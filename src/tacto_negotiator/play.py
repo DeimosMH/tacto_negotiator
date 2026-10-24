@@ -290,8 +290,13 @@ def acceptable_offer(case, events, sid=None):
 # relationship goals stay closer because squeezing the supplier's margin is charged in C.
 # A sweep on the hosted-like replicas (anchors x 0.75-1.5, gap step 0.15-0.5) favoured deeper anchors
 # and smaller steps: 1.25 x and 0.15 scored 0.731, the earlier 1.0 x and 0.30 scored 0.708.
-ANCHOR_BY_GOAL = {"leverage": 0.25, "routine": 0.225, "quality_first": 0.19, "secure_supply": 0.15,
+# secure_supply stays shallow and opens at the anchor itself (`FIRM_OPENING_GOALS`): a bottleneck supplier
+# answers a large first gap with a final offer. Hosted P10 stayed open at first asks 8-10 % below the quote
+# (4 of 5; round-2 finals 31.6 with a sheet on its own lead time, 0.671) and gave a round-1 final offer at
+# 13-20 % below (10 of 10: 32.0 with that sheet, 0.639; 33.6-33.8 without, 0.555-0.570).
+ANCHOR_BY_GOAL = {"leverage": 0.25, "routine": 0.225, "quality_first": 0.19, "secure_supply": 0.07,
                   "stabilise": 0.10}
+FIRM_OPENING_GOALS = {"secure_supply"}
 GAP_STEP, HOLD_STEP = 0.20, 0.10
 # Routine suppliers answer each of our moves with about 0.4 of it (hosted P07: 0.30-0.47 over seven
 # sessions) and issue their final offer after a fixed round or a cumulative gap of about 35 %, so the
@@ -303,6 +308,22 @@ GAP_STEP_BY_GOAL = {"routine": 0.40}
 def gap_step(case):
     """Share of the gap to the supplier's standing offer that our next sheet moves."""
     return GAP_STEP_BY_GOAL.get(case["buyer"].get("category_goal"), GAP_STEP)
+
+
+def opening_price_floor(case, events):
+    """Lowest unit price of an opening sheet: the anchored quote price for `FIRM_OPENING_GOALS`, else 0.
+    Equal-cost trades on top of an opening sheet (`_toward_sheets`) may still go below it. Hosted P10
+    models priced packages 18-20 % below the quote although the anchored cap was 15 %."""
+    try:
+        if case["buyer"].get("category_goal") not in FIRM_OPENING_GOALS:
+            return 0.0
+        _, terms, std, missing = known_offer(case, events)
+        if missing:
+            return 0.0
+        resolved = {**std, **case.get("fixed_terms", {}), **terms}
+        return round(resolved["unit_price"] * (1 - ANCHOR_BY_GOAL[case["buyer"]["category_goal"]]), 2)
+    except (KeyError, TypeError, ValueError, OverflowError, AttributeError):
+        return 0.0
 
 
 def opening_price_cap(case, events, sid=None):

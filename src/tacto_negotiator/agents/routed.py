@@ -33,6 +33,7 @@ from ..play import (
     live_threads,
     moves_left,
     opening_price_cap,
+    opening_price_floor,
     price_within,
     standing,
 )
@@ -128,11 +129,15 @@ class RoutedAgent:
             limit = ask_limit(case, events, sid) if reprice else math.inf
             opening = reprice and not any(e.get("from") == "buyer" and e.get("term_sheets") for e in events)
             cap = opening_price_cap(case, events, sid) if opening else math.inf
+            low = opening_price_floor(case, events) if opening else 0.0
             conformed = []
             for t in clean:
                 ceiling = max(cap, cheapest_price(case, t, std, sid) or 0) if opening else math.inf
                 if total_cost(case, t, std) > limit * 1.005 + 0.01 or t["unit_price"] > ceiling + 0.02:
                     t = {**t, "unit_price": self._price_within(case, t, std, sid, limit, ceiling)}
+                if t["unit_price"] < low - 0.02:  # a firm opening: up to the anchored price, within the limit
+                    t = {**t, "unit_price": max(t["unit_price"], self._price_within(
+                        case, {**t, "unit_price": low}, std, sid, limit))}
                 if reprice:
                     t = self._off_repeat(case, events, t, terms, std)
                 if t not in conformed:

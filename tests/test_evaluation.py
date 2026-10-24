@@ -220,6 +220,34 @@ def test_small_index_rises_and_other_goals_get_no_clause_sheet():
     assert agent._clause_sheet(routine, events, "sup:70510", [sheet]) is None
 
 
+def test_secure_supply_openings_stay_at_the_shallow_anchor():
+    """Hosted P10 gave a round-1 final offer to every first ask 13-20 % below its 32.20 quote and stayed
+    open at 8-10 % (29.2 on its own 56 days drew 31.6, 0.671). Model sheets at 26.2/25.8 are lifted to the
+    anchored price; the supplier's lead time comes back as an equal-cost trade. Other goals keep deep asks."""
+    from tacto_negotiator.agents.routed import RoutedAgent
+
+    feedback = json.loads((ROOT / "tests/fixtures/practice_feedback.json").read_text())
+    case = dict(feedback["cases"]["case:P10"])
+    sid = "sup:70410"
+    quote = [{"name": "quote.pdf", "text": "Our standard terms\nPayment terms (days net) 30\nIncoterm DAP"}]
+    opening = {"unit_price": 32.2, "lead_time_days": 54, "volume_per_year": 19890, "contract_months": 12}
+    threads = {sid: [{"from": "supplier", "status": "open", "attachments": quote,
+                      "term_sheets": [{"term_sheet_id": "offer:0", "terms": opening}]}]}
+    deep = [{"unit_price": 26.2, "volume_per_year": 23400, "contract_months": 36, "lead_time_days": 42},
+            {"unit_price": 25.8, "volume_per_year": 23400, "contract_months": 36, "lead_time_days": 56}]
+    agent = RoutedAgent(None, package=DataPackage(ROOT / "data"))
+    agent._prepare(case)
+    for move in (agent.validate(case, threads, {"supplier_id": sid, "action": "send", "term_sheets": deep}),
+                 agent._structured_bargain(case, threads)[1]):
+        sheets = [s["terms"] for s in move["message"]["term_sheets"]]
+        assert min(s["unit_price"] for s in sheets) >= 0.9 * 32.2
+        assert any(s["lead_time_days"] == 56 for s in sheets)
+    routine = {**case, "buyer": {**case["buyer"], "category_goal": "routine"}}
+    agent._prepare(routine)
+    move = agent.validate(routine, threads, {"supplier_id": sid, "action": "send", "term_sheets": deep[:1]})
+    assert move["message"]["term_sheets"][0]["terms"]["unit_price"] <= 26.2
+
+
 def test_a_sheet_the_supplier_countered_moves_instead_of_repeating():
     """An unchanged sheet draws no concession (hosted P02 v4 repeated its floor and the supplier walked)."""
     from tacto_negotiator.agents.routed import RoutedAgent
