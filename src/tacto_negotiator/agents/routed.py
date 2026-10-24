@@ -20,6 +20,7 @@ from ..cost import (
     total_cost,
     valid_value,
 )
+from ..docs import standard_terms
 from ..play import (
     ANCHOR_BY_GOAL,
     CLOSE_BEFORE_CAP_S,
@@ -61,6 +62,17 @@ SUPPLIER_CASH_TERMS = {"payment_days", "chargeback_eur_per_complaint", "ppm_comm
 # An index-clause sheet (relationship goals) needs a series rise this many times its expected cost to us,
 # and must close this share of the gap from the standing offer to our cheapest sheet (`_clause_sheet`).
 CLAUSE_RISE_RATIO, CLAUSE_GAP_SHARE = 3.0, 0.5
+# Body grounding (`_grounded_body`, docs/reviews/LLM_ASSUMPTIONS.md). The supplier's people and processes:
+# hosted v6-v12 models named them in 95 of 147 e-mails, 45 times repeating an ask in the same thread.
+SUPPLIER_ROLE_RE = re.compile(r"\b(?:pricing committee|committee|managing director|sales director|director|owner|"
+                              r"management|board|department|office manager|account manager|pricing authority|"
+                              r"approval limit|authori[sz]ed\s+(?:pricing\s+)?review|authority)\b", re.I)
+ROLE_SOURCES = ("committee", "owner", "director", "management", "board", "department", "manager")
+# An ID-less percentage or cost share ("the change exceeds 2 %") drew "Please send us the data" (20 replies).
+PERCENT_RE = re.compile(r"(\d+(?:[.,]\d+)?)\s?(?:%|per ?cent\b)|\b(?:a|one) (?:fifth|third|quarter|half) of\b", re.I)
+# Term values in prose: "24 or 36 months", "90-day payment", "800 ppm".
+TERM_FIGURE_RE = re.compile(r"\b(\d+(?:-?\s*(?:,|or|and)\s*\d+)*)(-|\s)?(months?|days?|ppm)\b", re.I)
+SENTENCE_RE = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9\"'(])")
 
 
 class RoutedAgent:
@@ -173,6 +185,7 @@ class RoutedAgent:
                 # term priced against uncovered demand) next to 4.57 and countered 6.00 instead of 5.40.
                 top = max(t["unit_price"] for t in clean)
                 clean = [t for t in clean if t["unit_price"] >= 0.9 * top] or clean[:1]
+            body = self._grounded_body(case, threads, sid, body, clean)
             move = {"supplier_id": sid, "message": {
                 "subject": subject, "body": body, "term_sheets": [{"terms": t} for t in clean]}}
             return move if len(json.dumps({"message": move["message"]}).encode()) <= 64_000 else None
@@ -311,6 +324,9 @@ class RoutedAgent:
                  for ref in ID_RE.findall(message.get("body", ""))}
         quotes = set(case.get("refs", [])) | {(case["buyer"].get("alternative") or {}).get("ref")}
         forecast = any(ref.startswith("fc:") for ref in cited)
+        # Another window of an index already cited is a duplicate: hosted v6-v12 got "already taken into
+        # account" for all 14 second PPI-D351 windows.
+        series = {ref.split("@")[0] for ref in cited if ref.startswith("idx:")}
         kept = set()
 
         def keep(match):
@@ -318,13 +334,84 @@ class RoutedAgent:
             ref = match.group(0)
             if ref in kept:
                 return ref
-            if ref in cited or (ref.startswith("quote:") and ref not in quotes) or (ref.startswith("fc:") and forecast):
+            if (ref in cited or (ref.startswith("quote:") and ref not in quotes) or (ref.startswith("fc:") and forecast)
+                    or ref.split("@")[0] in series):
                 return ""
             forecast = forecast or ref.startswith("fc:")
             kept.add(ref)
             return ref
 
         return re.sub(r"\s*\(\s*[,;\s]*\)", "", ID_RE.sub(keep, body)).strip()
+
+    def _grounded_body(self, case, threads, sid, body, sheets):
+        """Drop sentences the supplier reads as unsupported (hosted v6-v12, docs/reviews/LLM_ASSUMPTIONS.md):
+        - the supplier's people or processes (committee, owner, management, approval limits) unless its
+          own words or the case dossier name them, and at most once per thread;
+        - an ID-less percentage or cost share, unless it is a deadband we attach or a percentage the
+          supplier wrote. A sentence citing an ID, or continuing one ("The same scorecard ..."), is a claim
+          and stays (the arena checks it);
+        - a term value (months, days, ppm) that neither our sheets nor the supplier's terms or words hold:
+          code may drop a sheet the prose describes ("24 or 36 months" with only 24 attached, 11 e-mails).
+          A list keeps its supported values ("24- or 36-month" -> "24-month")."""
+        events = threads[sid]
+        supplier = [e for e in events if e.get("from") != "buyer"]
+        words = " ".join([e.get("body") or "" for e in supplier]
+                         + [a.get("text") or "" for e in supplier for a in e.get("attachments") or []])
+        brief = getattr(self.context, "brief", "") if getattr(self.context, "case_id", None) == case["case_id"] else ""
+        sources = f"{words} {brief or ''}".lower()
+        numbers = {float(n) for n in re.findall(r"\d+(?:\.\d+)?", words.replace(",", ""))}
+        for t in [*sheets, *(s.get("terms", s) for e in supplier for s in e.get("term_sheets") or []),
+                  standard_terms(events), case.get("fixed_terms", {}), case["buyer"]]:
+            numbers.update(float(v) for v in t.values() if isinstance(v, (int, float)) and not isinstance(v, bool))
+        percents = {float(n) for n in re.findall(r"(\d+(?:\.\d+)?)\s?%", words)}
+        percents |= {float(t["index_clause"]["deadband_pct"]) for t in sheets
+                     if isinstance(t.get("index_clause"), dict) and "deadband_pct" in t["index_clause"]}
+
+        def roles(sentence):  # the supplier's people, not "our engineering team"
+            return [m.group(0).lower() for m in SUPPLIER_ROLE_RE.finditer(sentence)
+                    if not re.search(r"\bour\s+(?:[\w-]+\s+){0,2}$", sentence[:m.start()], re.I)]
+
+        def grounded(role):  # a generic ask ("authorized review") needs any named decision-maker
+            needed = [word for word in ROLE_SOURCES if word in role] or ROLE_SOURCES
+            return any(word in sources for word in needed)
+
+        def figures(match):
+            values = [float(n) for n in re.findall(r"\d+", match.group(1))]
+            kept = [v for v in values if v in numbers]
+            if not kept:
+                raise LookupError
+            if len(kept) == len(values):
+                return match.group(0)
+            return " or ".join(f"{v:g}" for v in kept) + (match.group(2) or "") + match.group(3)
+
+        def supported(sentence, previous):
+            if ID_RE.search(sentence) or (ID_RE.search(previous) and re.match(
+                    r"(?:The same|This|That|It|Its|These)\b", sentence)):  # a claim and its continuation
+                return sentence
+            if any(not m.group(1) or float(m.group(1).replace(",", ".")) not in percents
+                                     for m in PERCENT_RE.finditer(sentence)):
+                return None
+            try:
+                return TERM_FIGURE_RE.sub(figures, sentence)
+            except LookupError:
+                return None
+
+        asked = any(roles(s) for e in events if e.get("from") == "buyer"
+                    for s in SENTENCE_RE.split(e.get("body") or ""))
+        lines = []
+        for line in body.split("\n"):
+            out = []
+            for sentence in SENTENCE_RE.split(line):
+                named = roles(sentence)
+                if named and not ID_RE.search(sentence) and (asked or not all(grounded(r) for r in named)):
+                    continue
+                if (sentence := supported(sentence, out[-1] if out else "")) is None:
+                    continue
+                asked = asked or bool(named)
+                out.append(sentence)
+            if out or not line.strip():
+                lines.append(" ".join(out))
+        return re.sub(r"\n{3,}", "\n\n", "\n".join(lines)).strip()
 
     def _record(self, case, route, reason, start, deadline, fallback=False):
         self.last_decision = {"case_id": case["case_id"], "route": route, "reason": reason,

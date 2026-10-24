@@ -314,6 +314,60 @@ def test_wasted_claim_ids_are_stripped_before_sending(scenario):
     assert "fc:" not in body and "quote:other" not in body and "quote:case" in body
 
 
+def test_a_second_window_of_a_cited_index_is_stripped_as_duplicate(scenario):
+    case, threads, sid = scenario
+    threads[sid].insert(0, {"from": "buyer", "body": "X fell 3% (idx:X@2025-08, idx:X@2026-08)."})
+    body = RoutedAgent._strip_wasted_claims(case, threads, "X fell (idx:X@2025-11, idx:X@2026-04); Y (idx:Y@2026-08).")
+    assert "idx:X" not in body and "idx:Y@2026-08" in body
+
+
+def grounded(scenario, body, sheets=None, supplier_says="Our proposal."):
+    case, threads, sid = scenario
+    threads[sid][0]["body"] = supplier_says
+    return RoutedAgent(completion(sid, []))._grounded_body(
+        case, threads, sid, body, sheets or [{"unit_price": 15, "payment_days": 30, "contract_months": 12}])
+
+
+def test_supplier_roles_need_a_source_and_are_named_once(scenario):
+    ask = "Could your pricing committee review it? Our engineering team will assess the variant."
+    assert grounded(scenario, ask) == "Our engineering team will assess the variant."
+    said = "Changes need our pricing committee."
+    assert grounded(scenario, ask, supplier_says=said) == ask
+    case, threads, sid = scenario
+    threads[sid].append({"from": "buyer", "body": "Could your pricing committee review it?"})
+    assert grounded(scenario, ask, supplier_says=said) == "Our engineering team will assess the variant."
+    # A cited claim stays even when it mentions a role: the arena checks it.
+    claim = "Your forecast fc:A@2026-09 records 4.2 %, as your owner expected."
+    assert grounded(scenario, claim) == claim
+
+
+def test_id_less_percentages_are_dropped_but_claims_and_deadbands_stay(scenario):
+    body = ("As the change exceeds 2 %, please review. Copper is roughly a fifth of the cost.\n"
+            "Our scorecard sc:A@2026Q3 shows 85.0 %. The same scorecard shows 302 ppm. One sheet has a 5% deadband.")
+    clause = {"series": "AS", "material_share": 0.4, "deadband_pct": 5.0, "base_month": "2026-08"}
+    out = grounded(scenario, body, [{"unit_price": 15, "payment_days": 30, "index_clause": clause}])
+    assert out == ("Our scorecard sc:A@2026Q3 shows 85.0 %. The same scorecard shows 302 ppm. "
+                   "One sheet has a 5% deadband.")
+    assert grounded(scenario, "Your requested 9.5 % is high.", supplier_says="We need 9.5 % more.") == \
+        "Your requested 9.5 % is high."
+
+
+def test_prose_term_values_must_match_an_attached_sheet_or_the_supplier(scenario):
+    body = ("Dear Ms A,\n\nWe commit 6650 pcs per year over 12- or 36-month terms. One option has 75-day payment.\n"
+            "Your 45 days are noted.\n\nKind regards")
+    out = grounded(scenario, body, supplier_says="We can do 45 days.")
+    assert out == ("Dear Ms A,\n\nWe commit 6650 pcs per year over 12-month terms.\nYour 45 days are noted.\n\n"
+                   "Kind regards")
+
+
+def test_validate_sends_the_grounded_body(scenario):
+    case, threads, sid = scenario
+    move = RoutedAgent(completion(sid, [])).validate(case, threads, {
+        "supplier_id": sid, "action": "send", "term_sheets": [{"unit_price": 15, "payment_days": 30}],
+        "body": "Could you improve? As this exceeds 2 %, please ask your management for an authorized review."})
+    assert move["message"]["body"] == "Could you improve?"
+
+
 def test_parse_takes_the_first_complete_object_despite_trailing_braces():
     from tacto_negotiator.agents.llm import parse
 
