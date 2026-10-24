@@ -65,7 +65,7 @@ tacto play / tacto run
 4. The runner refreshes authoritative thread timers, removes closed threads and refreshes changed offer IDs or statuses. It derives a decision budget from the earliest waiting supplier and the current wave reserve.
 5. RoutedAgent first tries a supported script. If interpretation remains, it prepares context using LLMAgent and calls either the fast or configured strong completion once. Preparation currently occurs after opening and uses the same decision budget.
 6. Every routed proposal passes the same validator. If a model fails, is late or returns an invalid decision, the agent returns a local closing fallback. Only the runner sends the arena move.
-7. The runner records the supplier response, reads new attachments, and repeats until acceptance, walk-away or an ended session. A 409 causes state recovery rather than blindly replaying stale acceptance.
+7. The runner records the supplier response, reads new attachments, and repeats until acceptance, walk-away or an ended session. After a 409 it replaces local history with the authoritative thread, matches terms to the current offer ID and counts timeout rounds. An opening with no live bidders returns its terminal result immediately.
 
 The extension interface remains small:
 
@@ -103,7 +103,9 @@ The routine/leverage script enumerates at most 256 legal non-price combinations 
 
 The shared routed validator checks live supplier and standing-offer ownership, schema/size, finite and permitted values, known quote defaults, must-haves and alternative comparison. Acceptance uses the supplier's current offer rather than a desired buyer counteroffer. A walk-away ends the whole case, including other supplier threads. Failed latest-quote evidence blocks acceptance until a later readable quote replaces it.
 
-complete_offer fills and snaps values; it is not itself a trust-boundary validator. The legacy LLMAgent and direct NaiveAgent paths do not have the full routed guard. NaiveAgent is useful for a controlled tutorial and benchmark, not as a claim of safe acceptance for arbitrary cases.
+The shared acceptable_offer and closing_move functions in play.py protect routed, legacy-model and deadline acceptance. known_offer resolves evidence, while valid_value in cost.py checks field types. The package search checks candidate costs and must-haves, then validates the selected complete message once; it does not reparse quotes for every candidate.
+
+complete_offer fills and snaps values while preserving supplied legal supplier-standard values, including standards outside term_options. It is not itself a trust-boundary validator. Legacy outgoing proposals retain their earlier policy and do not have the full routed message guard. Direct NaiveAgent acceptance remains deliberately unsafe for comparison. Unknown index-clause text raises a parsing error rather than becoming a null clause; guarded acceptance rejects it.
 
 Remaining economic limits are explicit: supplier-health estimation is not implemented in the routed acceptance comparison, and checking a cited ID does not verify arbitrary prose arithmetic. Passing no supplier estimate to total_cost makes its relationship-cost component zero; it does not establish that the real relationship cost is zero.
 

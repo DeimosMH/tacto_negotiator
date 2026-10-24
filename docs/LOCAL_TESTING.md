@@ -30,7 +30,7 @@ env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 \
 
 The active suite has no hosted-service parametrization. HTTP integration tests start uvicorn on 127.0.0.1 with a simulator-issued key that works only in that simulator. Unit tests inject model completions and mock HTTP. No real keys are read. The root pytest configuration collects tests only; the archived starter-kit tests under materials are outside that default collection. Local HTTP fixtures need socket permissions even though they never contact the internet.
 
-Verified after migration: **221 passed, 0 skipped**. The active project removes the hosted parametrization and adds command tests. The suite covers contract behavior, routing, provider cancellation, script coverage, budget accounting, competition and CLI behavior. Real model measurements remain a separate opt-in experiment recorded in [the competition guide](COMPETITION.md).
+Verified after the review fixes: **244 passed, 0 skipped**. The suite covers contract behavior, routing, provider cancellation, script coverage, budget accounting, competition and CLI behavior. New regressions cover stale-offer recovery, timeout rounds, terminal openings, shared acceptance, supplier-standard preservation, indexed quotes and scorer boundaries. See [resolved findings and validation](reviews/FIXES.md). Real model measurements remain a separate opt-in experiment recorded in [the competition guide](COMPETITION.md).
 
 The added test_final.py uses the actual simulator HTTP routes through FastAPI TestClient and httpx.MockTransport: no network connection is made. It drives five 480-second waves with virtual time and 150 sessions across three teams. Other tests inject model failures, slow decisions, slow suppliers, retry faults, restart/resume and an active host extension. A separate concurrent burst checks the shared client's pacing. Two diagnostic scenarios preserve failure outcomes for unbounded legacy/injected decision calls and neglected RFQ threads; passing them does not mean the agent is final-ready. See [the full scenario table and executable rehearsal](FINAL_READINESS.md).
 
@@ -45,6 +45,8 @@ For a focused command and a small example that prints the selected routes, see [
 [Local competition](COMPETITION.md) documents the new ten-scenario harness, offline commands, measured OpenAI comparison and its sanitized reports. The default command uses no credentials. Paid runs require both --live and an explicitly selected --key-file; only LLM_API_KEY is extracted, and all suppliers remain local. This opt-in benchmark is separate from the credential-free unit suite above.
 
 The additional tests cover bounded full-cost package enumeration, semantic near misses, private supplier data isolation, feasible references, quote-floor consistency, parallel worker overlap, model deadlines, budget reservations and the CLI opt-in boundary. These tests inject HTTP transports and never make real provider calls.
+
+Post-review validation ran two parallel cohorts of 450 matches each, with ten workers per cohort and five repeated waves. Both guarded strategies returned 600/600 valid outcomes; scripts needed the deliberately unavailable model callback in 60 cases, with no API calls. The delayed-supplier holdout still recorded thread timeouts. [Compact results and source hashes](reviews/validation.json) preserve these observations; this is not a shared-wave capacity or provider qualification run.
 
 ## Migration verification
 

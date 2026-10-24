@@ -1,87 +1,43 @@
-# Project review
+# Project review and fixes
 
-Three independent agents reviewed the current application at commit
-`4aca02de43bf3f15c554ab6144e438ae91616327`. This covers the implemented project,
-not just the last archive-move commit. Application code is unchanged by this review.
+**All nine findings are addressed.** Start with [FIXES.md](FIXES.md) for the
+implementation changes, regression tests, commit references and validation results.
+The full application suite passes 244 tests. Two parallel offline cohorts completed
+900 matches; the guarded policies had 600/600 valid outcomes. The source atlas and
+current guides explain the repaired implementation.
 
-| Review | Findings | Focus | Evidence |
-| --- | --- | --- | --- |
-| [Bugs](BUGS.md) | 4 | Incorrect moves, stale state, parsing and crashes | [Local reproductions](repro_bugs.py) |
-| [Logic](LOGIC.md) | 2 | Negotiation economics, scoring and conclusions from simulations | [Local reproductions](repro_logic.py) |
-| [Bloat](BLOAT.md) | 3 | Duplicated checks, unused descriptions and repeated work | [Local reproductions](repro_bloat.py) |
+| Historical review | Findings | Original reproduction |
+| --- | --- | --- |
+| [Bugs](BUGS.md) | 4: stale state, rewritten terms, quote parsing and terminal openings | [repro_bugs.py](repro_bugs.py) |
+| [Logic](LOGIC.md) | 2: opening eligibility and nonexistent outside options | [repro_logic.py](repro_logic.py) |
+| [Bloat](BLOAT.md) | 3: duplicated acceptance, unused descriptions and repeated parsing | [repro_bloat.py](repro_bloat.py) |
 
-Reviewers traced callers and dependencies across `src/tacto_negotiator`, tests,
-packaging and documentation. The original API contract in
-[`materials/starter_kit/brief/api.md`](../../materials/starter_kit/brief/api.md)
-provides the expected behavior. The assumed operating load is five 480-second
-waves, ten concurrent cases and independent 60-second supplier-thread windows;
-ten cases is a test assumption, not a supplied final case count.
+Three independent agents reviewed the full application at
+`4aca02de43bf3f15c554ab6144e438ae91616327`, rather than only the preceding archive
+move. They traced source callers, tests, packaging, guides and the supplied
+[API contract](../../materials/starter_kit/brief/api.md). The baseline had 221
+passing application tests and 11 documentation tests; the coordinating reviewer
+independently reproduced all nine findings despite that green suite.
 
-## Fix order
+The original reports and scripts are historical evidence. Their assertions
+confirm the old defects and are expected to fail after the fixes; they are not
+current regression commands. Use the tests and commands in [FIXES.md](FIXES.md)
+or [local testing](../LOCAL_TESTING.md) to validate the current checkout.
 
-1. **Preserve authoritative offer state during recovery.** A timeout followed by a
-   round-limit error can attach old terms to a current offer ID. The local
-   reproduction accepts a EUR 170,077.44 deal against a EUR 136,487.56 alternative.
-   See Bugs, finding 1.
-2. **Preserve legal supplier defaults when building offers.** The validator accepts
-   a supplier-standard value, then the completion helper silently changes it.
-   A scripted package priced below a EUR 30,000 alternative is sent at EUR 39,990
-   after its freight term changes. See Bugs, finding 2; the logic review
-   cross-references the same defect rather than counting it twice.
-3. **Keep unknown index clauses distinct from no clause.** The local simulator's
-   dictionary formatting is parsed as `None`, allowing an acceptance that violates
-   a must-have and scores zero. Hosted occurrence is unverified. See Bugs,
-   finding 3.
-4. **Return the result when every opening thread has ended.** The routed runner
-   currently computes a minimum over an empty set and crashes. See Bugs, finding 4.
-5. **Correct the competition scorer before extending the comparison.** An invalid
-   opening can lower the scoring baseline; a nonexistent outside option can earn
-   full points for walking away. These are local evaluator defects, not evidence
-   that the hosted arena scores incorrectly. See Logic.
-6. **Unify acceptance safety, then do the small cleanup.** Legacy and routed closing
-   checks disagree about unknown defaults. Unused catalog descriptions and repeated
-   quote parsing are lower-priority cleanup. See Bloat.
+[validation.json](validation.json) contains the new compact offline results and
+source hashes. No real dotenv file, credential, hosted arena or paid model was
+used for the review or remediation. The old paid experiment in `docs/results/`
+remains unchanged; it predates scoring version 2 and is not a current model ranking.
 
-The existing limitations around sequential RFQ requests, missing supplier-health
-estimates and synthetic model qualification remain relevant. They are already
-documented in [Sunday readiness](../FINAL_READINESS.md) and
-[competition methodology](../COMPETITION.md); this review does not present them as
-new discoveries. It does not establish a new model ranking or rewrite historical
-benchmark results.
+The operating assumption remains five 480-second waves, ten concurrent cases
+and independent 60-second buyer windows per supplier thread. Ten cases is a test
+assumption, not a supplied final case count. The full suite includes a shared-wave
+runner rehearsal; the 900-match policy comparison gives each match its own clock.
 
-## Verification
+The remaining sequential RFQ scheduling, supplier-health and prose-evidence limits
+are documented in [Sunday readiness](../FINAL_READINESS.md). The holdout still
+records supplier-thread timeouts. Fixing these review findings does not establish
+hosted final readiness.
 
-The unchanged baseline passed:
-
-- **221 application tests**, with no skips, in 25.89 seconds.
-- **11 documentation tests**, source-map snapshot validation and browser interaction
-  checks, including the browser check for remote requests.
-- Ruff over `src`, `tests` and `docs`.
-
-The coordinating reviewer independently reran all three review scripts and
-confirmed all nine findings. The scripts deliberately assert the reported defects
-or measured duplication. A successful script run therefore confirms a finding;
-it is not a passing safety regression. Run them independently from a clean
-environment, after installing the project's local development dependencies:
-
-```sh
-TACTO_ROOT="$PWD"
-cd /tmp
-env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 \
-  "$TACTO_ROOT/.venv/bin/python" "$TACTO_ROOT/docs/reviews/repro_bugs.py"
-env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 \
-  "$TACTO_ROOT/.venv/bin/python" "$TACTO_ROOT/docs/reviews/repro_logic.py"
-env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 \
-  "$TACTO_ROOT/.venv/bin/python" "$TACTO_ROOT/docs/reviews/repro_bloat.py"
-```
-
-All review reproductions use local data, in-memory suppliers or mocked calls. No
-real `.env`, `./env`, API key, hosted arena or paid model was used. Runtime behavior
-was checked against the repository and supplied contract; no external lookup was
-needed to resolve these findings.
-
-**Verdict:** fix the acceptance/state defects before treating the buyer as ready for
-the final. The green baseline misses these boundary cases.
-
-**Not checked:** actual arena behavior, live provider latency, venue capacity and
-Docker execution. The reports describe the reviewed revision, not future fixes.
+Not checked: live arena behavior, provider/venue capacity, Docker execution and
+paid model reranking.

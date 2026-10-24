@@ -1,5 +1,7 @@
 # Choose a model for the final
 
+**Review update:** the economic scores cited here predate the [scoring fixes](reviews/FIXES.md). They remain historical measurements; the model tournament has not been rerun under scoring version 2. Provider timing and call counts remain observations from that run, while the current policy still needs representative qualification.
+
 **Use deterministic Python for quantitative decisions, GPT-6.1 Sol at low effort for ordinary unresolved semantics, and optional Astra at low effort for qualified complex decisions.** In the measured local comparison, hybrid scored 73.07/100 with 35 model calls, versus Sol-only's 67.00 with 498 calls. Both produced 100/100 valid outcomes under the common guard. This supports the hierarchy within the tested synthetic families; the fast semantic branch still needs representative qualification. See [competition method, results and limits](COMPETITION.md) and [Sunday priorities](FINAL_READINESS.md).
 
 The implemented [routed buyer](ROUTING.md) handles known quantitative choices with bounded scripts, uses Sol as its default completion and can choose Astra for structured complexity when enough budget remains. Astra is disabled until configured. Each decision makes at most one completion request; failures use a local fallback. Use Astra for difficult preparation before a live session as well, if evaluation shows it improves those tasks.

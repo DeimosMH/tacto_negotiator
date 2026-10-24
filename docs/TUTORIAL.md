@@ -189,7 +189,7 @@ class TutorialBuyer(NaiveAgent):
 
 TutorialBuyer inherits the baseline's price strategy. super().decide gets that strategy's next decision. The new code changes payment_days only when the case permits negotiation of that field. complete_offer keeps the case's required negotiable fields and allowed option values. An unsupported numeric wish may be snapped to the nearest allowed option, so choose a value from S01's list for this exercise.
 
-When the baseline wants to accept, closing_move compares live standing offers using their standard terms, must-haves and the alternative. This is a useful existing closing check for this demo. It does not estimate supplier health, and the inherited price strategy is still simplistic. The default RoutedAgent already provides a broader shared validator; inspect [its routing guide](ROUTING.md) before extending this experiment into a competition buyer.
+When the baseline wants to accept, closing_move compares live standing offers using evidenced standard terms, must-haves and the alternative. It uses the same acceptance check as RoutedAgent and the legacy model guard. It does not estimate supplier health, and the inherited price strategy is still simplistic. RoutedAgent also validates outgoing messages; inspect [its routing guide](ROUTING.md) before extending this experiment into a competition buyer.
 
 Notice that changing payment_days in the structured term sheet matters even though we did not change the email wording. For a realistic buyer, make the email describe the same proposed trade.
 
@@ -245,7 +245,7 @@ Use this table when your next change has a different goal:
 | Price or term-selection policy | The agent's decide method | Message shape, allowed terms, alternatives and the final deal. |
 | Evidence given to the model | LLMAgent.prepare and DataPackage | Exact IDs, units, relevance and preparation time. Preparation currently starts after opening the session. |
 | Email wording | SYSTEM and rendering in agents/llm.py | Model output still passes the guard and says the same thing as its term sheets. |
-| Acceptance or fallback behavior | RoutedAgent.validate and _closing | Scripts, model proposals and fallback share this gate. Preserve current-offer, default, numeric, must-have and alternative checks; supplier-health estimates remain work. |
+| Acceptance or fallback behavior | play.acceptable_offer and play.closing_move; RoutedAgent.validate for outgoing messages | Guarded policies share acceptance rules. Preserve current-offer, default, numeric, must-have and alternative checks; supplier-health estimates remain work. |
 | Script/fast/strong choice | RoutedAgent in agents/routed.py | The rule matches complete data, leaves time to send, and every resulting action passes routed validation. |
 | Routed model execution | CompletionClient in agents/completion.py | Queue wait, output reading and cancellation share one deadline; incomplete output falls back locally. |
 | Document interpretation | docs.py | Quote defaults survive extraction; add a fixture demonstrating the change. |

@@ -2,6 +2,8 @@
 
 The Tacto Negotiator competition harness runs independent buyer strategies against the same synthetic supplier scenarios. Suppliers and arena state stay in memory. The optional model strategies make real, measured OpenAI requests. Its current entry points are tacto-compete and python -m tacto_negotiator.compete. Start with [the tutorial](TUTORIAL.md) for the negotiation loop and [the routing guide](ROUTING.md) for the decision tree.
 
+**Review update:** the tables below preserve the historical pre-review experiments. Scoring version 2 fixes eligible-opening and nonexistent-alternative errors, and adds a valid second bidder to leadtime_repair. Historical economic scores have not been recomputed and must not be presented as current model rankings. The new [900-match offline validation](reviews/FIXES.md) checks the repaired implementation without paid calls; all original result files remain unchanged.
+
 ## Results and recommendation
 
 The expanded scripts solve eight of the ten scenario families without a model or fallback. Keep the hierarchical design: deterministic quantitative work, model interpretation for the remaining semantic cases, and one shared validator on every path. This is supported within the tested families; it is not a guarantee about unseen final cases.
@@ -91,7 +93,7 @@ These are logical code blocks implemented by separate contributors. The deployed
 | --- | --- | --- |
 | simple_price | One supplier and a price-only negotiation | Immediate scripted anchor, bounded concessions and timely closure. |
 | payment_freight | Several payment and delivery options | Compare complete costs and compensate for freight/payment in each package's price. |
-| leadtime_repair | The initial lead time violates a must-have | Propose an explicit legal repair; never accept the original invalid quote. |
+| leadtime_repair | Supplier A violates a must-have; supplier B has an eligible opening | Repair A explicitly or choose a valid bidder. B provides the score baseline in version 2. |
 | competing_rfq | Three suppliers with different economics | Compare complete offers and give untried suppliers a turn. |
 | cheaper_alternative | An eligible outside quote is cheaper | Cap proposals against the alternative and walk away when appropriate. |
 | price_plateau | Supplier stops moving on price | Detect repeated complete quotes and avoid spending rounds indefinitely. |
@@ -120,6 +122,10 @@ Every policy gets an independent simulation with the same scenario and seed. Wor
 This is a paired policy comparison. A queued match starts its own clock when its worker begins: worker queue delay is excluded. Therefore the experiment does not establish how many cases the application can finish inside one shared eight-minute final wave. Repeated waves reuse the same seeded economics; they are repetitions, not five independent datasets. The separate [final rehearsal tests](FINAL_READINESS.md) exercise the real runner and shared wave timing.
 
 The reported score uses the public cost function with an enumerated feasible reference and the best eligible outside option. Relationship cases use an evaluator-only supplier-cost assumption and a finite price grid. The reference is not a proof of the global optimum. Invalid accepted deals or execution errors count as invalid; a deliberate walk-away can be valid. Regret is the realized cost minus the reference cost, in euros. Compare both cost and score: averaging normalized scores can hide large absolute losses.
+
+Current reports identify config.scoring_version=2. C_open is captured from the cheapest opening that satisfies all must-haves, using its own supplier defaults. A scenario with no eligible opening is rejected with an explicit error rather than assigned an invented baseline. A fixture with no feasible deal or declared alternative is also rejected. Reference enumeration includes legal supplier-standard values outside term_options.
+
+Only a declared buyer.alternative enters the outside-option calculation. The fallback_unit_price rate prices uncovered demand within a deal; it does not create an attainable outside quote. Walking away with alternative.kind=none scores zero and records null cost_eur and regret_eur. Mean regret excludes these unknown outcomes, so always read validity, deals and scores alongside that conditional average. With a declared eligible alternative, the walk-away cost and score use that alternative.
 
 ## Why the expanded scripts matter
 

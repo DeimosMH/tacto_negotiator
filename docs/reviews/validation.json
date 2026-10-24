@@ -1,0 +1,289 @@
+{
+  "purpose": "Post-review local correctness validation; not a model benchmark or shared-wave capacity test.",
+  "provider_calls": 0,
+  "arena_calls": 0,
+  "disabled_model_attempts": "scripts deliberately invokes a local unavailable callback for unsupported semantics.",
+  "application_tests": {
+    "passed": 244,
+    "skipped": 0,
+    "seconds": 27.4,
+    "source_revision": "0fddd10b3571b63d91f968d5131197ec2ca19365"
+  },
+  "cohorts": {
+    "development": {
+      "config": {
+        "scoring_version": 2,
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "waves": 5,
+        "wave_seconds": 480,
+        "workers": 10,
+        "holdout": false,
+        "decision_seconds": 25,
+        "scenarios": [
+          "simple_price",
+          "payment_freight",
+          "leadtime_repair",
+          "competing_rfq",
+          "cheaper_alternative",
+          "price_plateau",
+          "incomplete_defaults",
+          "contradicted_claims",
+          "relationship_risk",
+          "slow_reply"
+        ]
+      },
+      "peak_active_matches": 10,
+      "aggregate": {
+        "naive": {
+          "matches": 150,
+          "valid": 145,
+          "deals": 150,
+          "errors": 0,
+          "wave_points": {
+            "1": 54.7,
+            "2": 54.7,
+            "3": 54.7,
+            "4": 54.7,
+            "5": 54.7
+          },
+          "finished_before_cap": 150,
+          "total_points": 273.5,
+          "mean_score": 0.5469368366215146,
+          "mean_regret_eur": 2873.0355172413792,
+          "model_attempts": 0,
+          "fallbacks": 0,
+          "thread_timeouts": 0,
+          "decision_p95_s": 0.00010237899550702423,
+          "decision_wall_s": 0.04512754891766235,
+          "supplier_delay_s": 825.0,
+          "routes": {
+            "script": 375
+          }
+        },
+        "close": {
+          "matches": 150,
+          "valid": 150,
+          "deals": 120,
+          "errors": 0,
+          "wave_points": {
+            "1": 10.0,
+            "2": 10.0,
+            "3": 10.0,
+            "4": 10.0,
+            "5": 10.0
+          },
+          "finished_before_cap": 150,
+          "total_points": 50.0,
+          "mean_score": 0.1,
+          "mean_regret_eur": 4648.284814814815,
+          "model_attempts": 0,
+          "fallbacks": 0,
+          "thread_timeouts": 0,
+          "decision_p95_s": 0.00021489999926416203,
+          "decision_wall_s": 0.04319257600582205,
+          "supplier_delay_s": 0.0,
+          "routes": {
+            "script": 150
+          }
+        },
+        "scripts": {
+          "matches": 150,
+          "valid": 150,
+          "deals": 135,
+          "errors": 0,
+          "wave_points": {
+            "1": 52.0,
+            "2": 52.0,
+            "3": 52.0,
+            "4": 52.0,
+            "5": 52.0
+          },
+          "finished_before_cap": 150,
+          "total_points": 260.0,
+          "mean_score": 0.5197484944058511,
+          "mean_regret_eur": 2506.939,
+          "model_attempts": 30,
+          "fallbacks": 30,
+          "thread_timeouts": 0,
+          "decision_p95_s": 0.007099544003722258,
+          "decision_wall_s": 1.783942636953725,
+          "supplier_delay_s": 825.0,
+          "routes": {
+            "script": 375,
+            "fast": 30
+          }
+        }
+      },
+      "limitations": [
+        "Synthetic supplier profiles do not predict hosted negotiation scores.",
+        "Scoring v2 requires an eligible opening; leadtime_repair includes a valid second bidder.",
+        "No deal without a declared alternative scores zero; its cost and regret are unknown (null).",
+        "Reference is a feasible candidate benchmark, not a proof of global optimality.",
+        "No arena HTTP rate limiting, venue network or shared hosted-service load is simulated.",
+        "Worker queue wait is excluded: each match starts its own virtual 480-second clock.",
+        "Five waves repeat the same seed/scenario economics; they are repetitions, not new case types.",
+        "Fixed contradiction feedback and hidden penalties test mechanics, not semantic persuasion.",
+        "Legacy agents without decide_timed cannot have blocking calls cancelled by this harness.",
+        "Model attempts count complete/fast/strong callables; other designs need their own telemetry."
+      ],
+      "matches": 450,
+      "fully_scripted_matches": 120,
+      "guarded_invalid_acceptances": 0
+    },
+    "holdout": {
+      "config": {
+        "scoring_version": 2,
+        "seeds": [
+          201,
+          202,
+          203
+        ],
+        "waves": 5,
+        "wave_seconds": 480,
+        "workers": 10,
+        "holdout": true,
+        "decision_seconds": 25,
+        "scenarios": [
+          "simple_price",
+          "payment_freight",
+          "leadtime_repair",
+          "competing_rfq",
+          "cheaper_alternative",
+          "price_plateau",
+          "incomplete_defaults",
+          "contradicted_claims",
+          "relationship_risk",
+          "slow_reply"
+        ]
+      },
+      "peak_active_matches": 10,
+      "aggregate": {
+        "naive": {
+          "matches": 150,
+          "valid": 140,
+          "deals": 150,
+          "errors": 0,
+          "wave_points": {
+            "1": 55.4,
+            "2": 55.4,
+            "3": 55.4,
+            "4": 55.4,
+            "5": 55.4
+          },
+          "finished_before_cap": 150,
+          "total_points": 277.0,
+          "mean_score": 0.5542952755884873,
+          "mean_regret_eur": 2998.217142857143,
+          "model_attempts": 0,
+          "fallbacks": 0,
+          "thread_timeouts": 90,
+          "decision_p95_s": 7.817499863449484e-05,
+          "decision_wall_s": 0.3129013880097773,
+          "supplier_delay_s": 3600.0,
+          "routes": {
+            "script": 455
+          }
+        },
+        "close": {
+          "matches": 150,
+          "valid": 150,
+          "deals": 120,
+          "errors": 0,
+          "wave_points": {
+            "1": 10.0,
+            "2": 10.0,
+            "3": 10.0,
+            "4": 10.0,
+            "5": 10.0
+          },
+          "finished_before_cap": 150,
+          "total_points": 50.0,
+          "mean_score": 0.1,
+          "mean_regret_eur": 4496.486666666667,
+          "model_attempts": 0,
+          "fallbacks": 0,
+          "thread_timeouts": 0,
+          "decision_p95_s": 0.00022307800099952146,
+          "decision_wall_s": 0.02871632501046406,
+          "supplier_delay_s": 0.0,
+          "routes": {
+            "script": 150
+          }
+        },
+        "scripts": {
+          "matches": 150,
+          "valid": 150,
+          "deals": 135,
+          "errors": 0,
+          "wave_points": {
+            "1": 58.7,
+            "2": 58.7,
+            "3": 58.7,
+            "4": 58.7,
+            "5": 58.7
+          },
+          "finished_before_cap": 150,
+          "total_points": 293.5,
+          "mean_score": 0.5874137818171012,
+          "mean_regret_eur": 2269.371,
+          "model_attempts": 30,
+          "fallbacks": 30,
+          "thread_timeouts": 180,
+          "decision_p95_s": 0.0067143429987481795,
+          "decision_wall_s": 2.501040017064952,
+          "supplier_delay_s": 5400.0,
+          "routes": {
+            "script": 450,
+            "fast": 30
+          }
+        }
+      },
+      "limitations": [
+        "Synthetic supplier profiles do not predict hosted negotiation scores.",
+        "Scoring v2 requires an eligible opening; leadtime_repair includes a valid second bidder.",
+        "No deal without a declared alternative scores zero; its cost and regret are unknown (null).",
+        "Reference is a feasible candidate benchmark, not a proof of global optimality.",
+        "No arena HTTP rate limiting, venue network or shared hosted-service load is simulated.",
+        "Worker queue wait is excluded: each match starts its own virtual 480-second clock.",
+        "Five waves repeat the same seed/scenario economics; they are repetitions, not new case types.",
+        "Fixed contradiction feedback and hidden penalties test mechanics, not semantic persuasion.",
+        "Legacy agents without decide_timed cannot have blocking calls cancelled by this harness.",
+        "Model attempts count complete/fast/strong callables; other designs need their own telemetry."
+      ],
+      "matches": 450,
+      "fully_scripted_matches": 120,
+      "guarded_invalid_acceptances": 0
+    }
+  },
+  "competition_source_revision": "05920ab",
+  "competition_source_sha256": {
+    "src/tacto_negotiator/benchmark.py": "fffce4fcb1ec00aae6a0f84e0a530bc3fa5a08a6fbf32e5258233e1298cfd64d",
+    "src/tacto_negotiator/data.py": "5ab541637a17c9ad47ea907dfd3d09a30f51f5dd427bd834250d89ef3d888123",
+    "src/tacto_negotiator/cost.py": "445d46ebf2b3254c25bab131477a9a96b26666bd1e4b0d3a4e1e866cc3fa32f2",
+    "src/tacto_negotiator/client.py": "199dfb386434a676b0ffa09389531c8e623df412983558e78195eefdc9e84097",
+    "src/tacto_negotiator/competition.py": "7fd5072f560db211d0c5832b4ecb74149c7b765bd8a578039b5aec905763c44a",
+    "src/tacto_negotiator/cli.py": "a474fd2412c7b13653e4a8fbba9537a8f2d6999e26dc259771a801471c61ea18",
+    "src/tacto_negotiator/sim.py": "81692f99db190aeeabaf4d8e4ae58ca655945692ffaeb46945560c47c3861c2b",
+    "src/tacto_negotiator/play.py": "c7b693c6a4b3b39487e255bf856a922c316aaa71311c2b18a4b2fbaa778fb231",
+    "src/tacto_negotiator/__main__.py": "c3c697883784cbc443a2179843a3c758e19868ff04129329abbbb61d102ae680",
+    "src/tacto_negotiator/docs.py": "981a48de10182642d3b866af1e3c4a08c3eb611eca26bb68c153efc532fbf8f9",
+    "src/tacto_negotiator/compete.py": "3a33bd1e6b70c1a3c47963d4fe0de5e5f0c2a94c6f0875820332bd4a2eab7a7f",
+    "src/tacto_negotiator/__init__.py": "30679a26548de3280d29785a2eecf0a5d7d875c24be3d6520964fad546681587",
+    "src/tacto_negotiator/mcp_server.py": "40fa2f9e09c9f30305763e0ec35dc6c370939297f441546dcbdd2cf6dfa22de5",
+    "src/tacto_negotiator/agents/llm.py": "68fe11adbfcf2741b99542dce50c272b26ed493f5051f5d2427ab09ada603d18",
+    "src/tacto_negotiator/agents/completion.py": "c98e4303d4ea18dbe4d2e35de847782081cbe21eda2adf309f52149f14185e5b",
+    "src/tacto_negotiator/agents/routed.py": "816d90144d9a9004b62a44da0fd3db77e10f9ae62045dff0979747e1d2bfed48",
+    "src/tacto_negotiator/agents/naive.py": "bf1574b7db0dd330547c1840c192e26a4ba459990788243f15fc522e24853f77",
+    "src/tacto_negotiator/agents/__init__.py": "74e0576a9dc983527a99699b9f6a87b743cafb5bd2e74c46918e4511f014325c"
+  },
+  "documentation_checks": {
+    "tests_passed": 11,
+    "browser": "passed",
+    "ruff": "passed",
+    "atlas_snapshot": "passed"
+  }
+}

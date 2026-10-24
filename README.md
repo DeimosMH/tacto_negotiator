@@ -104,11 +104,20 @@ See [local verification](docs/LOCAL_TESTING.md) for the complete workflow.
 
 ## Results and remaining work
 
+All nine findings in the [project review](docs/reviews/README.md) are addressed; the
+[resolution record](docs/reviews/FIXES.md) links fixes, 244 passing tests and 900 new
+offline matches. The guarded policies had 600/600 valid outcomes. Delayed RFQs
+still expose the documented scheduling gap.
+
 The recorded comparison contains 2,700 scored local matches and 1,699 actual OpenAI
 calls, including its diagnostic pilot. Scripts covered 80% of the tested families;
 hybrid scored 73.07/100 with 35 model calls versus Sol-only's 67.00 with 498 calls.
 These are synthetic supplier results, not a hosted final leaderboard. Read the
 [method, results and limitations](docs/COMPETITION.md).
+
+Those historical scores predate scoring version 2 and its eligible-opening repair
+scenario. They are preserved measurements, not scores revalidated for the current
+evaluator; the paid models were not rerun during the review fixes.
 
 Sequential supplier requests within RFQs, supplier-health estimation, grounded prose
 claims and representative medium-semantic qualification remain work. Migration does
