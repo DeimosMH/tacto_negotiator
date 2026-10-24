@@ -66,6 +66,27 @@ def test_every_reference_is_a_feasible_accepted_deal_or_outside_option():
             assert sim.sessions[session_id]["result"]["realized_cost"] == reference["cost"]
 
 
+def test_equal_alternative_simulation_preserves_points_and_gains_a_deal():
+    scenario = next(s for s in build_scenarios(3) if s.name == "simple_price")
+    terms = feasible_reference(scenario)["terms"]
+    scenario.case["buyer"]["alternative"] = {"kind": "quote", "terms": terms}
+    results = []
+    for tie_aware in (False, True):
+        sim = CompetitionSim(scenario, 1)
+        opened = sim.open("local", "case:R1-C01")
+        sid, session_id = "sup:A", opened["session_id"]
+        # Arrange the same agreed, fully evidenced package for both closing policies.
+        reply = sim.message("local", session_id, sid, {"term_sheets": [{"terms": terms}]})
+        assert reply["status"] == "agreed"
+        move = closing_move(opened["case"], {sid: [reply]}) if tie_aware else {
+            "supplier_id": sid, "message": {"action": {"type": "walk_away"}}}
+        results.append(sim.message("local", session_id, sid, move["message"])["result"])
+    before, after = results
+    assert before["realized_cost"] == after["realized_cost"]
+    assert before["score"] == after["score"] == 1
+    assert not before["deal"] and after["deal"] and after["must_haves_ok"]
+
+
 def test_default_scenarios_cover_varied_profiles_and_holdouts():
     training, repeated, holdout = build_scenarios(11), build_scenarios(11), build_scenarios(11, holdout=True)
     assert training == repeated

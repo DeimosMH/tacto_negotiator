@@ -37,3 +37,24 @@ def test_buyer_default_and_explicit_policies(monkeypatch, argv, policy, data):
     monkeypatch.setattr(cli, "agent_factory", factory)
     cli.main(argv)
     assert selected == [(policy, data)]
+
+
+@pytest.mark.parametrize("mode", ["complete", "partial", "failed"])
+def test_final_points_are_per_wave_and_missing_results_are_unknown(monkeypatch, capsys, mode):
+    cases = [{"case_id": "one", "wave": 1}, {"case_id": "two", "wave": 1}, {"case_id": "three", "wave": 2}]
+    results = {"one": {"score": 1}, "two": RuntimeError("lost result") if mode == "partial" else {"score": 0},
+               "three": {"score": 1}}
+    if mode == "failed":
+        results = dict.fromkeys(results, RuntimeError("lost results"))
+    client = SimpleNamespace(practice_remaining=None, cases=lambda _: cases)
+    monkeypatch.setattr(cli, "load_env", lambda: None)
+    monkeypatch.setattr(cli, "ArenaClient", lambda: client)
+    monkeypatch.setattr(cli, "agent_factory", lambda *_: object)
+    monkeypatch.setattr(cli, "play_waves", lambda *_: results)
+    cli.main(["run", "--set", "final"])
+    text = capsys.readouterr().out
+    if mode != "complete":
+        assert "total unknown" in text and "1: None" in text
+        assert "points so far:" not in text
+    else:
+        assert "waves: {1: 50.0, 2: 100.0}" in text and "points so far: 150.0" in text

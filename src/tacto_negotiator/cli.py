@@ -150,12 +150,17 @@ def main(argv=None):
         for case_id, result in out.items():
             print(case_id, result if isinstance(result, Exception) else summary(result))
         scores = {c: r.get("score") for c, r in out.items() if isinstance(r, dict)}
-        if args.set == "final" and scores:  # points so far: each wave 0-100, their sum, as the board counts
+        if args.set == "final":  # each wave contributes its mean; unknown results are not zero
             waves = {}
             for case in client.cases("final"):  # your own case list: which wave each case was in
-                waves.setdefault(case["wave"], []).append(scores.get(case["case_id"]) or 0)
-            points = {n: round(100 * statistics.mean(v), 1) for n, v in sorted(waves.items())}
-            print(f"waves: {points}  points so far: {round(sum(points.values()), 1)} (the board is the record)")
+                waves.setdefault(case["wave"], []).append(scores.get(case["case_id"]))
+            points = {n: round(100.0 * statistics.mean(v), 1) if all(s is not None for s in v) else None
+                      for n, v in sorted(waves.items())}
+            if all(v is not None for v in points.values()):
+                print(f"waves: {points}  points so far: {round(sum(points.values()), 1)} (local results)")
+            else:
+                print(f"waves: {points}  total unknown: missing case results; "
+                      "no-deal alternatives may score above zero")
         elif scores and all(v is not None for v in scores.values()):
             print(f"mean score: {100 * statistics.mean(scores.values()):.1f}")
     if args.cmd in ("play", "run") and client.practice_remaining is not None:

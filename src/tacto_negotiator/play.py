@@ -19,7 +19,7 @@ from concurrent.futures import ThreadPoolExecutor
 import httpx
 
 from .client import ArenaError
-from .cost import must_haves_ok, total_cost, valid_value
+from .cost import RELATIONSHIP_GOALS, must_haves_ok, total_cost, valid_value
 from .docs import read_document, standard_terms
 
 log = logging.getLogger("arena")
@@ -220,7 +220,7 @@ def known_offer(case, events):
 
 
 def acceptable_offer(case, events):
-    """Return (standing offer ID, cost) only when its known terms safely beat the alternative."""
+    """Return a valid standing offer no dearer than the alternative; an exact cost tie favors a deal."""
     try:
         sheet, terms, std, missing = known_offer(case, events)
         if not isinstance(sheet, str) or not sheet or missing or set(terms) - set(case["negotiable"]):
@@ -242,7 +242,9 @@ def acceptable_offer(case, events):
             ):
                 return None
             other_cost = total_cost(case, other)
-            if not math.isfinite(other_cost) or cost >= other_cost:
+            # The final breaks equal points by deals. Unknown supplier-health cost prevents an exact tie.
+            uncertain_health = case["buyer"].get("category_goal") in RELATIONSHIP_GOALS
+            if not math.isfinite(other_cost) or cost > other_cost or (cost == other_cost and uncertain_health):
                 return None
         return (sheet, cost) if math.isfinite(cost) else None
     except (KeyError, TypeError, ValueError, OverflowError, AttributeError):
@@ -250,7 +252,7 @@ def acceptable_offer(case, events):
 
 
 def closing_move(case, threads):
-    """Accept the cheapest standing term sheet that keeps the must-haves and beats the alternative
+    """Accept the cheapest standing term sheet that keeps the must-haves and matches/beats the alternative
     (C with each supplier's standard terms), else walk away - what to do when time runs out."""
     live = [sid for sid in live_threads(threads) if sid in case["suppliers"]]
     if not live:

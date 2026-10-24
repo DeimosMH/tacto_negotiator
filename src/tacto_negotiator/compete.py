@@ -115,9 +115,9 @@ def main(argv=None):
                 "preflight": preflight, "status": "running"}
     metadata["source_sha256"] = {
         name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
-        for name in ("compete.py", "competition.py", "benchmark.py", "cost.py", "sim.py")
+        for name in ("compete.py", "competition.py", "benchmark.py", "cost.py", "play.py", "sim.py")
     }
-    for name in ("routed.py", "completion.py"):
+    for name in ("routed.py", "llm.py", "completion.py"):
         metadata["source_sha256"]["agents/" + name] = hashlib.sha256(
             Path(__file__).parent.joinpath("agents", name).read_bytes()).hexdigest()
     stop = threading.Event()

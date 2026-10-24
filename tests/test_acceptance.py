@@ -54,6 +54,26 @@ def test_legal_supplier_standard_survives_both_offer_builders():
         assert move["message"]["term_sheets"] == [{"terms": proposed}]
 
 
+@pytest.mark.parametrize(("goal", "price", "accept"), [
+    ("routine", 18, True), ("leverage", 18, True), ("quality_first", 18, True),
+    ("routine", 18.01, False), ("routine", 17.99, True),
+    ("stabilise", 18, False), ("secure_supply", 18, False),
+])
+def test_equal_full_cost_favors_a_deal_only_when_health_is_known(goal, price, accept):
+    case = copy.deepcopy(load_cases()["case:S01"])
+    case["buyer"].update(category_goal=goal, alternative={"kind": "quote", "terms": {
+        "unit_price": 18, "payment_days": 60}})
+    sid = case["suppliers"][0]
+    terms = {"unit_price": price, "payment_days": 60}
+    threads = {sid: [{"from": "supplier", "status": "agreed", "term_sheets": [
+        {"term_sheet_id": "offer:tie", "terms": terms}]}]}
+    decision = {"supplier_id": sid, "action": "accept"}
+    assert bool(RoutedAgent(None).validate(case, threads, decision)) is accept
+    assert bool(LLMAgent(None).guard(case, threads, decision)) is accept
+    action = closing_move(case, threads)["message"]["action"]["type"]
+    assert action == ("accept" if accept else "walk_away")
+
+
 @pytest.mark.parametrize("text", ["unknown", "{'series': 'S1'}", "S1, 35% material, deadband 3 %, base 2026-09 extra"])
 def test_unrecognized_clause_is_not_a_null_clause(text):
     with pytest.raises(ValueError, match="index clause"):

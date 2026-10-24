@@ -18,7 +18,7 @@ import re
 
 import httpx
 
-from ..cost import complete_offer, total_cost
+from ..cost import complete_offer, cost_breakdown, total_cost
 from ..docs import standard_terms
 from ..play import acceptable_offer, closing_move, latest, live_threads, moves_left, standing
 from .naive import NaiveAgent
@@ -29,6 +29,8 @@ ID_RE = re.compile(r"\b(?:idx|quote|offer|sc|qn|po|cost|fc|news|doc|ctr):[\w.:@#
 SYSTEM = """You are the buyer agent of Hollerau Pumpenwerke, a German pump maker, negotiating with
 industrial suppliers by e-mail. Goal: the lowest total cost C in euros for covering the need in the
 case file, without breaking a must-have. C of every standing term sheet is computed for you.
+The final ranks normalized case scores, not absolute euros saved: each wave averages its cases,
+then wave points are summed. The best attainable cost is fixed and may be hidden; do not invent it.
 
 Reply with ONE JSON object and nothing else:
 {"supplier_id": "...", "action": "send", "subject": "...", "body": "...",
@@ -43,11 +45,16 @@ Reply with ONE JSON object and nothing else:
   earliest lead time, cheaper variants). Never reveal urgency, a budget or a missing alternative.
   Stay polite and factual.
 - Whatever a term sheet leaves out closes on the supplier's standard terms (its quote PDF).
+- Compare the complete need over the entire horizon. Shorter contracts or lower volume leave
+  uncovered demand at fallback cost plus risk. Use the computed cost components, not price alone.
 - The case's category_goal sets its rates. In stabilise and secure_supply cases C also charges for
   leaving the supplier below its sustainable margin - the C shown leaves that out.
-- Do not accept the first offer. Concede in small steps; trade what is cheap for you (payment
-  days, contract length, volume, dates). status final_offer: push further and it may walk.
-- Accept only a term sheet that beats your alternative. Body: a short business e-mail, at most
+- Seek supported improvements; trade what is cheap for you (payment days, contract length,
+  volume, dates). Do not spend a round merely to avoid accepting an opening. status final_offer:
+  push further and it may walk. No deal can be optimal when the alternative is cheaper.
+- Accept only a valid package no worse than the alternative. An exact fully evaluated cost tie
+  favors a deal; equal tournament points rank by more deals, then fewer rounds. Supplier-health
+  uncertainty is not an established tie. Body: a short business e-mail, at most
   120 words, no placeholders."""
 
 
@@ -134,12 +141,16 @@ class LLMAgent:
             sheet_id, terms = standing(events)
             std = standard_terms(events)
             c = total_cost(case, terms, std) if sheet_id else math.inf
+            components = ({k: round(v, 2) for k, v in cost_breakdown(case, terms, std).items() if v}
+                          if math.isfinite(c) else {})
             c = f"{c:,.0f}" if c < math.inf else "-"
             out.append(
                 f"\nTHREAD {sid}: status {latest(events).get('status')}, "
                 f"{moves_left(case, events)} messages left; standing {sheet_id} "
                 f"{json.dumps(terms)} -> C = {c}; standard terms {json.dumps(std)}"
             )
+            if components:
+                out.append(f"C COMPONENTS (EUR, nonzero; supplier health not estimated): {json.dumps(components)}")
             for m in events[-6:]:
                 head = {k: m.get(k) for k in ("status", "term_sheets", "missing_fields", "claim_results") if m.get(k)}
                 out.append(f"--- {m.get('from')}: {json.dumps(head)}\n{m.get('body', '')[:800]}")

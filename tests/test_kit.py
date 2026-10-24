@@ -42,6 +42,23 @@ def test_cost_matches_the_brief_example():
     # 12 months covers half the need: the rest is bought at the fallback price
     half = {"contract_months": 12, "volume_per_year": 4000, "unit_price": 41.60, "payment_days": 60}
     assert total_cost(BRIEF, half) == 166_400 + 184_000
+    # The FAQ's leverage variant adds 3% risk on the uncovered half of the two-year need.
+    leverage = {**BRIEF, "buyer": {**BRIEF["buyer"], "category_goal": "leverage", "fallback_risk_pct": 3}}
+    assert total_cost(leverage, half) == 355_920
+    assert score(c_open, total_cost(leverage, half), c_best) == 0
+
+
+def test_model_context_exposes_uncovered_need_and_full_horizon_cost():
+    case = {**BRIEF, "buyer": {**BRIEF["buyer"], "category_goal": "leverage", "fallback_risk_pct": 3}}
+    terms = {"contract_months": 12, "volume_per_year": 4000, "unit_price": 41.60, "payment_days": 60}
+    agent = LLMAgent(None)
+    agent.brief = agent.prepare(case)
+    prompt = agent.render(case, {"sup:A": [{"from": "supplier", "status": "open", "term_sheets": [
+        {"term_sheet_id": "offer:half", "terms": terms}]}]})
+    line = next(line for line in prompt.splitlines() if line.startswith("C COMPONENTS"))
+    components = json.loads(line.split(": ", 1)[1])
+    assert components == {"price": 166_400, "uncovered_need": 184_000, "fallback_risk": 5520}
+    assert "C = 355,920" in prompt
 
 
 def test_cost_other_terms():
