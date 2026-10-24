@@ -510,3 +510,24 @@ def test_a_budget_too_short_for_the_model_counters_by_script(scenario):
     agent = RoutedAgent(completion(sid, calls), clock=clock)
     move = agent.decide_timed(case, threads, deadline=clock() + 10)  # hosted P05 v11: 10.5 s, then a timeout
     assert calls == [] and agent.last_decision["fallback"] and "action" not in move["message"]
+
+
+def test_no_counter_sheets_to_a_final_offer_and_no_walk_while_a_deal_stands(scenario):
+    case, threads, sid = scenario
+    threads[sid][-1]["status"] = "final_offer"
+    agent = RoutedAgent(None)
+    send = {"supplier_id": sid, "action": "send", "body": "Lower?", "term_sheets": [{"unit_price": 19}]}
+    assert agent.validate(case, threads, send) is None  # hosted v5: three suppliers walked (FLOW.md F4)
+    assert agent.validate(case, threads, {"supplier_id": sid, "action": "walk_away"}) is None  # F5
+    assert agent.validate(case, threads, {"supplier_id": sid, "action": "accept"})
+
+
+def test_a_supplier_raising_its_price_does_not_raise_our_next_ask(scenario):
+    from tacto_negotiator.play import ask_limit
+
+    case, threads, sid = scenario
+    ours = {"from": "buyer", "body": "Package.", "term_sheets": [{"terms": {"unit_price": 15, "payment_days": 30}}]}
+    raised = {"from": "supplier", "status": "open", "body": "Higher.",
+              "term_sheets": [{"term_sheet_id": "offer:2", "terms": {"unit_price": 21, "payment_days": 30}}]}
+    held = {**raised, "term_sheets": [{"term_sheet_id": "offer:2", "terms": {"unit_price": 20, "payment_days": 30}}]}
+    assert ask_limit(case, threads[sid] + [ours, raised], sid) == ask_limit(case, threads[sid] + [ours, held], sid)

@@ -362,6 +362,13 @@ def ask_limit(case, events, sid=None):
             opening = {**resolved, "unit_price": opening_price_cap(case, events, sid)}
             return min(current, total_cost(case, {f: opening[f] for f in case["negotiable"]}, std))
         ours = min(total_cost(case, s.get("terms", s), std) for s in sent[-1]["term_sheets"])
+        # Measure the gap to the best offer this supplier has made: a supplier raising its price must not
+        # raise our next ask (FLOW.md F1a; reciprocity, as negmas' KindConcessionRecommender).
+        for index, event in enumerate(events):
+            if event.get("from") != "buyer" and event.get("term_sheets"):
+                _, earlier, earlier_std, gaps = known_offer(case, events[:index + 1])
+                if not gaps:
+                    current = min(current, total_cost(case, earlier, earlier_std))
         if current <= ours:
             return current
         step = gap_step(case)

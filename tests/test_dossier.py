@@ -43,7 +43,9 @@ def test_cost_claims_route_to_model_and_keep_semantic_context():
     assert agent._semantic_blocker(case, threads)
     threads["sup:A"][0]["body"] = "Our revised quote."
     assert not agent._semantic_blocker(case, threads)
-    agent.context.case_id = case["case_id"]
+    agent.context.case_id = case["case_id"]  # a prepared prompt alone does not latch (FLOW.md F6)
+    assert not agent._semantic_blocker(case, threads)
+    agent.model_case = case["case_id"]  # a validated model move does
     assert agent._semantic_blocker(case, threads)
 
 

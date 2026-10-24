@@ -93,6 +93,7 @@ class RoutedAgent:
         self.bank = FactBank(package)
         self.last_decision = {}
         self.unavailable = set()  # suppliers whose reply clock runs out before a message could arrive
+        self.model_case = None  # the case whose negotiation context the model now carries
 
     def validate(self, case, threads, decision, *, reprice=True):
         """One gate for scripts, model proposals and fallback. Return a wire move or None.
@@ -106,6 +107,14 @@ class RoutedAgent:
             if sid not in case["suppliers"] or sid not in live_threads(threads):
                 return None
             if action == "walk_away":
+                # A walk-away ends the case (the alternative, or 0): never while an acceptable offer stands,
+                # nor with rounds left and no alternative to fall back on (FLOW.md F5).
+                live = live_threads(threads)
+                if any(acceptable_offer(case, threads[s], s) for s in live):
+                    return None
+                alternative = (case["buyer"].get("alternative") or {}).get("kind") not in (None, "none")
+                if not alternative and any(moves_left(case, threads[s]) > 1 for s in live):
+                    return None
                 return {"supplier_id": sid, "message": {"action": {"type": "walk_away"}}}
             events = threads[sid]
             if action == "accept":
@@ -115,6 +124,8 @@ class RoutedAgent:
             _, terms, std, _ = known_offer(case, events)
             if action != "send" or moves_left(case, events) <= 0 or sid in self.unavailable:
                 return None
+            if reprice and decision.get("term_sheets") and latest(events).get("status") in {"final_offer", "agreed"}:
+                return None  # countering a final offer made hosted suppliers walk away (v5: 3 of 3; FLOW.md F4)
             body, subject = decision.get("body", ""), decision.get("subject", f"Re: {case['title']}")
             if not isinstance(body, str) or len(body) > 8000 or not isinstance(subject, str) or len(subject) > 300:
                 return None
@@ -144,7 +155,7 @@ class RoutedAgent:
                 complete = complete_offer(case, {**std, **terms, **proposed}, std)
                 if set(complete) != set(case["negotiable"]) or any(not valid_value(f, v) for f, v in complete.items()):
                     return None
-                if not must_haves_ok(case, complete) or not math.isfinite(decision_cost(case, complete, std, sid)):
+                if not must_haves_ok(case, complete, std) or not math.isfinite(decision_cost(case, complete, std, sid)):
                     return None
                 if complete not in clean:
                     clean.append(complete)
@@ -165,6 +176,8 @@ class RoutedAgent:
                         case, {**t, "unit_price": low}, std, sid, limit))}
                 if reprice:
                     t = self._off_repeat(case, events, t, terms, std)
+                    if total_cost(case, t, std) > limit * 1.005 + 0.01:  # keep the hold step (FLOW.md F2)
+                        t = {**t, "unit_price": self._price_within(case, t, std, sid, limit)}
                 if t not in conformed:
                     conformed.append(t)
             clean = conformed
@@ -540,7 +553,7 @@ class RoutedAgent:
                                              "term_sheets": [{**sheet, "unit_price": price}]})
 
     def _semantic_blocker(self, case, threads):
-        if self.context.case_id == case["case_id"]:
+        if self.model_case == case["case_id"]:
             return True  # Preserve the model's negotiation context after a semantic exchange.
         if case["buyer"].get("category_goal", "routine") not in {"routine", "leverage", "quality_first"}:
             return True
@@ -630,7 +643,7 @@ class RoutedAgent:
             cost = decision_cost(case, proposal, standard, sid)
             if proposal["unit_price"] <= 0 or not math.isfinite(cost) or cash > ceiling or cost >= alternative:
                 continue
-            if must_haves_ok(case, proposal):
+            if must_haves_ok(case, proposal, standard):
                 rows.append((cost, proposal))
         return sorted(rows, key=lambda row: (
             round(decision_cost(case, {**row[1], "unit_price": reference_price}, standard, sid), 2),
@@ -970,6 +983,7 @@ class RoutedAgent:
                     case, threads, move["supplier_id"]):
                 raise ValueError("model accepted an open offer above our last ask")
             reason, move = self._before_accept(case, threads, reason, move)
+            self.model_case = case["case_id"]  # latch only after a validated model move (FLOW.md F6)
             self._record(case, route, reason, start, deadline)
             return move
         except Exception as error:

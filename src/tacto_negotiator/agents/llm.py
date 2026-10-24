@@ -20,7 +20,17 @@ import httpx
 
 from ..cost import complete_offer, cost_breakdown, decision_cost, must_haves_ok, total_cost
 from ..docs import standard_terms
-from ..play import acceptable_offer, ask_limit, closing_move, latest, live_threads, moves_left, price_within, standing
+from ..play import (
+    acceptable_offer,
+    ask_limit,
+    closing_move,
+    gap_step,
+    latest,
+    live_threads,
+    moves_left,
+    price_within,
+    standing,
+)
 from .levers import FLOOR_QUESTION, floor_question_due, floor_reached, order_path_sentence
 from .naive import NaiveAgent
 
@@ -90,10 +100,12 @@ Reply with ONE JSON object and nothing else:
 - Compare the complete need over the entire horizon. Shorter contracts or lower volume leave
   uncovered demand at fallback cost plus risk. Use the computed cost components, not price alone.
 - The case's category_goal sets its rates. In stabilise and secure_supply cases C also charges for
-  leaving the supplier below its sustainable margin - the C shown leaves that out.
+  leaving the supplier below its sustainable margin; the C shown includes that estimate when one is
+  available (see "relationship" in the C components).
 - Seek supported improvements; trade what is cheap for you (payment days, contract length,
-  volume, dates). Do not spend a round merely to avoid accepting an opening. status final_offer:
-  push further and it may walk. No deal can be optimal when the alternative is cheaper.
+  volume, dates). status final_offer: accept it if acceptable - never counter it (suppliers walk
+  away). Accept an open offer only when it meets your last ask. No deal can be optimal when the
+  alternative is cheaper.
 - Accept only a valid package no worse than the alternative. An exact fully evaluated cost tie
   favors a deal; equal tournament points rank by more deals, then fewer rounds. Supplier-health
   uncertainty is not an established tie. Body: a short business e-mail, at most
@@ -211,9 +223,10 @@ class LLMAgent:
                          if sheet_id and all(f in resolved for f in case["negotiable"]) else None)
                 at_price = f" (on the standing terms: EUR {price:g} per unit)" if price else ""
                 out.append(f"ASK LIMIT: every term sheet you send to {sid} now must have C <= {limit:,.0f} "
-                           f"without the supplier-health term{at_price} (an ambitious opening, then 20% of the "
-                           "remaining gap per round); code reprices sheets above it. Accepting a standing offer "
-                           "is not limited.")
+                           f"without the supplier-health term{at_price} (an ambitious opening, then "
+                           f"{gap_step(case):.0%} of the remaining gap per round, less after a large supplier "
+                           "concession); code reprices sheets above it. Accept only final offers and agreements, "
+                           "or an open offer that meets your last ask.")
             if components:
                 health = ("relationship = estimated supplier-health cost: pushing the price below the supplier's "
                           "sustainable margin raises C" if estimate else "supplier health not estimated")
