@@ -264,3 +264,19 @@ def test_a_sheet_the_supplier_countered_moves_instead_of_repeating():
     assert moved["unit_price"] == round(361.42 + 0.2 * 3.58, 2)
     other = {"unit_price": 361.0, "payment_days": 60}  # another package keeps its scheduled price
     assert RoutedAgent._off_repeat(case, events, other, standing, {}) == other
+
+
+def test_the_clause_sheet_carries_the_longest_payment_term():
+    from tacto_negotiator.agents.routed import RoutedAgent
+    from tacto_negotiator.compete import unavailable
+
+    feedback = json.loads((ROOT / "tests/fixtures/practice_feedback.json").read_text())
+    case = dict(feedback["cases"]["case:P02"])
+    agent = RoutedAgent(unavailable, package=DataPackage(ROOT / "data"))
+    agent._prepare(case)
+    sid = case["suppliers"][0]
+    opening = next(s for s in feedback["sessions"] if s["case_id"] == "case:P02")["threads"][sid]["opening"]
+    events = [{"from": "supplier", "status": "open", "body": "Quote.", "term_sheets": opening,
+               "attachments": [{"name": "quote.pdf", "text": "Our standard terms\nPayment terms (days net) 30"}]}]
+    sheet = agent._clause_sheet(case, events, sid, [{"unit_price": 357.0, "payment_days": 30, "index_clause": None}])
+    assert sheet["payment_days"] == 90  # hosted P02 v16 agreed to a 30-day clause sheet: 0.634 vs 0.735
