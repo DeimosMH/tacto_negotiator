@@ -138,7 +138,35 @@ class DataPackage:
                 change = (selected[newest]["value"] / selected[previous]["value"] - 1) * 100
                 selected[newest] = {**selected[newest], "comparison_ref": previous,
                                     "computed_change_pct": round(change, 2)}
+                if change > 0:
+                    selected[newest]["note"] = "rising: supports the supplier's case, do not cite"
+            if fall := self._steepest_fall(refs):
+                start, end, change = fall
+                selected[start] = self.lookup(start)
+                selected[end] = {**self.lookup(end), "comparison_ref": start, "computed_change_pct": round(change, 2),
+                                 "note": "steepest recent fall: cite both IDs and this change"}
         return selected
+
+    def _steepest_fall(self, refs):
+        """The steepest index fall of 3-12 months ending in the series' last 6 months, at least -1 %.
+
+        Earlier teams on this arena saw rising indices confirm suppliers' cases; falls move them."""
+        rows = [(ref, self.lookup(ref)) for ref in refs]
+        rows = [(ref, fact, int(fact["month"][:4]) * 12 + int(fact["month"][5:7])) for ref, fact in rows
+                if fact and fact.get("month") and isinstance(fact.get("value"), (int, float))]
+        if not rows:
+            return None
+        last = max(month for _, _, month in rows)
+        best = None
+        for end_ref, end, end_month in rows:
+            if last - end_month > 5:
+                continue
+            for start_ref, start, start_month in rows:
+                if 3 <= end_month - start_month <= 12 and start["value"] > 0:
+                    change = (end["value"] / start["value"] - 1) * 100
+                    if change <= -1 and (best is None or change < best[2]):
+                        best = (start_ref, end_ref, change)
+        return best
 
     @cached_property
     def cases(self):

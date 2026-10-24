@@ -45,9 +45,14 @@ Reply with ONE JSON object and nothing else:
   At most three claims per message. Use new IDs, not previously checked ones. For forecasts cite
   the recorded percentage change; for market indices cite both endpoints and the computed change.
   Only the case's quoted alternatives or a current rival offer are valid competitive quote claims.
-- The supplier's team reads your e-mail as a person would. Ask questions (a cost breakdown, the
-  earliest lead time, cheaper variants). Never reveal urgency, a budget or a missing alternative.
-  Stay polite and factual.
+- Evidence that moves suppliers (observed on this arena): cite an index only where it FELL - a rising
+  index confirms the supplier's case. Purchase-order price history does not move suppliers; skip it.
+  Verified claims work best in the first message. Bluffs, urgency and ultimatums do not help.
+- When the supplier asks about volume or commitment, answer with the exact figures of your term
+  sheets (pieces per year, contract months). A vague answer has lost bidders.
+- The supplier's team reads your e-mail as a person would. Ask questions (the earliest lead time,
+  cheaper variants); suppliers rarely share a cost breakdown. Never reveal urgency, a budget or a
+  missing alternative. Stay polite, cooperative and factual.
 - Read the supplier correspondence before choosing tactics. Use specific, relevant evidence:
   hedging dates, capacity, approval limits, financing needs, comparable quotes and forecasts.
   Ask for an authorized pricing review when the account manager lacks authority. A should-cost

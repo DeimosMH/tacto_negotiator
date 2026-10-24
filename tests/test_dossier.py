@@ -85,3 +85,16 @@ def test_script_sends_one_forecast_per_case_weighted_by_volume():
     assert "fc:B@2026-01" in body and "fc:A" not in body
     # hosted replays mark any later forecast claim duplicate, so another part is not cited either
     assert not agent._forecast_evidence(case, {"sup:X": [{"from": "buyer", "body": body}]})
+
+
+def test_dossier_offers_the_steepest_recent_fall_and_flags_a_rise(tmp_path):
+    facts = {f"idx:M@2026-{m:02d}": {"series": "M", "month": f"2026-{m:02d}", "value": v}
+             for m, v in zip(range(1, 10), (100, 104, 106, 103, 101, 99, 100, 102, 105), strict=True)}
+    facts["idx:M@2025-09"] = {"series": "M", "month": "2025-09", "value": 90}
+    (tmp_path / "facts.json").write_text(json.dumps(facts))
+    package = DataPackage(tmp_path)
+    case = {"suppliers": ["sup:A"], "parts": ["part:A"], "buyer": {"index_paths": {"M": []}}}
+    dossier = package.negotiation_facts(case)
+    assert dossier["idx:M@2026-09"]["note"].startswith("rising")  # +16.7 % over twelve months
+    fall = dossier["idx:M@2026-06"]  # 106 -> 99: the steepest 3-12 month fall ending in the last 6 months
+    assert fall["comparison_ref"] == "idx:M@2026-03" and fall["computed_change_pct"] == -6.6
