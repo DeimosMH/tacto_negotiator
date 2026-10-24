@@ -214,7 +214,10 @@ def test_failure_falls_back_without_trying_a_second_provider(scenario, failure):
     agent = RoutedAgent(completion(sid, fast), bad, clock=clock)
     move = agent.decide(case, threads)
     assert len(strong) == 1 and fast == []
-    assert move["message"]["action"]["type"] == "accept"
+    if failure == "late":  # no time left: close on the opening
+        assert move["message"]["action"]["type"] == "accept"
+    else:  # time left: counter instead of accepting an untouched opening
+        assert "action" not in move["message"] and move["message"]["term_sheets"]
     assert agent.last_decision["route"] == "strong" and agent.last_decision["fallback"]
 
 

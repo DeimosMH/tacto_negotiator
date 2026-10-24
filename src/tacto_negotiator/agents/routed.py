@@ -386,11 +386,15 @@ class RoutedAgent:
         except Exception as error:
             # Providers enforce cancellation; this also discards late results from injected completions.
             move = closing_move(case, threads)
-            if (self.clock() < deadline and case["buyer"].get("category_goal") not in RELATIONSHIP_GOALS
-                    and move["message"].get("action", {}).get("type") == "walk_away"
-                    and any(moves_left(case, threads[sid]) > 1 for sid in live_threads(threads))):
+            action = move["message"].get("action", {}).get("type")
+            # Accepting an untouched opening after a failed model call scored 0 in hosted P01.
+            untouched = action == "accept" and not any(m.get("from") == "buyer" for m in threads[move["supplier_id"]])
+            if (self.clock() < deadline and any(moves_left(case, threads[sid]) > 1 for sid in live_threads(threads))
+                    and (untouched or action == "walk_away"
+                         and case["buyer"].get("category_goal") not in RELATIONSHIP_GOALS)):
                 repair = self._structured_bargain(case, threads)
-                if repair and repair[0] == "must_have_repair":
+                if repair and (untouched or repair[0] == "must_have_repair"):
                     move = repair[1]
             self._record(case, route, type(error).__name__, start, deadline, fallback=True)
+            self.last_decision["error"] = str(error)[:300]
             return move

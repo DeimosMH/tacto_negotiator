@@ -1,0 +1,1396 @@
+{
+  "status": "partial",
+  "source": "local_replay_decisions",
+  "config": {
+    "workers": 6,
+    "arena_calls": 0
+  },
+  "matches": [
+    {
+      "variant_id": "opus_low",
+      "model": "claude-opus-5-5",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P03",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 7.731158365000738,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70530",
+        "action": "send",
+        "subject": "Renewal ctr:4600070530 \u2013 24-month proposal for part:350020",
+        "body": "Dear Ms Mayrhofer,\n\nThank you for your offer. We propose a 24-month renewal for the full 4,580 pcs per year, which gives you secure volume through 2028. Our forecast fc:350020@2026-09 records a 10.3 % volume change, so this is a growing part for you. Our current agreement ctr:4600070530 runs on 90 days payment, and we would like to keep that. Given your pricing committee approves changes above 2 %, could you please take our proposal to its next meeting? Please also share your earliest lead time and any cheaper variant.\n\nKind regards,\nHollerau Pumpenwerke, Purchasing",
+        "term_sheets": [
+          {
+            "unit_price": 434.0,
+            "payment_days": 90,
+            "contract_months": 24,
+            "volume_per_year": 4580
+          },
+          {
+            "unit_price": 436.0,
+            "payment_days": 60,
+            "contract_months": 24,
+            "volume_per_year": 4580
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        3948937.07,
+        3993760.0
+      ],
+      "score_if_accepted": 0.8817153580866094,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_low",
+      "model": "claude-opus-5-5",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P07",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 8.248419544994249,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70610",
+        "action": "send",
+        "subject": "Fastener kit bundle - 24/36-month proposal",
+        "body": "Dear Mr Stadler,\n\nThank you for your offer. We are prepared to bundle all four kit items, about 30,000 kits a year, with you for 24 or 36 months instead of 12.\n\nYour call note doc:20260514-70610-M3 records that your second shift has been on hold since spring, so this volume fills idle capacity. The main cost driver, steel index PPI-C2594, rose only from 114.4 (idx:PPI-C2594@2025-08) to 116.3 (idx:PPI-C2594@2026-08), a change of 1.66%.\n\nAs these packages differ from your quote by more than 2%, please submit them to your pricing committee for an authorized review. Could you also share the price build-up per kit component?\n\nKind regards,\nHollerau Pumpenwerke Purchasing",
+        "term_sheets": [
+          {
+            "unit_price": 5.4,
+            "payment_days": 90,
+            "contract_months": 36
+          },
+          {
+            "unit_price": 5.45,
+            "payment_days": 90,
+            "contract_months": 24
+          },
+          {
+            "unit_price": 5.5,
+            "payment_days": 60,
+            "contract_months": 24
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        321840.0,
+        324820.0,
+        330000.0
+      ],
+      "score_if_accepted": 0.7537910775194144,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_low",
+      "model": "claude-opus-5-5",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P02",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 9.112133162998362,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70510",
+        "action": "send",
+        "subject": "Part 350011 \u2013 price adjustment 2027, payment terms",
+        "body": "Dear Ms Lechner,\n\nThank you for your offer and the cost explanation for the 7.5 kW motor. We recognise the copper development and can accept your EUR 370.96 per unit without an index clause.\n\nOur current agreement ctr:4600070510 provides 90 days payment. We ask that this term be kept for the 2027 supply of 6,110 pcs. This gives you a full-year volume at your requested price with stable, predictable terms.\n\nWe have attached two packages: 90 days as our preference, or 60 days as an alternative. If your pricing committee needs to approve this, could you please submit it at its next meeting? Please confirm the package you can make your standing offer.\n\nKind regards,\nPurchasing, Hollerau Pumpenwerke",
+        "term_sheets": [
+          {
+            "unit_price": 370.96,
+            "payment_days": 90,
+            "index_clause": null
+          },
+          {
+            "unit_price": 370.96,
+            "payment_days": 60,
+            "index_clause": null
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        2251455.16,
+        2266565.6
+      ],
+      "score_if_accepted": 0.6633589872245776,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_low",
+      "model": "claude-opus-5-5",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P08",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 9.109758337006497,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70710",
+        "action": "send",
+        "subject": "Part 370010 \u2013 price basis 2027",
+        "body": "Dear Mr Aigner,\n\nThank you for your offer. Your letter doc:20260706-70710-M1 states that your nickel and alloy requirement is covered at fixed prices until March 2027, so the AS-14404 movement does not reach your costs at the start of the new period. Our forecast fc:370010@2026-09 records a change of +1.9 % in volume for this part. We therefore propose a longer commitment at the current price level, without an index clause. Please see our attached packages.\n\nYour owner kindly offered to walk us through your calculation of hourly rates and material. Could we schedule that? If the price is above your authority, please arrange an authorized pricing review.\n\nKind regards,\nHollerau Pumpenwerke Purchasing",
+        "term_sheets": [
+          {
+            "unit_price": 5.35,
+            "index_clause": null,
+            "payment_days": 90,
+            "contract_months": 24
+          },
+          {
+            "unit_price": 5.3,
+            "index_clause": null,
+            "payment_days": 60,
+            "contract_months": 36
+          },
+          {
+            "unit_price": 5.4,
+            "index_clause": null,
+            "payment_days": 60,
+            "contract_months": 24
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        1007597.6,
+        1004880.0,
+        1023840.0
+      ],
+      "score_if_accepted": 0.7461488188009939,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_low",
+      "model": "claude-opus-5-5",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P11",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 9.88105581200216,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70140",
+        "action": "send",
+        "subject": "Bearing bracket HN (part:310020) \u2013 2027 supply and quality commitment",
+        "body": "Dear Mr Lis,\n\nThank you for your offer. A 6400 ppm commitment is not acceptable to us. Your scorecard sc:70140@2026Q3 shows 2376 ppm with 63.5 % on-time delivery, so we need a binding improvement plan. Our forecast fc:310020@2026-09 records a 20.0 % volume increase, which gives you stable, growing business. Steel index PPI-D351 fell from 137.0 to 131.9 (-3.72 %) between 2025-08 and 2026-08.\n\nWe propose the attached packages, with 60-day payment and 12 months at 15,900 pcs. Could you share the cost of reaching 300 ppm and your earliest reliable lead time?\n\nKind regards\nHollerau Pumpenwerke, Purchasing",
+        "term_sheets": [
+          {
+            "unit_price": 45.15,
+            "ppm_commitment": 300,
+            "chargeback_eur_per_complaint": 0
+          },
+          {
+            "unit_price": 45.6,
+            "ppm_commitment": 800,
+            "chargeback_eur_per_complaint": 150
+          },
+          {
+            "unit_price": 45.9,
+            "ppm_commitment": 1500,
+            "chargeback_eur_per_complaint": 300
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        744517.5,
+        753342.0,
+        757873.5
+      ],
+      "score_if_accepted": 0.7684271373876477,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_low",
+      "model": "claude-opus-5-5",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P10",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 10.184758440002042,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70410",
+        "action": "send",
+        "subject": "Part 340010: firm 24-month commitment for full volume",
+        "body": "Dear Ms Zellner,\n\nThank you for your offer. You prioritise firm long-term commitments, so we propose to commit our full 23,400 pc per year for 24 or 36 months at a 42-day lead time.\n\nLCI-C labour costs moved from 116.5 to 119.6 (idx:LCI-C@2026-06), a change of 2.66%. PPI-C2219 moved from 117.8 to 122.4 (idx:PPI-C2219@2026-08), a change of 3.9%. At the estimated cost weights, these changes justify only a small adjustment to our current \u20ac29.89, not \u20ac32.20.\n\nPlease submit the attached packages to your pricing committee for an authorised review. Could you also share your earliest achievable lead time and a cost breakdown?\n\nKind regards,\nHollerau Pumpenwerke Purchasing",
+        "term_sheets": [
+          {
+            "unit_price": 29.6,
+            "volume_per_year": 23400,
+            "contract_months": 24,
+            "lead_time_days": 42
+          },
+          {
+            "unit_price": 29.9,
+            "volume_per_year": 23400,
+            "contract_months": 36,
+            "lead_time_days": 42
+          },
+          {
+            "unit_price": 30.1,
+            "volume_per_year": 23400,
+            "contract_months": 24,
+            "lead_time_days": 35
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        1394515.2,
+        1408648.8,
+        1418071.2
+      ],
+      "score_if_accepted": 0.8913318723149238,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_low",
+      "model": "claude-opus-5-5",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P18",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 7.931203994005045,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70740",
+        "action": "send",
+        "subject": "Part 370010 \u2013 24-month price basis proposal",
+        "body": "Dear Mr Seidl,\n\nThank you for your offer for part:370010. We would like to give you a longer, larger commitment. Our forecast fc:370010@2026-09 shows a volume change of +1.9 %, so this business is growing. In exchange, we propose a 24-month contract at a fixed price with no index clause, which gives you planning security.\n\nPlease see our attached term sheets. As the increase from our current price exceeds 2 %, could you please submit them to your pricing committee for an authorized review? We would also appreciate a cost breakdown, as your owner offered, and any cheaper variant you can suggest.\n\nKind regards,\nHollerau Pumpenwerke, Purchasing",
+        "term_sheets": [
+          {
+            "unit_price": 5.84,
+            "payment_days": 60,
+            "index_clause": null,
+            "contract_months": 24
+          },
+          {
+            "unit_price": 5.9,
+            "payment_days": 45,
+            "index_clause": null,
+            "contract_months": 24
+          },
+          {
+            "unit_price": 5.95,
+            "payment_days": 30,
+            "index_clause": null,
+            "contract_months": 24
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        276816.0,
+        280592.2,
+        283910.2
+      ],
+      "score_if_accepted": 0.2531265012694084,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_high",
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "scenario": "recorded_opening",
+      "case_id": "case:P03",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 11.94133321899426,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70530",
+        "action": "send",
+        "subject": "Renewal ctr:4600070530 \u2013 proposal for a 24-month frame agreement",
+        "body": "Dear Ms Mayrhofer,\n\nThank you for your offer. We would like to renew on a longer, stable basis. Our expiring agreement ctr:4600070530 runs on 90 days payment, and we ask to keep that term. Our forecast fc:350020@2026-09 shows demand up 10.3 %, so we propose a 24-month commitment at 4,580 pcs per year.\n\nIn return, a 6.2 % increase on our current EUR 412.74 is difficult for us. Please see the attached alternatives. As the change exceeds 2 %, could you please submit them to your pricing committee for review? Could you also share which cost elements drive the increase, and whether a cheaper variant or a longer contract would lower the price?\n\nKind regards,\nPurchasing, Hollerau Pumpenwerke",
+        "term_sheets": [
+          {
+            "unit_price": 429.0,
+            "payment_days": 90,
+            "contract_months": 24,
+            "volume_per_year": 4580
+          },
+          {
+            "unit_price": 425.0,
+            "payment_days": 60,
+            "contract_months": 24,
+            "volume_per_year": 4580
+          },
+          {
+            "unit_price": 431.0,
+            "payment_days": 90,
+            "contract_months": 36,
+            "volume_per_year": 4580
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        3903442.4,
+        3893000.0,
+        3921640.27
+      ],
+      "score_if_accepted": 1,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_high",
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "scenario": "recorded_opening",
+      "case_id": "case:P04",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 11.185011612004018,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70620",
+        "action": "send",
+        "subject": "Renewal ctr:4600070620 \u2013 24-month proposal for 6306-2Z C3",
+        "body": "Dear Mr Gruber,\n\nThank you for your offer. We propose a 24-month volume agreement for 20,000 pc a year, as you indicated that multi-year agreements are what move prices.\n\nidx:PPI-C2815@2026-08 went from 118.8 to 119.8, a change of 0.84%.\nidx:LCI-C@2026-06 went from 116.5 to 119.6, a change of 2.66%.\nWeighted by your own cost shares, this supports roughly 0.8% on our current 4.39 EUR, not 13%.\nfc:360020@2026-09 records a 4.2% increase in our demand for this part.\n\nPlease review the attached packages. If one suits you, could you make it your standing offer? Could you also send a short cost breakdown and tell us the earliest date you can confirm?\n\nKind regards,\nHollerau Pumpenwerke Purchasing",
+        "term_sheets": [
+          {
+            "unit_price": 4.42,
+            "payment_days": 60,
+            "contract_months": 24
+          },
+          {
+            "unit_price": 4.45,
+            "payment_days": 45,
+            "contract_months": 24
+          },
+          {
+            "unit_price": 4.48,
+            "payment_days": 30,
+            "contract_months": 24
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        176800.0,
+        178593.33,
+        180394.67
+      ],
+      "score_if_accepted": 1,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_high",
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "scenario": "recorded_opening",
+      "case_id": "case:P02",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 13.790998513999511,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70510",
+        "action": "send",
+        "subject": "Part 350011 \u2013 2027 terms for Motor IE3 7.5 kW",
+        "body": "Dear Ms Lechner,\n\nThank you for your offer and the cost explanation. We value our long partnership and want a stable, healthy supply for 2027.\n\nOur expiring contract ctr:4600070510 runs on 90-day payment terms. We would like to keep those terms with your price.\n\nOur latest forecast fc:350011@2026-09 records an 11.9% volume increase for this motor.\n\nWe propose two complete packages, attached as term sheets. Because changes above 2% need your pricing committee's approval, could you please submit them for an authorized pricing review? We would also welcome any cheaper variant you can offer.\n\nKind regards,\nPurchasing, Hollerau Pumpenwerke",
+        "term_sheets": [
+          {
+            "unit_price": 370.96,
+            "payment_days": 90,
+            "index_clause": null
+          },
+          {
+            "unit_price": 368.5,
+            "payment_days": 60,
+            "index_clause": null
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        2251455.16,
+        2251535.0
+      ],
+      "score_if_accepted": 0.6633589872245776,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_high",
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "scenario": "recorded_opening",
+      "case_id": "case:P01",
+      "valid": false,
+      "error": null,
+      "elapsed_s": 15.935006715000782,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70110",
+        "action": "send",
+        "subject": "HN 50-200 volute casings \u2013 counterproposal on price adjustment",
+        "body": "Dear Mr Brandlhuber,\n\nThank you for your offer and for many years of reliable partnership. Our agreement ctr:4600070110 runs until 2026-12-31, so the current price applies until then. Weighting your own figures, LCI-C at 2.7 % for 30 % and PPI-C241 at 6.5 % for 24 %, gives about 2.4 %, not 9.5 %. Index idx:PPI-D351 fell from 137.0 to 131.9, a change of -3.72 %, which offsets part of that. Our proposals are attached. One option pays your invoices within 14 days, as you requested. Could you share a cost breakdown showing material, energy and labour? We want a price that keeps your foundry healthy.\n\nKind regards,\nPurchasing, Hollerau Pumpenwerke",
+        "term_sheets": [
+          {
+            "unit_price": 129.5,
+            "effective_date": "2027-04-01",
+            "payment_days": 30
+          },
+          {
+            "unit_price": 130.5,
+            "effective_date": "2027-01-01",
+            "payment_days": 14
+          },
+          {
+            "unit_price": 130.0,
+            "effective_date": "2027-04-01",
+            "payment_days": 14
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [],
+      "score_if_accepted": null,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_high",
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "scenario": "recorded_opening",
+      "case_id": "case:P05",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 15.772098740999354,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70240",
+        "action": "send",
+        "subject": "Pump shaft HX (part:320070) \u2013 lead time and 24-month commitment",
+        "body": "Dear Ms Proch\u00e1zkov\u00e1,\n\nThank you for your quotation. We can only award with a lead time of at most 42 days. Your supplier record sup:70240 lists a standard lead time of 42 days, so 52 days seems unusual for this part. Your e-mail doc:20260924-70240-M1 asks for a binding 12-month commitment, and our contract offers a fixed 24 months at 4,200 pc per year. Your input index PPI-D351 fell from 137.0 to 131.9 (\u22123.72%) between 2025-08 and 2026-08.\n\nWe propose the attached packages. Could you also confirm the earliest lead time you can commit to, and share a rough cost breakdown?\n\nKind regards\nPurchasing, Hollerau Pumpenwerke",
+        "term_sheets": [
+          {
+            "unit_price": 30.0,
+            "payment_days": 60,
+            "lead_time_days": 42
+          },
+          {
+            "unit_price": 30.5,
+            "payment_days": 60,
+            "lead_time_days": 35
+          },
+          {
+            "unit_price": 31.0,
+            "payment_days": 45,
+            "lead_time_days": 35
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        253400.0,
+        256200.0,
+        261268.0
+      ],
+      "score_if_accepted": 0.6349787916068516,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_high",
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "scenario": "recorded_opening",
+      "case_id": "case:P07",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 11.992578733996197,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70610",
+        "action": "send",
+        "subject": "Fastener kit bundle \u2013 multi-year proposal for pricing committee review",
+        "body": "Dear Mr Stadler,\n\nThank you for your offer. We are prepared to bundle the full kit with you under a longer commitment of 24 or 36 months.\n\nYour call note doc:20260514-70610-M3 records that your second shift has been on hold since spring, so this volume fills idle capacity. Your scorecard sc:70610@2026Q3 shows on-time delivery of 88.6%, which we need to see improve. Our forecast fc:360030@2026-09 records a +8.7% change in washer volume.\n\nAs changes above 2% need your pricing committee, please submit the attached packages for an authorized review. Could you also share a cost breakdown per kit component and any cheaper equivalent variants?\n\nKind regards,\nPurchasing, Hollerau Pumpenwerke",
+        "term_sheets": [
+          {
+            "unit_price": 5.42,
+            "payment_days": 90,
+            "contract_months": 36
+          },
+          {
+            "unit_price": 5.48,
+            "payment_days": 90,
+            "contract_months": 24
+          },
+          {
+            "unit_price": 5.45,
+            "payment_days": 60,
+            "contract_months": 36
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        323032.0,
+        326608.0,
+        327000.0
+      ],
+      "score_if_accepted": 0.7408043347829748,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_high",
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "scenario": "recorded_opening",
+      "case_id": "case:P10",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 10.65534581799875,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70410",
+        "action": "send",
+        "subject": "Part 340010 \u2013 firm 24/36-month commitment for full volume",
+        "body": "Dear Ms Zellner,\n\nThank you for your offer. Since you prioritise firm, long-term commitments, we propose binding our full need of 23,400 pc a year with a 42-day lead time. Your price of \u20ac32.20 is 7.7% above our current \u20ac29.89, which the cost drivers do not support. Labour index idx:LCI-C@2026-06 rose from 116.5 to 119.6 (+2.66%) at a 28% cost weight. Material index idx:PPI-C2219@2026-08 rose from 117.8 to 122.4 (+3.9%) at a 14% weight. Together these justify about +1.3%. Our forecast fc:340010@2026-09 records a +10.1% volume change, which gives you a growing, secured account. As this exceeds 2%, please submit the attached packages to your pricing committee.\n\nKind regards,\nHollerau Pumpenwerke Purchasing",
+        "term_sheets": [
+          {
+            "unit_price": 29.95,
+            "volume_per_year": 23400,
+            "contract_months": 24,
+            "lead_time_days": 42
+          },
+          {
+            "unit_price": 30.2,
+            "volume_per_year": 23400,
+            "contract_months": 36,
+            "lead_time_days": 42
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        1411004.4,
+        1422782.4
+      ],
+      "score_if_accepted": 0.8640122098472561,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_high",
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "scenario": "recorded_opening",
+      "case_id": "case:P08",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 13.137038779997965,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70710",
+        "action": "send",
+        "subject": "Part 370010 \u2013 price basis 2027: proposal for a longer agreement",
+        "body": "Dear Mr Aigner,\n\nThank you for your offer. Your letter doc:20260706-70710-M1 states that your nickel and alloy requirement is covered at fixed prices until March 2027, so the AS-14404 rise does not reach your 2027 costs. Our scorecard sc:70710@2026Q3 shows 88% on-time delivery and 75 ppm, so a price increase is hard to justify. Our category estimate part:370010 puts the AS-14404 weight at 0.43, below the 45% you cite.\n\nWe offer a longer commitment instead, without a price adjustment clause; please see the attached term sheets. Your owner offered to walk us through your calculation of hourly rates and material. Could you share that cost breakdown?\n\nKind regards,\nHollerau Pumpenwerke Purchasing",
+        "term_sheets": [
+          {
+            "unit_price": 5.2,
+            "index_clause": null,
+            "payment_days": 90,
+            "contract_months": 36
+          },
+          {
+            "unit_price": 5.3,
+            "index_clause": null,
+            "payment_days": 90,
+            "contract_months": 24
+          },
+          {
+            "unit_price": 5.35,
+            "index_clause": null,
+            "payment_days": 60,
+            "contract_months": 24
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        979347.2,
+        998180.8,
+        1014360.0
+      ],
+      "score_if_accepted": 0.8915702683622859,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_high",
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "scenario": "recorded_opening",
+      "case_id": "case:P11",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 12.489706196996849,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70140",
+        "action": "send",
+        "subject": "Bearing bracket HN (part:310020) \u2013 quality commitment and 2027 pricing",
+        "body": "Dear Mr Lis,\n\nThank you for your offer. A 6400 ppm commitment is not acceptable for us. Your scorecard sc:70140@2026Q3 shows 2376 ppm. The same scorecard shows on-time delivery of only 63.5 %. Index PPI-D351 fell from 137.0 to 131.9, a change of -3.72 %, between 2025-08 and 2026-08.\n\nWe propose the attached packages. Each pairs a binding quality commitment with cost recovery, at a price close to today's level. Could you share the main cost drivers behind the EUR 47.00? Please also outline your improvement plan for quality and delivery.\n\nWe would welcome your preferred package as your standing offer.\n\nKind regards\nHollerau Pumpenwerke, Purchasing",
+        "term_sheets": [
+          {
+            "unit_price": 45.15,
+            "ppm_commitment": 300,
+            "chargeback_eur_per_complaint": 150
+          },
+          {
+            "unit_price": 45.5,
+            "ppm_commitment": 800,
+            "chargeback_eur_per_complaint": 300
+          },
+          {
+            "unit_price": 45.3,
+            "ppm_commitment": 1500,
+            "chargeback_eur_per_complaint": 500
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        743802.0,
+        749844.0,
+        744756.0
+      ],
+      "score_if_accepted": 0.7759525391683754,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_high",
+      "model": "claude-opus-5-5",
+      "effort": "high",
+      "scenario": "recorded_opening",
+      "case_id": "case:P18",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 12.371760508001898,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70740",
+        "action": "send",
+        "subject": "Part 370010 \u2013 24-month price basis proposal",
+        "body": "Dear Mr Seidl,\n\nThank you for your offer for part:370010. We would like to propose a longer, firm price basis.\n\nOur forecast fc:370010@2026-09 records a 1.9 % increase in volume for this part. Our current contract ctr:4600070740 runs on 60 days payment.\n\nWe offer a 24-month commitment from 2027-01-01 at a fixed price without a surcharge clause. The attached packages give the details. As your proposed change is above 2 %, we would appreciate a review by your pricing committee.\n\nYour owner kindly offered to walk us through your calculation. Could you share the material and processing split behind the 6.10 EUR?\n\nKind regards,\nHollerau Pumpenwerke, Purchasing",
+        "term_sheets": [
+          {
+            "unit_price": 5.89,
+            "payment_days": 60,
+            "index_clause": null,
+            "contract_months": 24
+          },
+          {
+            "unit_price": 5.94,
+            "payment_days": 45,
+            "index_clause": null,
+            "contract_months": 24
+          },
+          {
+            "unit_price": 5.97,
+            "payment_days": 30,
+            "index_clause": null,
+            "contract_months": 36
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        279186.0,
+        282494.52,
+        284864.52
+      ],
+      "score_if_accepted": 0.2204467446825759,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_max",
+      "model": "claude-opus-5-5",
+      "effort": "max",
+      "scenario": "recorded_opening",
+      "case_id": "case:P07",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 168.79336715200043,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70610",
+        "action": "send",
+        "subject": "Complete fastener kit - 36-month proposal for pricing committee review",
+        "body": "Dear Mr Stadler,\n\nThank you for your offer. We are prepared to award the complete kit, 30,000 kits a year, to you alone under a 36-month contract.\nYour second shift has been on hold since spring (doc:20260514-70610-M3), so this volume would fill idle capacity.\nOur current contract ctr:4600070610 already runs on 90-day payment terms.\nAs doc:20260513-70610-M1 records that price changes above 2 % need your pricing committee, please submit the three attached packages to it for an authorized review.\nCould you also send us a cost breakdown per part and any cheaper equivalent variants?\n\nKind regards\nPurchasing, Hollerau Pumpenwerke",
+        "term_sheets": [
+          {
+            "unit_price": 5.22,
+            "payment_days": 90,
+            "contract_months": 36
+          },
+          {
+            "unit_price": 5.18,
+            "payment_days": 60,
+            "contract_months": 36
+          },
+          {
+            "unit_price": 5.15,
+            "payment_days": 30,
+            "contract_months": 36
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        311112.0,
+        310800.0,
+        311060.0
+      ],
+      "score_if_accepted": 0.8740709766891236,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_max",
+      "model": "claude-opus-5-5",
+      "effort": "max",
+      "scenario": "recorded_opening",
+      "case_id": "case:P05",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 213.4668559769998,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70240",
+        "action": "send",
+        "subject": "HX pump shaft (part:320070) - lead time and 24-month commitment",
+        "body": "Dear Ms Proch\u00e1zkov\u00e1,\n\nThank you for your quotation for the HX pump shaft. Your supplier record sup:70240 shows a standard lead time of 42 days, well below the 52 days quoted. We would like 35 days. Your e-mail doc:20260924-70240-M1 asks for a binding 12-month commitment, while our contract commits 4,200 pc a year for 24 months. On this basis we ask for a sharper unit price and propose the three attached packages. Could you also send us a cost breakdown and tell us your earliest possible lead time?\n\nKind regards\nPurchasing, Hollerau Pumpenwerke",
+        "term_sheets": [
+          {
+            "unit_price": 30.7,
+            "payment_days": 60,
+            "lead_time_days": 35
+          },
+          {
+            "unit_price": 30.5,
+            "payment_days": 60,
+            "lead_time_days": 42
+          },
+          {
+            "unit_price": 30.6,
+            "payment_days": 45,
+            "lead_time_days": 35
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        257880.0,
+        257600.0,
+        257896.8
+      ],
+      "score_if_accepted": 0.5838346172753577,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_max",
+      "model": "claude-opus-5-5",
+      "effort": "max",
+      "scenario": "recorded_opening",
+      "case_id": "case:P01",
+      "valid": false,
+      "error": "TimeoutError",
+      "elapsed_s": 240.10228899300273,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score_if_accepted": null,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_max",
+      "model": "claude-opus-5-5",
+      "effort": "max",
+      "scenario": "recorded_opening",
+      "case_id": "case:P02",
+      "valid": false,
+      "error": "TimeoutError",
+      "elapsed_s": 240.10131643299974,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score_if_accepted": null,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_max",
+      "model": "claude-opus-5-5",
+      "effort": "max",
+      "scenario": "recorded_opening",
+      "case_id": "case:P03",
+      "valid": false,
+      "error": "TimeoutError",
+      "elapsed_s": 240.05453465000028,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score_if_accepted": null,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_max",
+      "model": "claude-opus-5-5",
+      "effort": "max",
+      "scenario": "recorded_opening",
+      "case_id": "case:P04",
+      "valid": false,
+      "error": "TimeoutError",
+      "elapsed_s": 240.04471349900268,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score_if_accepted": null,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_max",
+      "model": "claude-opus-5-5",
+      "effort": "max",
+      "scenario": "recorded_opening",
+      "case_id": "case:P08",
+      "valid": false,
+      "error": "TimeoutError",
+      "elapsed_s": 240.09341710300214,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score_if_accepted": null,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_max",
+      "model": "claude-opus-5-5",
+      "effort": "max",
+      "scenario": "recorded_opening",
+      "case_id": "case:P10",
+      "valid": false,
+      "error": "TimeoutError",
+      "elapsed_s": 240.08527766200132,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score_if_accepted": null,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_max",
+      "model": "claude-opus-5-5",
+      "effort": "max",
+      "scenario": "recorded_opening",
+      "case_id": "case:P11",
+      "valid": false,
+      "error": "TimeoutError",
+      "elapsed_s": 240.1015461240022,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score_if_accepted": null,
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "opus_max",
+      "model": "claude-opus-5-5",
+      "effort": "max",
+      "scenario": "recorded_opening",
+      "case_id": "case:P18",
+      "valid": false,
+      "error": "TimeoutError",
+      "elapsed_s": 240.10227798599954,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score_if_accepted": null,
+      "score": null,
+      "deal": null
+    }
+  ],
+  "limitations": [
+    "No arena sessions or supplier model calls: these are decisions on recorded public openings.",
+    "Validity and arithmetic can be assessed; proposed packages are not accepted deals and have no actual score.",
+    "Every variant gets 240 seconds to measure latency; the live runner enforces 25 seconds per decision.",
+    "score_if_accepted applies the hosted C_open/C_best of the recorded session to the cheapest proposed package: an upper bound on ambition, not a result.",
+    "Stopped after 27 of 30 decisions: the replay script shared one SQLite-backed data package across worker threads."
+  ],
+  "budget": {
+    "cap_usd": 100.0,
+    "estimated_known_usage_usd": 1.818485,
+    "reserved_in_flight_usd": 0.0,
+    "unreconciled_reservations_usd": 5.765435,
+    "committed_usd": 7.58392,
+    "remaining_usd": 92.41608,
+    "budget_rejections": 0,
+    "halted": false,
+    "price_basis": "Conservative standard estimate: all input at 1.25x default 30-minute cache-write rate, output at standard rate; not a billing reconciliation",
+    "calls": [
+      {
+        "call_id": 0,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 16059,
+        "output_bound": 32000,
+        "usage": {
+          "input_tokens": 6678,
+          "output_tokens": 676,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 9.111865,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.720295,
+        "estimated_cost_usd": 0.04691
+      },
+      {
+        "call_id": 1,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 16090,
+        "output_bound": 32000,
+        "usage": {
+          "input_tokens": 6635,
+          "output_tokens": 603,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 7.730804,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.72045,
+        "estimated_cost_usd": 0.045235
+      },
+      {
+        "call_id": 2,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 15498,
+        "output_bound": 32000,
+        "usage": {
+          "input_tokens": 6340,
+          "output_tokens": 648,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 8.248128,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.71749,
+        "estimated_cost_usd": 0.04466
+      },
+      {
+        "call_id": 3,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 14534,
+        "output_bound": 32000,
+        "usage": {
+          "input_tokens": 5828,
+          "output_tokens": 841,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 10.184448,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.71267,
+        "estimated_cost_usd": 0.04596
+      },
+      {
+        "call_id": 4,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 16037,
+        "output_bound": 32000,
+        "usage": {
+          "input_tokens": 6600,
+          "output_tokens": 699,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 9.109454,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.720185,
+        "estimated_cost_usd": 0.04698
+      },
+      {
+        "call_id": 5,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 14999,
+        "output_bound": 32000,
+        "usage": {
+          "input_tokens": 6158,
+          "output_tokens": 872,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 9.880758,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.714995,
+        "estimated_cost_usd": 0.04823
+      },
+      {
+        "call_id": 6,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 17708,
+        "output_bound": 32000,
+        "usage": {
+          "input_tokens": 7325,
+          "output_tokens": 741,
+          "cached_input_tokens": 1326
+        },
+        "latency_s": 7.930856,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.72854,
+        "estimated_cost_usd": 0.051445
+      },
+      {
+        "call_id": 7,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 17113,
+        "output_bound": 32000,
+        "usage": {
+          "input_tokens": 7070,
+          "output_tokens": 1582,
+          "cached_input_tokens": 1326
+        },
+        "latency_s": 15.934859,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.725565,
+        "estimated_cost_usd": 0.06699
+      },
+      {
+        "call_id": 8,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 16059,
+        "output_bound": 32000,
+        "usage": {
+          "input_tokens": 6678,
+          "output_tokens": 1257,
+          "cached_input_tokens": 1326
+        },
+        "latency_s": 13.790747,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.720295,
+        "estimated_cost_usd": 0.05853
+      },
+      {
+        "call_id": 9,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 16090,
+        "output_bound": 32000,
+        "usage": {
+          "input_tokens": 6635,
+          "output_tokens": 1195,
+          "cached_input_tokens": 1326
+        },
+        "latency_s": 11.941038,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.72045,
+        "estimated_cost_usd": 0.057075
+      },
+      {
+        "call_id": 10,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 16547,
+        "output_bound": 32000,
+        "usage": {
+          "input_tokens": 6749,
+          "output_tokens": 1129,
+          "cached_input_tokens": 1326
+        },
+        "latency_s": 11.184728,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.722735,
+        "estimated_cost_usd": 0.056325
+      },
+      {
+        "call_id": 11,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 23996,
+        "output_bound": 32000,
+        "usage": {
+          "input_tokens": 10333,
+          "output_tokens": 1550,
+          "cached_input_tokens": 1326
+        },
+        "latency_s": 15.771745,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.75998,
+        "estimated_cost_usd": 0.082665
+      },
+      {
+        "call_id": 12,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 15498,
+        "output_bound": 32000,
+        "usage": {
+          "input_tokens": 6340,
+          "output_tokens": 1229,
+          "cached_input_tokens": 1326
+        },
+        "latency_s": 11.992284,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.71749,
+        "estimated_cost_usd": 0.05628
+      },
+      {
+        "call_id": 13,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 16037,
+        "output_bound": 32000,
+        "usage": {
+          "input_tokens": 6600,
+          "output_tokens": 1239,
+          "cached_input_tokens": 1326
+        },
+        "latency_s": 13.136745,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.720185,
+        "estimated_cost_usd": 0.05778
+      },
+      {
+        "call_id": 14,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 14534,
+        "output_bound": 32000,
+        "usage": {
+          "input_tokens": 5828,
+          "output_tokens": 1023,
+          "cached_input_tokens": 1326
+        },
+        "latency_s": 10.655079,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.71267,
+        "estimated_cost_usd": 0.0496
+      },
+      {
+        "call_id": 15,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 14999,
+        "output_bound": 32000,
+        "usage": {
+          "input_tokens": 6158,
+          "output_tokens": 1167,
+          "cached_input_tokens": 1326
+        },
+        "latency_s": 12.4894,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.714995,
+        "estimated_cost_usd": 0.05413
+      },
+      {
+        "call_id": 16,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 17708,
+        "output_bound": 32000,
+        "usage": {
+          "input_tokens": 7325,
+          "output_tokens": 1175,
+          "cached_input_tokens": 1326
+        },
+        "latency_s": 12.371358,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.72854,
+        "estimated_cost_usd": 0.060125
+      },
+      {
+        "call_id": 17,
+        "model": "claude-opus-5-5",
+        "status": "timeout",
+        "input_bound": 17113,
+        "output_bound": 32000,
+        "usage": null,
+        "latency_s": 240.102252,
+        "error_class": "TimeoutError",
+        "reserved_usd": 0.725565,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 18,
+        "model": "claude-opus-5-5",
+        "status": "timeout",
+        "input_bound": 16059,
+        "output_bound": 32000,
+        "usage": null,
+        "latency_s": 240.101255,
+        "error_class": "TimeoutError",
+        "reserved_usd": 0.720295,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 19,
+        "model": "claude-opus-5-5",
+        "status": "timeout",
+        "input_bound": 16090,
+        "output_bound": 32000,
+        "usage": null,
+        "latency_s": 240.054499,
+        "error_class": "TimeoutError",
+        "reserved_usd": 0.72045,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 20,
+        "model": "claude-opus-5-5",
+        "status": "timeout",
+        "input_bound": 16547,
+        "output_bound": 32000,
+        "usage": null,
+        "latency_s": 240.044677,
+        "error_class": "TimeoutError",
+        "reserved_usd": 0.722735,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 21,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 23996,
+        "output_bound": 32000,
+        "usage": {
+          "input_tokens": 10333,
+          "output_tokens": 22295,
+          "cached_input_tokens": 1326
+        },
+        "latency_s": 213.466539,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.75998,
+        "estimated_cost_usd": 0.497565
+      },
+      {
+        "call_id": 22,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 15498,
+        "output_bound": 32000,
+        "usage": {
+          "input_tokens": 6340,
+          "output_tokens": 18015,
+          "cached_input_tokens": 1326
+        },
+        "latency_s": 168.793018,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.71749,
+        "estimated_cost_usd": 0.392
+      },
+      {
+        "call_id": 23,
+        "model": "claude-opus-5-5",
+        "status": "timeout",
+        "input_bound": 16037,
+        "output_bound": 32000,
+        "usage": null,
+        "latency_s": 240.093382,
+        "error_class": "TimeoutError",
+        "reserved_usd": 0.720185,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 24,
+        "model": "claude-opus-5-5",
+        "status": "timeout",
+        "input_bound": 14534,
+        "output_bound": 32000,
+        "usage": null,
+        "latency_s": 240.085238,
+        "error_class": "TimeoutError",
+        "reserved_usd": 0.71267,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 25,
+        "model": "claude-opus-5-5",
+        "status": "timeout",
+        "input_bound": 14999,
+        "output_bound": 32000,
+        "usage": null,
+        "latency_s": 240.10151,
+        "error_class": "TimeoutError",
+        "reserved_usd": 0.714995,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 26,
+        "model": "claude-opus-5-5",
+        "status": "timeout",
+        "input_bound": 17708,
+        "output_bound": 32000,
+        "usage": null,
+        "latency_s": 240.102241,
+        "error_class": "TimeoutError",
+        "reserved_usd": 0.72854,
+        "estimated_cost_usd": null
+      }
+    ]
+  }
+}
