@@ -97,6 +97,37 @@ class DataPackage:
             raise FileNotFoundError(ref)
         return path.read_text(encoding="utf-8")
 
+    def negotiation_facts(self, case):
+        """A bounded dossier from supplied evidence, including the Sunday overlay."""
+        suppliers, parts = set(case["suppliers"]), set(case["parts"])
+        selected = {}
+        for prefix, limit in (("doc:", 24), ("news:", 8), ("cost:", 8), ("quote:", 12), ("fc:", 6)):
+            rows = [(ref, fact) for ref, fact in self.facts.items() if ref.startswith(prefix) and (
+                fact.get("supplier") in suppliers if prefix in ("doc:", "news:") else fact.get("part") in parts)]
+            rows.sort(key=lambda item: (item[1].get("date", ""), item[0]), reverse=True)
+            for ref, fact in rows[:limit]:
+                selected[ref] = dict(fact)
+                if prefix in ("doc:", "news:"):
+                    selected[ref]["text"] = self.document(ref)[:1800]
+                elif prefix == "cost:":
+                    # The estimate's supplier and uncertainty matter; it is not a private reservation price.
+                    selected[ref].update(self._ids.get(ref, {}))
+        series = set(case["buyer"].get("index_paths", {}))
+        for clause in case.get("term_options", {}).get("index_clause", []):
+            if clause:
+                series.add(clause["series"])
+        for name in sorted(series):
+            refs = self.ids(f"idx:{name}@")
+            if not refs:
+                continue
+            newest = refs[-1]
+            month = self.lookup(newest)["month"]
+            previous = f"idx:{name}@{int(month[:4]) - 1}{month[4:]}"
+            for ref in (previous, newest):
+                if fact := self.lookup(ref):
+                    selected[ref] = fact
+        return selected
+
     @cached_property
     def cases(self):
         """Practice (and demo) case files in the package: {case_id: case}."""

@@ -3,7 +3,8 @@
 CODE = "src/tacto_negotiator/"
 DATA = "data/"
 GUIDES = ("README.md", "TUTORIAL.md", "IMPLEMENTATION.md", "DATA_GUIDE.md", "LOCAL_TESTING.md",
-          "FINAL_READINESS.md", "MODEL_SELECTION.md", "ROUTING.md", "COMPETITION.md", "WEB_UI.md", "FAQ_ADVANTAGE.md")
+          "FINAL_READINESS.md", "MODEL_SELECTION.md", "ROUTING.md", "COMPETITION.md", "WEB_UI.md", "FAQ_ADVANTAGE.md",
+          "LIVE_PRACTICE.md")
 
 GROUPS = {
     "project": {"label": "Project setup", "color": "#e4b86b"},
@@ -62,6 +63,7 @@ FILES = {
     "tests/test_routing_integration.py": ("local", "Routing checks", "Routed runner/CLI integration: remaining budgets, document failures, fallback telemetry and five virtual waves.", "Checks that actual available time reaches the router and that closing validation and failed-quote evidence survive the runner boundary."),
     "tests/test_client_deadline.py": ("local", "Routing checks", "Per-call read timeout/retry overrides and unchanged POST retry/idempotency tests.", "Keeps short timed-agent metadata reads separate from the longer supplier-response timeout without changing shared client defaults."),
     "tests/test_script_coverage.py": ("local", "Routing checks", "Deterministic multi-term bargaining, bidder rotation, plateau handling and semantic defer checks.", "Tests expanded script coverage using ordinary public case fields, without access to synthetic supplier floors."),
+    "tests/test_dossier.py": ("local", "Evidence checks", "Related supplier evidence, Sunday overlay and semantic routing checks.", "Ensures material correspondence reaches decisions without mixing unrelated suppliers or contacting the arena."),
     "tests/test_competition.py": ("local", "Strategy competition", "Paired waves, reference feasibility, hidden-data separation, neutral labels, worker overlap and audited outcomes.", "Verifies the harness itself before scores are used to compare policies, including the actual-package floor regression and keeping failed-call latency in the report."),
     "tests/test_benchmark.py": ("local", "Model evaluation", "Literal credential parsing, pricing/reservation accounting, access preflight and bounded model wrappers.", "Uses temporary fake keys and mock HTTP to check that the paid-evaluation controls work without spending money."),
     "tests/test_compete.py": ("local", "Strategy competition", "Competition CLI, offline defaults, explicit live-call gates and strategy construction checks.", "Keeps reproducible local evaluation usable while making paid model execution an explicit choice."),

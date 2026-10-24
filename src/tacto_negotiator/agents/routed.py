@@ -27,7 +27,8 @@ log = logging.getLogger("arena")
 MAX_SCRIPT_CANDIDATES = 256
 # shortcut: conservative phrase matching; use structured side-condition extraction for broader prose coverage.
 CONDITIONAL_WORDING = ("subject to", "provided that", "only if", "pending approval", "conditional on", "unless",
-                       "please clarify", "please explain", "capacity constraint")
+                       "please clarify", "please explain", "capacity constraint", "of our cost", "whole range",
+                       "faster payment", "alternatively", "no-go")
 
 
 class RoutedAgent:
@@ -119,6 +120,8 @@ class RoutedAgent:
         return move
 
     def _semantic_blocker(self, case, threads):
+        if self.context.case_id == case["case_id"]:
+            return True  # Preserve the model's negotiation context after a semantic exchange.
         if case["buyer"].get("category_goal", "routine") not in {"routine", "leverage"}:
             return True
         for sid in live_threads(threads):
@@ -137,7 +140,7 @@ class RoutedAgent:
                 quotes.append(None if missing else {**std, **case.get("fixed_terms", {}), **terms})
         return len(quotes) >= 3 and quotes[-1] is not None and quotes[-1] == quotes[-2] == quotes[-3]
 
-    def _packages(self, case, options, target_cost, alternative, reference_price):
+    def _packages(self, case, options, target_cost, alternative, reference_price, *, price_ceiling=math.inf):
         """Price each trade under the same full-cost ceiling, including the outside option."""
         fields = [field for field in case["negotiable"] if field != "unit_price"]
         rows = []
@@ -150,7 +153,7 @@ class RoutedAgent:
             slope = (reference_cost - base) / reference_price
             if not math.isfinite(slope) or slope <= 0:
                 continue
-            proposal["unit_price"] = math.floor((ceiling - base) / slope * 100) / 100
+            proposal["unit_price"] = min(price_ceiling, math.floor((ceiling - base) / slope * 100) / 100)
             if proposal["unit_price"] <= 0:
                 continue
             cost = total_cost(case, proposal)
@@ -238,7 +241,8 @@ class RoutedAgent:
                     if self.validate(case, threads, {"supplier_id": sid, "action": "accept"}):
                         return "small_cost_gap" if small_gap else "round_reserve", closing_move(case, threads)
             rows = self._packages(case, record["options"], target_cost, alternative,
-                                  current["unit_price"])
+                                  current["unit_price"],
+                                  price_ceiling=round(current["unit_price"] * 0.9, 2) if not sent else math.inf)
             if not rows:
                 continue
             chosen = [rows[0][1]]

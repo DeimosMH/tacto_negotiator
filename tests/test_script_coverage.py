@@ -57,14 +57,29 @@ def test_full_term_opening_offers_cheaper_packages_and_a_familiar_tradeoff(negot
     move = agent.decide(case, threads)
     packages = [sheet["terms"] for sheet in move["message"]["term_sheets"]]
     assert calls == [] and agent.last_decision["reason"] == "enumerated_opening"
-    assert packages[0] == {"unit_price": 109.26, "payment_days": 60, "incoterm": "DAP"}
+    assert packages[0] == {"unit_price": 99.0, "payment_days": 60, "incoterm": "DAP"}
     baseline = next(t for t in packages if t["payment_days"] == 14 and t["incoterm"] == "EXW")
     assert baseline["unit_price"] < packages[0]["unit_price"]
     assert len(packages) <= 3 and all(set(t) == set(case["negotiable"]) for t in packages)
     assert total_cost(case, packages[0]) < total_cost(case, threads["sup:A"][0]["term_sheets"][0]["terms"])
     assert not move["message"].get("action")
     ceiling = total_cost(case, threads["sup:A"][0]["term_sheets"][0]["terms"]) * 0.9
-    assert all(ceiling - 11 <= total_cost(case, t) <= ceiling for t in packages)
+    assert all(total_cost(case, t) <= ceiling and t["unit_price"] <= 99 for t in packages)
+
+
+def test_covering_more_demand_does_not_raise_the_opening_unit_price(negotiation):
+    case, threads = negotiation
+    case["buyer"]["horizon_years"] = 2
+    case["fixed_terms"].pop("contract_months")
+    case["negotiable"].append("contract_months")
+    case["term_options"]["contract_months"] = [12, 24, 36]
+    threads["sup:A"][0]["term_sheets"][0]["terms"]["contract_months"] = 12
+    agent, calls = agent_with_calls()
+    move = agent.decide(case, threads)
+    assert not calls
+    packages = [s["terms"] for s in move["message"]["term_sheets"]]
+    assert any(t["contract_months"] >= 24 for t in packages)
+    assert all(t["unit_price"] <= 99 for t in packages)
 
 
 def test_explicit_outgoing_package_repairs_a_negotiable_must_have(negotiation):
