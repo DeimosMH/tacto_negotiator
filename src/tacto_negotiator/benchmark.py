@@ -15,8 +15,11 @@ from decimal import ROUND_FLOOR, Decimal
 
 import httpx
 
+from .agents.completion import ANTHROPIC_URL
+
 OPENAI_BASE = "https://api.openai.com/v1"
-PRICES_PER_MILLION = {"gpt-6.1-sol": (2, 10), "gpt-6-astra": (10, 50), "gpt-6-luna": (0.1, 0.5)}
+PRICES_PER_MILLION = {"gpt-6.1-sol": (2, 10), "gpt-6-astra": (10, 50), "gpt-6-luna": (0.1, 0.5),
+                      "claude-opus-5-5": (4, 20)}
 NANO = 1_000_000_000
 INPUT_OVERHEAD = 1024
 STANDARD_INPUT_LIMIT = 272_000
@@ -173,8 +176,8 @@ class BudgetedCompletion:
     def __init__(self, client, ledger):
         if client.model not in PRICES_PER_MILLION:
             raise ValueError("model has no verified benchmark price")
-        if client.url != OPENAI_BASE + "/responses" or client.service_tier != "default":
-            raise ValueError("benchmark requests require the fixed OpenAI URL and standard service tier")
+        if client.url not in (OPENAI_BASE + "/responses", ANTHROPIC_URL) or client.service_tier != "default":
+            raise ValueError("benchmark requests require a fixed provider URL and standard service tier")
         self.client, self.ledger, self.model = client, ledger, client.model
 
     def __call__(self, system, user, *, deadline):

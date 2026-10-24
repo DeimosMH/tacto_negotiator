@@ -79,7 +79,8 @@ def llm_from_env():
     if provider == "anthropic":
         import anthropic
 
-        client = anthropic.Anthropic(timeout=45.0)
+        key = os.environ.get("LLM_API_KEY_ANTHROPIC") or os.environ.get("ANTHROPIC_API_KEY")
+        client = anthropic.Anthropic(api_key=key, timeout=45.0)
         extra = {"output_config": {"effort": e}} if (e := os.environ.get("LLM_EFFORT")) else {}
 
         def complete(system, user):

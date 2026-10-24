@@ -1,4 +1,5 @@
-"""Bounded OpenAI Responses calls for RoutedAgent; no credentials are loaded from files.
+"""Bounded OpenAI Responses or Anthropic Messages calls for RoutedAgent; no credentials are loaded
+from files.
 
 Call from synchronous case workers with an absolute time.monotonic() deadline. Provider
 queueing, HTTP and response reading share that budget. Each request owns and closes its async
@@ -151,21 +152,85 @@ class CompletionClient:
                 return result
 
 
+ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
+
+
+def anthropic_metadata(message):
+    """Same accounting shape as response_metadata; input_tokens includes cache reads and writes."""
+    usage = getattr(message, "usage", None)
+    counts = [getattr(usage, name, None) or 0 for name in
+              ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens", "output_tokens")]
+    if usage is None or not all(type(value) is int and value >= 0 for value in counts):
+        return {"status": "unknown", "usage": None}
+    return {"status": "completed" if message.stop_reason == "end_turn" else "incomplete",
+            "usage": {"input_tokens": sum(counts[:3]), "output_tokens": counts[3],
+                      "cached_input_tokens": counts[2]}}
+
+
+class AnthropicCompletionClient(CompletionClient):
+    """Claude via the Anthropic SDK with the same deadline, semaphore and observer contract.
+
+    Thinking is adaptive (always on for Claude Opus 5.5); effort is its only depth control.
+    Server-side fallbacks re-run a safety-classifier refusal on another model in the same call.
+    """
+
+    def __init__(self, model, api_key, *, effort="low", max_output_tokens=16000, semaphore=None,
+                 service_tier=None, base_url=None):
+        if not isinstance(api_key, str) or not api_key.strip():
+            raise ValueError("set ANTHROPIC_API_KEY for an Anthropic model")
+        super().__init__(model, api_key, effort=effort, max_output_tokens=max_output_tokens,
+                         semaphore=semaphore, service_tier=service_tier)
+        self.url, self.headers, self.api_key = ANTHROPIC_URL, {}, api_key
+
+    async def _request(self, system, user, deadline, observer=None):
+        import anthropic
+
+        async with asyncio.timeout(_remaining(deadline)):
+            async with anthropic.AsyncAnthropic(api_key=self.api_key, max_retries=0,
+                                                timeout=_remaining(deadline)) as client:
+                message = await client.beta.messages.create(
+                    model=self.model,
+                    max_tokens=self.max_output_tokens,
+                    system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
+                    messages=[{"role": "user", "content": user}],
+                    output_config={"effort": self.effort},
+                    betas=["server-side-fallback-2026-07-01"],
+                    fallbacks="default",
+                )
+                if observer is not None:
+                    observer(anthropic_metadata(message))
+                if message.stop_reason != "end_turn":
+                    raise ValueError(f"model stopped with {message.stop_reason}")
+                result = "".join(block.text for block in message.content if block.type == "text")
+                if not result.strip():
+                    raise ValueError("model response has no decision text")
+                _remaining(deadline)
+                return result
+
+
 def routed_completions_from_env():
-    """Read explicit process configuration; the strong route is disabled unless configured."""
-    if os.environ.get("LLM_PROVIDER", "openai").lower() != "openai":
-        raise ValueError("the routed agent uses OpenAI Responses; set LLM_PROVIDER=openai")
+    """Read explicit process configuration; the strong route is disabled unless configured.
+
+    LLM_PROVIDER=anthropic uses LLM_API_KEY_ANTHROPIC (or ANTHROPIC_API_KEY) and defaults to claude-opus-5-5."""
+    provider = os.environ.get("LLM_PROVIDER", "openai").lower()
+    if provider not in ("openai", "anthropic"):
+        raise ValueError("the routed agent supports LLM_PROVIDER=openai or anthropic")
     maximum = int(os.environ.get("LLM_MAX_CONCURRENT", "10"))
     if maximum < 1:
         raise ValueError("LLM_MAX_CONCURRENT must be positive")
-    shared = {
-        "api_key": os.environ.get("LLM_API_KEY") or os.environ.get("OPENAI_API_KEY"),
-        "base_url": os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1"),
-        "semaphore": threading.BoundedSemaphore(maximum),
-    }
-    fast = CompletionClient(os.environ.get("LLM_MODEL", "gpt-6.1-sol"),
-                            effort=os.environ.get("LLM_EFFORT", "low"), **shared)
+    if provider == "anthropic":
+        client, default_model = AnthropicCompletionClient, "claude-opus-5-5"
+        key = os.environ.get("LLM_API_KEY_ANTHROPIC") or os.environ.get("ANTHROPIC_API_KEY")
+        shared = {"api_key": key, "semaphore": threading.BoundedSemaphore(maximum)}
+    else:
+        client, default_model = CompletionClient, "gpt-6.1-sol"
+        shared = {
+            "api_key": os.environ.get("LLM_API_KEY") or os.environ.get("OPENAI_API_KEY"),
+            "base_url": os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1"),
+            "semaphore": threading.BoundedSemaphore(maximum),
+        }
+    fast = client(os.environ.get("LLM_MODEL", default_model), effort=os.environ.get("LLM_EFFORT", "low"), **shared)
     strong_model = os.environ.get("LLM_STRONG_MODEL", "").strip()
-    strong = (CompletionClient(strong_model, effort=os.environ.get("LLM_STRONG_EFFORT", "medium"), **shared)
+    strong = (client(strong_model, effort=os.environ.get("LLM_STRONG_EFFORT", "medium"), **shared)
               if strong_model else None)
     return fast, strong

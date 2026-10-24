@@ -257,7 +257,7 @@ def test_default_cache_write_ceiling_for_one_million_input_and_output_tokens(mod
 def test_benchmark_rejects_unpriced_models_custom_endpoints_and_nonstandard_tiers():
     with pytest.raises(ValueError, match="verified"):
         BudgetedCompletion(CompletionClient("unknown", "fake", service_tier="default"), BudgetLedger())
-    with pytest.raises(ValueError, match="fixed OpenAI"):
+    with pytest.raises(ValueError, match="fixed provider"):
         BudgetedCompletion(CompletionClient("gpt-6.1-sol", "fake", base_url="https://elsewhere.invalid",
                                             service_tier="default"), BudgetLedger())
     with pytest.raises(ValueError, match="standard"):

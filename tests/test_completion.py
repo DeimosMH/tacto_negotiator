@@ -204,7 +204,7 @@ def test_factory_defaults_and_explicit_strong_model(provider_env, monkeypatch):
 
 
 @pytest.mark.parametrize(("name", "value"), [
-    ("LLM_PROVIDER", "anthropic"), ("LLM_MAX_CONCURRENT", "0"), ("LLM_MAX_CONCURRENT", "bad"),
+    ("LLM_PROVIDER", "gemini"), ("LLM_MAX_CONCURRENT", "0"), ("LLM_MAX_CONCURRENT", "bad"),
     ("LLM_EFFORT", "none"), ("LLM_MODEL", ""), ("LLM_API_KEY", ""),
 ])
 def test_bad_configuration_fails_before_any_request(provider_env, monkeypatch, name, value):
@@ -217,3 +217,24 @@ def test_factory_accepts_standard_openai_key_name(provider_env, monkeypatch):
     monkeypatch.delenv("LLM_API_KEY")
     monkeypatch.setenv("OPENAI_API_KEY", "local-only")
     assert routed_completions_from_env()[0].model == "gpt-6.1-sol"
+
+
+def test_anthropic_provider_reads_its_own_key_and_accounts_cache_tokens(monkeypatch):
+    from types import SimpleNamespace
+
+    from tacto_negotiator.agents.completion import AnthropicCompletionClient, anthropic_metadata
+    from tacto_negotiator.benchmark import BudgetedCompletion, BudgetLedger
+
+    monkeypatch.setenv("LLM_PROVIDER", "anthropic")
+    monkeypatch.setenv("LLM_API_KEY_ANTHROPIC", "test-key")
+    monkeypatch.delenv("LLM_MODEL", raising=False)
+    fast, strong = routed_completions_from_env()
+    assert isinstance(fast, AnthropicCompletionClient) and strong is None
+    assert (fast.model, fast.effort, fast.api_key) == ("claude-opus-5-5", "low", "test-key")
+    fast.service_tier = "default"
+    BudgetedCompletion(fast, BudgetLedger(1))  # priced and accepted by the spend ledger
+    usage = SimpleNamespace(input_tokens=10, cache_creation_input_tokens=5, cache_read_input_tokens=100,
+                            output_tokens=7)
+    assert anthropic_metadata(SimpleNamespace(usage=usage, stop_reason="end_turn")) == {
+        "status": "completed", "usage": {"input_tokens": 115, "output_tokens": 7, "cached_input_tokens": 100}}
+    assert anthropic_metadata(SimpleNamespace(usage=usage, stop_reason="max_tokens"))["status"] == "incomplete"
