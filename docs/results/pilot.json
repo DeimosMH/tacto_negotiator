@@ -1,0 +1,1342 @@
+{
+  "config": {
+    "seeds": [
+      0
+    ],
+    "waves": 1,
+    "wave_seconds": 480,
+    "workers": 6,
+    "holdout": false,
+    "decision_seconds": 25,
+    "scenarios": [
+      "payment_freight",
+      "relationship_risk"
+    ]
+  },
+  "peak_active_matches": 6,
+  "aggregate": {
+    "sol": {
+      "matches": 2,
+      "valid": 2,
+      "deals": 2,
+      "errors": 0,
+      "wave_points": {
+        "1": 84.3
+      },
+      "finished_before_cap": 2,
+      "total_points": 84.3,
+      "mean_score": 0.8426687152235741,
+      "mean_regret_eur": -541.925,
+      "model_attempts": 9,
+      "fallbacks": 0,
+      "thread_timeouts": 0,
+      "decision_p95_s": 6.645977451000363,
+      "decision_wall_s": 34.799871809984324,
+      "supplier_delay_s": 0.0,
+      "routes": {
+        "fast": 9
+      }
+    },
+    "astra": {
+      "matches": 2,
+      "valid": 2,
+      "deals": 2,
+      "errors": 0,
+      "wave_points": {
+        "1": 90.9
+      },
+      "finished_before_cap": 2,
+      "total_points": 90.9,
+      "mean_score": 0.9090481812203988,
+      "mean_regret_eur": 522.0350000000001,
+      "model_attempts": 6,
+      "fallbacks": 0,
+      "thread_timeouts": 0,
+      "decision_p95_s": 5.918396230998042,
+      "decision_wall_s": 26.739938097998674,
+      "supplier_delay_s": 0.0,
+      "routes": {
+        "fast": 6
+      }
+    },
+    "luna": {
+      "matches": 2,
+      "valid": 2,
+      "deals": 2,
+      "errors": 0,
+      "wave_points": {
+        "1": 31.1
+      },
+      "finished_before_cap": 2,
+      "total_points": 31.1,
+      "mean_score": 0.31135363331066307,
+      "mean_regret_eur": 5136.78,
+      "model_attempts": 10,
+      "fallbacks": 1,
+      "thread_timeouts": 0,
+      "decision_p95_s": 5.896351984003559,
+      "decision_wall_s": 49.72617041699414,
+      "supplier_delay_s": 0.0,
+      "routes": {
+        "fast": 10
+      }
+    },
+    "hybrid": {
+      "matches": 2,
+      "valid": 2,
+      "deals": 2,
+      "errors": 0,
+      "wave_points": {
+        "1": 44.6
+      },
+      "finished_before_cap": 2,
+      "total_points": 44.6,
+      "mean_score": 0.44642765558589803,
+      "mean_regret_eur": 3216.3,
+      "model_attempts": 1,
+      "fallbacks": 0,
+      "thread_timeouts": 0,
+      "decision_p95_s": 4.6966660609978135,
+      "decision_wall_s": 4.6980969779906445,
+      "supplier_delay_s": 0.0,
+      "routes": {
+        "script": 3,
+        "strong": 1
+      }
+    },
+    "scripts": {
+      "matches": 2,
+      "valid": 2,
+      "deals": 2,
+      "errors": 0,
+      "wave_points": {
+        "1": 24.1
+      },
+      "finished_before_cap": 2,
+      "total_points": 24.1,
+      "mean_score": 0.2414991377708526,
+      "mean_regret_eur": 3797.84,
+      "model_attempts": 1,
+      "fallbacks": 1,
+      "thread_timeouts": 0,
+      "decision_p95_s": 0.0011560670027392916,
+      "decision_wall_s": 0.0016938129992922768,
+      "supplier_delay_s": 0.0,
+      "routes": {
+        "script": 2,
+        "fast": 1
+      }
+    }
+  },
+  "matches": [
+    {
+      "variant_id": "sol",
+      "scenario": "payment_freight",
+      "seed": 0,
+      "holdout": false,
+      "wave": 1,
+      "case_id": "case:R1-payment_freight",
+      "deal": true,
+      "valid": true,
+      "finished_before_cap": true,
+      "score": 1.0,
+      "cost_eur": 35260.0,
+      "reference_cost_eur": 37236.79,
+      "reference_kind": "best enumerated feasible deal or outside option",
+      "regret_eur": -1976.79,
+      "end_reason": "accepted",
+      "error": null,
+      "invalid_moves": 0,
+      "thread_timeouts": 0,
+      "model_attempts": 5,
+      "fallbacks": 0,
+      "routes": {
+        "fast": 5
+      },
+      "decisions": [
+        {
+          "case_id": "case:R1-payment_freight",
+          "route": "fast",
+          "reason": "semantic_decision",
+          "elapsed_s": 4.234209987000213,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 4.234217644996534,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        },
+        {
+          "case_id": "case:R1-payment_freight",
+          "route": "fast",
+          "reason": "semantic_decision",
+          "elapsed_s": 3.398473733002902,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 3.3984811620030086,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        },
+        {
+          "case_id": "case:R1-payment_freight",
+          "route": "fast",
+          "reason": "semantic_decision",
+          "elapsed_s": 3.8106986920029158,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 3.8107064939977136,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        },
+        {
+          "case_id": "case:R1-payment_freight",
+          "route": "fast",
+          "reason": "semantic_decision",
+          "elapsed_s": 3.426124607998645,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 3.4261330969966366,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        },
+        {
+          "case_id": "case:R1-payment_freight",
+          "route": "fast",
+          "reason": "semantic_decision",
+          "elapsed_s": 1.5323063609976089,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 1.532313952993718,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        }
+      ],
+      "decision_wall_s": 16.40185235098761,
+      "supplier_delay_s": 0.0,
+      "virtual_elapsed_s": 16.720352955162525,
+      "wall_s": 16.721416099993803
+    },
+    {
+      "variant_id": "astra",
+      "scenario": "payment_freight",
+      "seed": 0,
+      "holdout": false,
+      "wave": 1,
+      "case_id": "case:R1-payment_freight",
+      "deal": true,
+      "valid": true,
+      "finished_before_cap": true,
+      "score": 0.9170684426305216,
+      "cost_eur": 38000.0,
+      "reference_cost_eur": 37236.79,
+      "reference_kind": "best enumerated feasible deal or outside option",
+      "regret_eur": 763.21,
+      "end_reason": "accepted",
+      "error": null,
+      "invalid_moves": 0,
+      "thread_timeouts": 0,
+      "model_attempts": 2,
+      "fallbacks": 0,
+      "routes": {
+        "fast": 2
+      },
+      "decisions": [
+        {
+          "case_id": "case:R1-payment_freight",
+          "route": "fast",
+          "reason": "semantic_decision",
+          "elapsed_s": 4.603923455004406,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 4.603931442004978,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        },
+        {
+          "case_id": "case:R1-payment_freight",
+          "route": "fast",
+          "reason": "semantic_decision",
+          "elapsed_s": 1.859575146001589,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 1.859583006997127,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        }
+      ],
+      "decision_wall_s": 6.463514449002105,
+      "supplier_delay_s": 0.0,
+      "virtual_elapsed_s": 6.779034563107416,
+      "wall_s": 6.779786445003992
+    },
+    {
+      "variant_id": "luna",
+      "scenario": "payment_freight",
+      "seed": 0,
+      "holdout": false,
+      "wave": 1,
+      "case_id": "case:R1-payment_freight",
+      "deal": true,
+      "valid": true,
+      "finished_before_cap": true,
+      "score": 0.0,
+      "cost_eur": 46439.68,
+      "reference_cost_eur": 37236.79,
+      "reference_kind": "best enumerated feasible deal or outside option",
+      "regret_eur": 9202.89,
+      "end_reason": "accepted",
+      "error": null,
+      "invalid_moves": 0,
+      "thread_timeouts": 0,
+      "model_attempts": 1,
+      "fallbacks": 1,
+      "routes": {
+        "fast": 1
+      },
+      "decisions": [
+        {
+          "case_id": "case:R1-payment_freight",
+          "route": "fast",
+          "reason": "JSONDecodeError",
+          "elapsed_s": 5.547375137997733,
+          "budget_s": 25,
+          "fallback": true,
+          "decision_wall_s": 5.547382848999405,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        }
+      ],
+      "decision_wall_s": 5.547382848999405,
+      "supplier_delay_s": 0.0,
+      "virtual_elapsed_s": 5.8578031359938905,
+      "wall_s": 5.858475433000422
+    },
+    {
+      "variant_id": "hybrid",
+      "scenario": "payment_freight",
+      "seed": 0,
+      "holdout": false,
+      "wave": 1,
+      "case_id": "case:R1-payment_freight",
+      "deal": true,
+      "valid": true,
+      "finished_before_cap": true,
+      "score": 0.4829982755417052,
+      "cost_eur": 41994.7,
+      "reference_cost_eur": 37236.79,
+      "reference_kind": "best enumerated feasible deal or outside option",
+      "regret_eur": 4757.91,
+      "end_reason": "accepted",
+      "error": null,
+      "invalid_moves": 0,
+      "thread_timeouts": 0,
+      "model_attempts": 0,
+      "fallbacks": 0,
+      "routes": {
+        "script": 2
+      },
+      "decisions": [
+        {
+          "case_id": "case:R1-payment_freight",
+          "route": "script",
+          "reason": "enumerated_opening",
+          "elapsed_s": 0.001127376002841629,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 0.0011404359975131229,
+          "model_attempts": 0,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        },
+        {
+          "case_id": "case:R1-payment_freight",
+          "route": "script",
+          "reason": "terminal_offers",
+          "elapsed_s": 0.00014292600098997355,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 0.00014930799807189032,
+          "model_attempts": 0,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        }
+      ],
+      "decision_wall_s": 0.0012897439955850132,
+      "supplier_delay_s": 0.0,
+      "virtual_elapsed_s": 0.31421689107082784,
+      "wall_s": 0.31511040199984564
+    },
+    {
+      "variant_id": "scripts",
+      "scenario": "payment_freight",
+      "seed": 0,
+      "holdout": false,
+      "wave": 1,
+      "case_id": "case:R1-payment_freight",
+      "deal": true,
+      "valid": true,
+      "finished_before_cap": true,
+      "score": 0.4829982755417052,
+      "cost_eur": 41994.7,
+      "reference_cost_eur": 37236.79,
+      "reference_kind": "best enumerated feasible deal or outside option",
+      "regret_eur": 4757.91,
+      "end_reason": "accepted",
+      "error": null,
+      "invalid_moves": 0,
+      "thread_timeouts": 0,
+      "model_attempts": 0,
+      "fallbacks": 0,
+      "routes": {
+        "script": 2
+      },
+      "decisions": [
+        {
+          "case_id": "case:R1-payment_freight",
+          "route": "script",
+          "reason": "enumerated_opening",
+          "elapsed_s": 0.0011507950039231218,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 0.0011560670027392916,
+          "model_attempts": 0,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        },
+        {
+          "case_id": "case:R1-payment_freight",
+          "route": "script",
+          "reason": "terminal_offers",
+          "elapsed_s": 0.00013675299851456657,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 0.00014146699686534703,
+          "model_attempts": 0,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        }
+      ],
+      "decision_wall_s": 0.0012975339996046387,
+      "supplier_delay_s": 0.0,
+      "virtual_elapsed_s": 0.3168049529194832,
+      "wall_s": 0.3176215499988757
+    },
+    {
+      "variant_id": "sol",
+      "scenario": "relationship_risk",
+      "seed": 0,
+      "holdout": false,
+      "wave": 1,
+      "case_id": "case:R1-relationship_risk",
+      "deal": true,
+      "valid": true,
+      "finished_before_cap": true,
+      "score": 0.6853374304471482,
+      "cost_eur": 42494.85,
+      "reference_cost_eur": 41601.91,
+      "reference_kind": "best enumerated feasible deal or outside option",
+      "regret_eur": 892.94,
+      "end_reason": "accepted",
+      "error": null,
+      "invalid_moves": 0,
+      "thread_timeouts": 0,
+      "model_attempts": 4,
+      "fallbacks": 0,
+      "routes": {
+        "fast": 4
+      },
+      "decisions": [
+        {
+          "case_id": "case:R1-relationship_risk",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 5.08001751700067,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 5.080025449999084,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        },
+        {
+          "case_id": "case:R1-relationship_risk",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 4.575535885000136,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 4.57554404700204,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        },
+        {
+          "case_id": "case:R1-relationship_risk",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 6.6459664779977174,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 6.645977451000363,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        },
+        {
+          "case_id": "case:R1-relationship_risk",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 2.096464032001677,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 2.096472510995227,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        }
+      ],
+      "decision_wall_s": 18.398019458996714,
+      "supplier_delay_s": 0.0,
+      "virtual_elapsed_s": 18.714678316027857,
+      "wall_s": 18.727444010997715
+    },
+    {
+      "variant_id": "astra",
+      "scenario": "relationship_risk",
+      "seed": 0,
+      "holdout": false,
+      "wave": 1,
+      "case_id": "case:R1-relationship_risk",
+      "deal": true,
+      "valid": true,
+      "finished_before_cap": true,
+      "score": 0.9010279198102759,
+      "cost_eur": 41882.77,
+      "reference_cost_eur": 41601.91,
+      "reference_kind": "best enumerated feasible deal or outside option",
+      "regret_eur": 280.86,
+      "end_reason": "accepted",
+      "error": null,
+      "invalid_moves": 0,
+      "thread_timeouts": 0,
+      "model_attempts": 4,
+      "fallbacks": 0,
+      "routes": {
+        "fast": 4
+      },
+      "decisions": [
+        {
+          "case_id": "case:R1-relationship_risk",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 5.731720874995517,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 5.731728149999981,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        },
+        {
+          "case_id": "case:R1-relationship_risk",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 5.9183871610002825,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 5.918396230998042,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        },
+        {
+          "case_id": "case:R1-relationship_risk",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 5.776668066995626,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 5.776675731998694,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        },
+        {
+          "case_id": "case:R1-relationship_risk",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 2.8496156510009314,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 2.8496235359998536,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        }
+      ],
+      "decision_wall_s": 20.27642364899657,
+      "supplier_delay_s": 0.0,
+      "virtual_elapsed_s": 20.283912787097506,
+      "wall_s": 20.317647937998117
+    },
+    {
+      "variant_id": "luna",
+      "scenario": "relationship_risk",
+      "seed": 0,
+      "holdout": false,
+      "wave": 1,
+      "case_id": "case:R1-relationship_risk",
+      "deal": true,
+      "valid": true,
+      "finished_before_cap": true,
+      "score": 0.6227072666213261,
+      "cost_eur": 42672.58,
+      "reference_cost_eur": 41601.91,
+      "reference_kind": "best enumerated feasible deal or outside option",
+      "regret_eur": 1070.67,
+      "end_reason": "accepted",
+      "error": null,
+      "invalid_moves": 0,
+      "thread_timeouts": 0,
+      "model_attempts": 9,
+      "fallbacks": 0,
+      "routes": {
+        "fast": 9
+      },
+      "decisions": [
+        {
+          "case_id": "case:R1-relationship_risk",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 5.686923419998493,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 5.6869320679979865,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        },
+        {
+          "case_id": "case:R1-relationship_risk",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 5.607971990000806,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 5.6079803190004895,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        },
+        {
+          "case_id": "case:R1-relationship_risk",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 3.7434461880038725,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 3.7434539390014834,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        },
+        {
+          "case_id": "case:R1-relationship_risk",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 3.9111930599974585,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 3.9111999079977977,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        },
+        {
+          "case_id": "case:R1-relationship_risk",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 3.7472426160020404,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 3.7472499269933905,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        },
+        {
+          "case_id": "case:R1-relationship_risk",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 5.245812541004852,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 5.245820532996731,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        },
+        {
+          "case_id": "case:R1-relationship_risk",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 5.4401114900028915,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 5.440118639002321,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        },
+        {
+          "case_id": "case:R1-relationship_risk",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 5.896344404995034,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 5.896351984003559,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        },
+        {
+          "case_id": "case:R1-relationship_risk",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 4.899671548999322,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 4.899680251000973,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        }
+      ],
+      "decision_wall_s": 44.17878756799473,
+      "supplier_delay_s": 0.0,
+      "virtual_elapsed_s": 44.19358467590064,
+      "wall_s": 44.21437505400536
+    },
+    {
+      "variant_id": "hybrid",
+      "scenario": "relationship_risk",
+      "seed": 0,
+      "holdout": false,
+      "wave": 1,
+      "case_id": "case:R1-relationship_risk",
+      "deal": true,
+      "valid": true,
+      "finished_before_cap": true,
+      "score": 0.4098570356300909,
+      "cost_eur": 43276.6,
+      "reference_cost_eur": 41601.91,
+      "reference_kind": "best enumerated feasible deal or outside option",
+      "regret_eur": 1674.69,
+      "end_reason": "accepted",
+      "error": null,
+      "invalid_moves": 0,
+      "thread_timeouts": 0,
+      "model_attempts": 1,
+      "fallbacks": 0,
+      "routes": {
+        "strong": 1,
+        "script": 1
+      },
+      "decisions": [
+        {
+          "case_id": "case:R1-relationship_risk",
+          "route": "strong",
+          "reason": "complex_tradeoffs",
+          "elapsed_s": 4.69665982999868,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 4.6966660609978135,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        },
+        {
+          "case_id": "case:R1-relationship_risk",
+          "route": "script",
+          "reason": "terminal_offers",
+          "elapsed_s": 0.00013586300337919965,
+          "budget_s": 25,
+          "fallback": false,
+          "decision_wall_s": 0.00014117299724603072,
+          "model_attempts": 0,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        }
+      ],
+      "decision_wall_s": 4.6968072339950595,
+      "supplier_delay_s": 0.0,
+      "virtual_elapsed_s": 4.6999949919991195,
+      "wall_s": 4.711544940000749
+    },
+    {
+      "variant_id": "scripts",
+      "scenario": "relationship_risk",
+      "seed": 0,
+      "holdout": false,
+      "wave": 1,
+      "case_id": "case:R1-relationship_risk",
+      "deal": true,
+      "valid": true,
+      "finished_before_cap": true,
+      "score": 0.0,
+      "cost_eur": 44439.68,
+      "reference_cost_eur": 41601.91,
+      "reference_kind": "best enumerated feasible deal or outside option",
+      "regret_eur": 2837.77,
+      "end_reason": "accepted",
+      "error": null,
+      "invalid_moves": 0,
+      "thread_timeouts": 0,
+      "model_attempts": 1,
+      "fallbacks": 1,
+      "routes": {
+        "fast": 1
+      },
+      "decisions": [
+        {
+          "case_id": "case:R1-relationship_risk",
+          "route": "fast",
+          "reason": "RuntimeError",
+          "elapsed_s": 0.0003886559934471734,
+          "budget_s": 25,
+          "fallback": true,
+          "decision_wall_s": 0.00039627899968763813,
+          "model_attempts": 1,
+          "forced_close": false,
+          "elapsed_over_budget": false
+        }
+      ],
+      "decision_wall_s": 0.00039627899968763813,
+      "supplier_delay_s": 0.0,
+      "virtual_elapsed_s": 0.001974707003682852,
+      "wall_s": 0.013719763002882246
+    }
+  ],
+  "limitations": [
+    "Synthetic supplier profiles do not predict hosted negotiation scores.",
+    "Reference is a feasible candidate benchmark, not a proof of global optimality.",
+    "No arena HTTP rate limiting, venue network or shared hosted-service load is simulated.",
+    "Legacy agents without decide_timed cannot have blocking calls cancelled by this harness.",
+    "Model attempts count complete/fast/strong callables; other designs need their own telemetry.",
+    "Pilot exposed non-neutral scenario labels and a supplier quote-floor bug; scores are diagnostic only. Usage and latency measurements remain real."
+  ],
+  "started_utc": "2026-10-24T14:29:07.551434+00:00",
+  "models": {
+    "astra": "gpt-6-astra",
+    "luna": "gpt-6-luna",
+    "sol": "gpt-6.1-sol"
+  },
+  "effort": "low",
+  "service_tier": "default",
+  "max_output_tokens": 4096,
+  "preflight": {
+    "status": "ok",
+    "http_status": 200,
+    "models": {
+      "gpt-6-astra": "available",
+      "gpt-6-luna": "available",
+      "gpt-6.1-sol": "available"
+    }
+  },
+  "status": "completed",
+  "finished_utc": "2026-10-24T14:29:52.095287+00:00",
+  "budget": {
+    "cap_usd": 5.0,
+    "estimated_known_usage_usd": 0.198582125,
+    "reserved_in_flight_usd": 0.0,
+    "unreconciled_reservations_usd": 0.0,
+    "committed_usd": 0.198582125,
+    "remaining_usd": 4.801417875,
+    "budget_rejections": 0,
+    "halted": false,
+    "price_basis": "Conservative standard estimate: all input at 1.25x default 30-minute cache-write rate, output at standard rate; not a billing reconciliation",
+    "calls": [
+      {
+        "call_id": 0,
+        "model": "gpt-6.1-sol",
+        "status": "completed",
+        "input_bound": 4511,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 990,
+          "output_tokens": 119,
+          "reasoning_tokens": 0,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 4.233782,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.0522375,
+        "estimated_cost_usd": 0.003665
+      },
+      {
+        "call_id": 1,
+        "model": "gpt-6-astra",
+        "status": "completed",
+        "input_bound": 4511,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 990,
+          "output_tokens": 145,
+          "reasoning_tokens": 0,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 4.60351,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.2611875,
+        "estimated_cost_usd": 0.019625
+      },
+      {
+        "call_id": 2,
+        "model": "gpt-6-luna",
+        "status": "completed",
+        "input_bound": 4511,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 990,
+          "output_tokens": 301,
+          "reasoning_tokens": 144,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 5.547028,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.002611875,
+        "estimated_cost_usd": 0.00027425
+      },
+      {
+        "call_id": 3,
+        "model": "gpt-6.1-sol",
+        "status": "completed",
+        "input_bound": 4594,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 995,
+          "output_tokens": 159,
+          "reasoning_tokens": 0,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 5.079612,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.052445,
+        "estimated_cost_usd": 0.0040775
+      },
+      {
+        "call_id": 4,
+        "model": "gpt-6-luna",
+        "status": "completed",
+        "input_bound": 4594,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 995,
+          "output_tokens": 323,
+          "reasoning_tokens": 163,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 5.670697,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.00262225,
+        "estimated_cost_usd": 0.000285875
+      },
+      {
+        "call_id": 5,
+        "model": "gpt-6-astra",
+        "status": "completed",
+        "input_bound": 4594,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 995,
+          "output_tokens": 143,
+          "reasoning_tokens": 0,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 5.73138,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.262225,
+        "estimated_cost_usd": 0.0195875
+      },
+      {
+        "call_id": 6,
+        "model": "gpt-6.1-sol",
+        "status": "completed",
+        "input_bound": 5442,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 1254,
+          "output_tokens": 121,
+          "reasoning_tokens": 0,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 3.39812,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.054565,
+        "estimated_cost_usd": 0.004345
+      },
+      {
+        "call_id": 7,
+        "model": "gpt-6-astra",
+        "status": "completed",
+        "input_bound": 5516,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 1273,
+          "output_tokens": 15,
+          "reasoning_tokens": 0,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 1.859305,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.27375,
+        "estimated_cost_usd": 0.0166625
+      },
+      {
+        "call_id": 8,
+        "model": "gpt-6.1-sol",
+        "status": "completed",
+        "input_bound": 5737,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 1292,
+          "output_tokens": 167,
+          "reasoning_tokens": 29,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 4.575229,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.0553025,
+        "estimated_cost_usd": 0.0049
+      },
+      {
+        "call_id": 9,
+        "model": "gpt-6-astra",
+        "status": "completed",
+        "input_bound": 4594,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 995,
+          "output_tokens": 146,
+          "reasoning_tokens": 0,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 4.696289,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.262225,
+        "estimated_cost_usd": 0.0197375
+      },
+      {
+        "call_id": 10,
+        "model": "gpt-6-luna",
+        "status": "completed",
+        "input_bound": 5669,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 1285,
+          "output_tokens": 346,
+          "reasoning_tokens": 218,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 5.607659,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.002756625,
+        "estimated_cost_usd": 0.000333625
+      },
+      {
+        "call_id": 11,
+        "model": "gpt-6-astra",
+        "status": "completed",
+        "input_bound": 5657,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 1267,
+          "output_tokens": 163,
+          "reasoning_tokens": 17,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 5.918044,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.2755125,
+        "estimated_cost_usd": 0.0239875
+      },
+      {
+        "call_id": 12,
+        "model": "gpt-6.1-sol",
+        "status": "completed",
+        "input_bound": 6422,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 1533,
+          "output_tokens": 141,
+          "reasoning_tokens": 0,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 3.810337,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.057015,
+        "estimated_cost_usd": 0.0052425
+      },
+      {
+        "call_id": 13,
+        "model": "gpt-6.1-sol",
+        "status": "completed",
+        "input_bound": 6752,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 1545,
+          "output_tokens": 252,
+          "reasoning_tokens": 105,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 6.645434,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.05784,
+        "estimated_cost_usd": 0.0063825
+      },
+      {
+        "call_id": 14,
+        "model": "gpt-6-luna",
+        "status": "completed",
+        "input_bound": 6629,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 1546,
+          "output_tokens": 220,
+          "reasoning_tokens": 94,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 3.743117,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.002876625,
+        "estimated_cost_usd": 0.00030325
+      },
+      {
+        "call_id": 15,
+        "model": "gpt-6.1-sol",
+        "status": "completed",
+        "input_bound": 6889,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 1667,
+          "output_tokens": 141,
+          "reasoning_tokens": 0,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 3.425723,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.0581825,
+        "estimated_cost_usd": 0.0055775
+      },
+      {
+        "call_id": 16,
+        "model": "gpt-6-astra",
+        "status": "completed",
+        "input_bound": 6735,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 1526,
+          "output_tokens": 176,
+          "reasoning_tokens": 31,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 5.776345,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.2889875,
+        "estimated_cost_usd": 0.027875
+      },
+      {
+        "call_id": 17,
+        "model": "gpt-6.1-sol",
+        "status": "completed",
+        "input_bound": 6986,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 1699,
+          "output_tokens": 15,
+          "reasoning_tokens": 0,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 1.532026,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.058425,
+        "estimated_cost_usd": 0.0043975
+      },
+      {
+        "call_id": 18,
+        "model": "gpt-6-luna",
+        "status": "completed",
+        "input_bound": 7038,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 1648,
+          "output_tokens": 278,
+          "reasoning_tokens": 153,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 3.910871,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.00292775,
+        "estimated_cost_usd": 0.000345
+      },
+      {
+        "call_id": 19,
+        "model": "gpt-6.1-sol",
+        "status": "completed",
+        "input_bound": 7280,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 1661,
+          "output_tokens": 41,
+          "reasoning_tokens": 24,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 2.096185,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.05916,
+        "estimated_cost_usd": 0.0045625
+      },
+      {
+        "call_id": 20,
+        "model": "gpt-6-astra",
+        "status": "completed",
+        "input_bound": 7260,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 1639,
+          "output_tokens": 79,
+          "reasoning_tokens": 62,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 2.84934,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.29555,
+        "estimated_cost_usd": 0.0244375
+      },
+      {
+        "call_id": 21,
+        "model": "gpt-6-luna",
+        "status": "completed",
+        "input_bound": 6912,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 1617,
+          "output_tokens": 268,
+          "reasoning_tokens": 147,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 3.746877,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.002912,
+        "estimated_cost_usd": 0.000336125
+      },
+      {
+        "call_id": 22,
+        "model": "gpt-6-luna",
+        "status": "completed",
+        "input_bound": 6863,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 1610,
+          "output_tokens": 414,
+          "reasoning_tokens": 291,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 5.245473,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.002905875,
+        "estimated_cost_usd": 0.00040825
+      },
+      {
+        "call_id": 23,
+        "model": "gpt-6-luna",
+        "status": "completed",
+        "input_bound": 6819,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 1607,
+          "output_tokens": 449,
+          "reasoning_tokens": 325,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 5.439793,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.002900375,
+        "estimated_cost_usd": 0.000425375
+      },
+      {
+        "call_id": 24,
+        "model": "gpt-6-luna",
+        "status": "completed",
+        "input_bound": 6793,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 1606,
+          "output_tokens": 467,
+          "reasoning_tokens": 343,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 5.896039,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.002897125,
+        "estimated_cost_usd": 0.00043425
+      },
+      {
+        "call_id": 25,
+        "model": "gpt-6-luna",
+        "status": "completed",
+        "input_bound": 6807,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 1609,
+          "output_tokens": 345,
+          "reasoning_tokens": 328,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 4.899324,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.002898875,
+        "estimated_cost_usd": 0.000373625
+      }
+    ],
+    "original_pre_cache_write_estimate_usd": 0.1701888,
+    "repricing_note": "Repriced stored token usage and reservation bounds to the conservative default 30-minute cache-write input rate; no additional requests were made."
+  },
+  "phase": "diagnostic pilot before simulator fairness corrections; excluded from final model comparison",
+  "excluded_from_comparison": true,
+  "exclusion_reason": "Diagnostic run preceded neutral public labels and the retained-package quote-floor correction."
+}
