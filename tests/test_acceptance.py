@@ -130,3 +130,25 @@ def test_a_quote_skipped_for_lack_of_time_is_read_once_before_deciding():
     reread_skipped_documents(Table(), threads)
     reread_skipped_documents(Table(), threads)
     assert Table.calls == 1 and message["attachments"][0]["text"] == "not a pdf"
+
+
+def test_a_failed_quote_read_of_a_final_offer_is_retried_once():
+    from tacto_negotiator.play import reread_skipped_documents
+
+    class Table:
+        calls = 0
+
+        def attachment(self, attachment_id, **options):
+            Table.calls += 1
+            return b"quote text"
+
+    message = {"from": "sales@a", "status": "final_offer",
+               "attachments": [{"attachment_id": "att:1", "name": "notes.txt", "read_failed": True}]}
+    reread_skipped_documents(Table(), {"sup:A": [message]})
+    reread_skipped_documents(Table(), {"sup:A": [message]})
+    assert Table.calls == 1 and message["attachments"][0]["text"] == "quote text"
+    message["status"] = "open"  # an open offer's genuine read failure is not retried
+    other = {"from": "sales@b", "status": "open", "attachments": [{"attachment_id": "att:2", "name": "x.txt",
+                                                                     "read_failed": True}]}
+    reread_skipped_documents(Table(), {"sup:B": [other]})
+    assert Table.calls == 1

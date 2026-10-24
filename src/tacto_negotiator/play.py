@@ -211,9 +211,14 @@ def reread_skipped_documents(table, threads, seconds=3.0):
     actually failed or timed out are not repeated."""
     for events in threads.values():
         message = latest(events)
-        failed = [att for att in message.get("attachments") or [] if att.pop("skipped", False)]
+        # A failed read of a final offer or agreement is retried once too: hosted P08 walked away from
+        # an acceptable final offer (0 instead of about 0.54) because its quote could not be read.
+        terminal = message.get("status") in {"final_offer", "agreed"}
+        failed = [att for att in message.get("attachments") or [] if att.pop("skipped", False)
+                  or (terminal and att.get("read_failed") and not att.get("retried"))]
         for att in failed:
-            att.pop("read_failed")
+            att.pop("read_failed", None)
+            att["retried"] = True
         if failed:
             fetch_documents(table, message, deadline=time.monotonic() + seconds)
 
