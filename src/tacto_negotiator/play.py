@@ -293,6 +293,16 @@ def acceptable_offer(case, events, sid=None):
 ANCHOR_BY_GOAL = {"leverage": 0.25, "routine": 0.225, "quality_first": 0.19, "secure_supply": 0.15,
                   "stabilise": 0.10}
 GAP_STEP, HOLD_STEP = 0.20, 0.10
+# Routine suppliers answer each of our moves with about 0.4 of it (hosted P07: 0.30-0.47 over seven
+# sessions) and issue their final offer after a fixed round or a cumulative gap of about 35 %, so the
+# final price is their round-1 counter minus 0.4 x our movement before it. 20 % steps left most of the
+# gap open when the final came (P07 v7-v10: our 4.66 against a 5.42 final, accepted at 5.49).
+GAP_STEP_BY_GOAL = {"routine": 0.40}
+
+
+def gap_step(case):
+    """Share of the gap to the supplier's standing offer that our next sheet moves."""
+    return GAP_STEP_BY_GOAL.get(case["buyer"].get("category_goal"), GAP_STEP)
 
 
 def opening_price_cap(case, events, sid=None):
@@ -333,7 +343,7 @@ def ask_limit(case, events, sid=None):
         ours = min(total_cost(case, s.get("terms", s), std) for s in sent[-1]["term_sheets"])
         if current <= ours:
             return current
-        step = GAP_STEP
+        step = gap_step(case)
         if len(sent) >= 2:  # the supplier's last concession, measured against the gap before it
             before = min(total_cost(case, s.get("terms", s), std) for s in sent[-2]["term_sheets"])
             index = events.index(sent[-1])

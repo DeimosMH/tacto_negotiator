@@ -23,11 +23,11 @@ from ..cost import (
 from ..play import (
     ANCHOR_BY_GOAL,
     CLOSE_BEFORE_CAP_S,
-    GAP_STEP,
     HOLD_STEP,
     acceptable_offer,
     ask_limit,
     closing_move,
+    gap_step,
     known_offer,
     latest,
     live_threads,
@@ -243,7 +243,7 @@ class RoutedAgent:
 
     @staticmethod
     def _off_repeat(case, events, sheet, terms, std):
-        """A sheet the supplier just countered on the same package goes up by `GAP_STEP` of that
+        """A sheet the supplier just countered on the same package goes up by `gap_step` of that
         package's gap instead of repeating: an unchanged sheet draws no concession, and hosted P02 v4
         walked away after the same health-floor sheet three times. Packages are compared on non-price
         terms; the health floor of a package (e.g. one with an index clause) otherwise repeats. `terms` and
@@ -262,7 +262,7 @@ class RoutedAgent:
                 if package(s.get("terms", s)) == package(sheet)]
         if not ours or sheet["unit_price"] > max(ours) + 0.005 or terms["unit_price"] <= max(ours):
             return sheet
-        return {**sheet, "unit_price": round(max(ours) + GAP_STEP * (terms["unit_price"] - max(ours)), 2)}
+        return {**sheet, "unit_price": round(max(ours) + gap_step(case) * (terms["unit_price"] - max(ours)), 2)}
 
     def _clause_pays(self, case, clause):
         """The clause's series rose over the last twelve months by at least `CLAUSE_RISE_RATIO` times

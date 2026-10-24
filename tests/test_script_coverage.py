@@ -9,7 +9,7 @@ import pytest
 from tacto_negotiator.agents.routed import MAX_SCRIPT_CANDIDATES, RoutedAgent
 from tacto_negotiator.cost import must_haves_ok, total_cost
 from tacto_negotiator.docs import quote_terms
-from tacto_negotiator.play import ask_limit
+from tacto_negotiator.play import GAP_STEP, ask_limit, gap_step
 
 
 @pytest.fixture
@@ -187,8 +187,12 @@ def test_followup_concedes_in_full_cost_and_closes_agreement(negotiation):
     proposed = followup["message"]["term_sheets"][0]["terms"]
     previous_cost = min(total_cost(case, sheet["terms"]) for sheet in opening["message"]["term_sheets"])
     current_cost = total_cost(case, reply)
-    # every round moves, but only 30 % of the gap: never straight to the supplier's number
-    assert previous_cost <= total_cost(case, proposed) <= previous_cost + 0.3 * (current_cost - previous_cost) + 0.01
+    # every round moves, by a share of the gap: never straight to the supplier's number. Routine
+    # suppliers answer a share of our move before a final offer, so routine steps are larger.
+    step = gap_step(case)
+    assert step == 0.4 and gap_step({**case, "buyer": {**case["buyer"], "category_goal": "leverage"}}) == GAP_STEP
+    gap = current_cost - previous_cost
+    assert previous_cost + 0.5 * step * gap <= total_cost(case, proposed) <= previous_cost + step * gap + 0.01
     record_round(threads, followup, proposed, number=2, status="agreed")
     assert agent.decide(case, threads)["message"]["action"]["type"] == "accept"
     assert calls == []
