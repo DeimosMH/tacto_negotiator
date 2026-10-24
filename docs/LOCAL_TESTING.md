@@ -34,6 +34,8 @@ Verified after the review fixes: **244 passed, 0 skipped**. The suite covers con
 
 After adding the local dashboard: **252 passed, 0 skipped**. The eight additional tests cover public trace snapshots and the dashboard's report API, field projection, static assets, legacy data, malformed input, file boundaries, report limits and CLI help.
 
+After [FAQ alignment](FAQ_ADVANTAGE.md): **264 passed, 0 skipped**. Twelve new cases cover exact-cost acceptance ties, conservative relationship goals, explicit whole-horizon model context, a simulated tie preserving score while adding a deal, and complete/partial/missing final result summaries. The published short-contract example also has an added regression. Two paired 300-match holdout runs retained the same economic outcomes; [their compact validation record](reviews/faq_validation.json) includes configuration and source hashes. The new prompt was not evaluated through a paid model.
+
 ## Dashboard checks
 
 From the repository root, with Node 22+ and Chrome/Chromium installed:

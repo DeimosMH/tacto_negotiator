@@ -2,9 +2,13 @@
 
 **All nine findings are addressed.** Start with [FIXES.md](FIXES.md) for the
 implementation changes, regression tests, commit references and validation results.
-The full application suite passes 244 tests. Two parallel offline cohorts completed
+At that review's resolution, the application suite passed 244 tests. Two parallel offline cohorts completed
 900 matches; the guarded policies had 600/600 valid outcomes. The source atlas and
 current guides explain the repaired implementation.
+
+Subsequent [FAQ alignment](../FAQ_ADVANTAGE.md) brings the suite to 264 tests and adds
+[a separate 600-match before/after validation record](faq_validation.json). Those
+results preserve the original review evidence and document the remaining RFQ timeouts.
 
 | Historical review | Findings | Original reproduction |
 | --- | --- | --- |

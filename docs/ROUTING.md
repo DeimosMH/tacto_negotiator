@@ -98,6 +98,8 @@ An unreadable latest quote is missing evidence too. A failed routed document rea
 
 The same action checks apply to scripts, either model and fallback. They protect the structured message, term types and values, supplier/standing-offer selection, resolved quote defaults, must-haves and alternative comparison. No acceptance should silently turn an omitted supplier term into the buyer's preferred value. A walk-away ends the entire case, including its other supplier threads.
 
+An exact evaluated-cost tie with the alternative now favors acceptance: the final tie-break prefers more deals. Equality does not qualify when the goal has an unestimated supplier-health term. A more expensive package is still rejected. Shared model context now shows nonzero cost components, including uncovered need and fallback risk, and explains whole-horizon scoring and round economy. See [FAQ alignment and local tests](FAQ_ADVANTAGE.md).
+
 Acceptance and closing now use acceptable_offer and closing_move in play.py, also used by the legacy model guard and generic deadline closer. An unrecognized index-clause string is rejected; only explicit none means no clause. The simulator formats structured clauses in the parser's supported representation. See the [review fixes and regressions](reviews/FIXES.md).
 
 This does not complete the larger evidence buyer. Claim IDs and numeric terms are checkable, but arbitrary natural-language claims still require better grounding. Full supplier-health estimation, case dossiers and concurrent service of RFQ threads remain further work.

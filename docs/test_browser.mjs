@@ -154,6 +154,10 @@ try {
   assert.ok(await evaluate("document.querySelector('#guide').textContent.includes('scenario')"));
   assert.ok(await evaluate("document.querySelector('#guide a[href=\"results/offline.json\"]') !== null"));
   assert.ok(await evaluate("window.ATLAS.reports['docs/results/offline.json'].match_count > 0"));
+  await evaluate("document.querySelector('[data-tab=\"FAQ_ADVANTAGE.md\"]').click()");
+  await until("document.querySelector('#guide h1')?.textContent === 'Turn the official FAQ into a better buyer'");
+  assert.ok(await evaluate("document.querySelector('#guide').textContent.includes('264 tests')"));
+  assert.ok(await evaluate("document.querySelector('#guide a[href=\"https://arena.tacto.ai/faq\"]') !== null"));
   await evaluate("document.querySelector('[data-tab=\"WEB_UI.md\"]').click()");
   await until("document.querySelector('#guide h1')?.textContent === 'Explore negotiation results locally'");
   assert.ok(await evaluate("document.querySelector('#guide').textContent.includes('.venv/bin/tacto-ui')"));

@@ -77,6 +77,9 @@ See [project architecture](docs/IMPLEMENTATION.md), [routing](docs/ROUTING.md) a
 the [interactive source map](docs/index.html). Every source file has its role,
 classes, internal state and dependency links in the atlas.
 
+The [FAQ advantage guide](docs/FAQ_ADVANTAGE.md) explains exact-cost tie handling,
+whole-horizon cost context, final preparation and the remaining RFQ scheduling priority.
+
 ## Configure a hosted buyer
 
 Use `.env.example` as a configuration reference. Put actual values in an ignored

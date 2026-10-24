@@ -2,6 +2,8 @@
 
 Tacto Negotiator already has a routed deadline controller and shared deterministic action checks. Preserve those controls and prioritize the remaining RFQ scheduling and evidence gaps below. A stronger model does not compensate for missing a thread deadline or leaving a case open at the wave cap.
 
+The [FAQ advantage guide](FAQ_ADVANTAGE.md) records official clarification, implemented tie handling and cost-context changes, local evidence and final-machine preparation. Stop practice activity before the final so old sessions do not consume its capacity. The CLI now leaves incomplete final totals unknown instead of silently scoring missing cases as zero.
+
 The recommended initial model is **GPT-6.1 Sol with low reasoning effort**, subject to a representative latency and validity evaluation. The implemented [routed buyer](ROUTING.md) combines tested scripts, Sol and optional Astra with deadline-aware execution and deterministic fallback. [Model selection](MODEL_SELECTION.md) compares the requested candidates and gives the qualification procedure. This recommendation prioritizes hosted API reliability and latency, as requested.
 
 [Local competition](COMPETITION.md) contains the expanded deterministic policy, parallel seeded scenarios and measured OpenAI results. Those paired per-case trials complement the shared-wave runner tests below; their synthetic scores do not predict the final leaderboard.

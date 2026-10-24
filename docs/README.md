@@ -12,6 +12,8 @@ New to the project? Open the **Start here** tab or read [the beginner tutorial](
 
 Preparing for Sunday 13:30? Open **Sunday final** for [implementation priorities, five-wave simulations and the rehearsal guide](FINAL_READINESS.md), then read [the hosted model recommendation and qualification procedure](MODEL_SELECTION.md).
 
+Open **FAQ advantages** for [official clarifications translated into policy changes, regression tests and event preparation](FAQ_ADVANTAGE.md). It distinguishes measured local behavior from remaining hosted qualification.
+
 The implemented **Routing guide** explains [how a decision selects a script, Sol or optional Astra](ROUTING.md), including the deadline adapter, configuration, local examples and how to change a rule.
 
 The [review resolution record](reviews/FIXES.md) maps all nine findings to fixes and regression tests, with results from 900 new offline matches. The original reviews remain available as historical evidence.

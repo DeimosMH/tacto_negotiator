@@ -1,0 +1,132 @@
+{
+  "checked_utc": "2026-10-24T15:46:06.936937+00:00",
+  "sources": [
+    "https://arena.tacto.ai/faq",
+    "https://github.com/tacto-playground/negotiation-arena-kit/blob/main/brief/brief.md",
+    "https://github.com/tacto-playground/negotiation-arena-kit/blob/main/brief/api.md"
+  ],
+  "policy_commit": "68439219d03298a3cfc36f2c0878a435dccce252",
+  "application_tests": {
+    "passed": 264,
+    "skipped": 0
+  },
+  "provider_calls": 0,
+  "hosted_arena_calls": 0,
+  "credential_files_read": false,
+  "comparison": {
+    "config": {
+      "scoring_version": 2,
+      "seeds": [
+        11,
+        12
+      ],
+      "waves": 5,
+      "wave_seconds": 480,
+      "workers": 10,
+      "holdout": true,
+      "decision_seconds": 25,
+      "scenarios": [
+        "simple_price",
+        "payment_freight",
+        "leadtime_repair",
+        "competing_rfq",
+        "cheaper_alternative",
+        "price_plateau",
+        "incomplete_defaults",
+        "contradicted_claims",
+        "relationship_risk",
+        "slow_reply"
+      ]
+    },
+    "matches_per_cohort": 300,
+    "fields_compared": [
+      "variant_id",
+      "scenario",
+      "seed",
+      "wave",
+      "deal",
+      "valid",
+      "score",
+      "cost_eur",
+      "regret_eur",
+      "terms",
+      "error",
+      "invalid_moves",
+      "model_attempts",
+      "fallbacks",
+      "thread_timeouts",
+      "routes"
+    ],
+    "changed_outcomes": 0,
+    "before_source_sha256": {
+      "compete.py": "3a33bd1e6b70c1a3c47963d4fe0de5e5f0c2a94c6f0875820332bd4a2eab7a7f",
+      "competition.py": "d08a2f4b4bf6ef711fa91dd905e732790f5a029fe34967b191f1ea73e860e1f0",
+      "benchmark.py": "fffce4fcb1ec00aae6a0f84e0a530bc3fa5a08a6fbf32e5258233e1298cfd64d",
+      "cost.py": "445d46ebf2b3254c25bab131477a9a96b26666bd1e4b0d3a4e1e866cc3fa32f2",
+      "sim.py": "81692f99db190aeeabaf4d8e4ae58ca655945692ffaeb46945560c47c3861c2b",
+      "agents/routed.py": "816d90144d9a9004b62a44da0fd3db77e10f9ae62045dff0979747e1d2bfed48",
+      "agents/completion.py": "c98e4303d4ea18dbe4d2e35de847782081cbe21eda2adf309f52149f14185e5b"
+    },
+    "after_source_sha256": {
+      "compete.py": "14599f06e5dc63c41912d497656b4ffeeb292e33c3ce73e3031db7540d5fa84b",
+      "competition.py": "d08a2f4b4bf6ef711fa91dd905e732790f5a029fe34967b191f1ea73e860e1f0",
+      "benchmark.py": "fffce4fcb1ec00aae6a0f84e0a530bc3fa5a08a6fbf32e5258233e1298cfd64d",
+      "cost.py": "445d46ebf2b3254c25bab131477a9a96b26666bd1e4b0d3a4e1e866cc3fa32f2",
+      "play.py": "6e8e50ad45909b0381841679138dc661ba65c89d20b12e40b7475ee2141e134b",
+      "sim.py": "81692f99db190aeeabaf4d8e4ae58ca655945692ffaeb46945560c47c3861c2b",
+      "agents/routed.py": "816d90144d9a9004b62a44da0fd3db77e10f9ae62045dff0979747e1d2bfed48",
+      "agents/llm.py": "36abaf2912752e6bff185239d0ed4f9da4787d1e2b6f9a7e6a57feeec0c37d5b",
+      "agents/completion.py": "c98e4303d4ea18dbe4d2e35de847782081cbe21eda2adf309f52149f14185e5b"
+    },
+    "strategies": {
+      "naive": {
+        "matches": 100,
+        "valid": 95,
+        "deals": 100,
+        "errors": 0,
+        "total_points": 296.5,
+        "mean_score": 0.5932429011245361,
+        "model_attempts": 0,
+        "fallbacks": 0,
+        "thread_timeouts": 60
+      },
+      "close": {
+        "matches": 100,
+        "valid": 100,
+        "deals": 80,
+        "errors": 0,
+        "total_points": 50.0,
+        "mean_score": 0.1,
+        "model_attempts": 0,
+        "fallbacks": 0,
+        "thread_timeouts": 0
+      },
+      "scripts": {
+        "matches": 100,
+        "valid": 100,
+        "deals": 90,
+        "errors": 0,
+        "total_points": 289.5,
+        "mean_score": 0.5788456309913402,
+        "model_attempts": 20,
+        "fallbacks": 20,
+        "thread_timeouts": 120
+      }
+    }
+  },
+  "targeted_checks": {
+    "equal_cost_closure": "Two local negotiations end at equal cost and score 1.0. The previous strict comparison walks; exact-tie acceptance gains one valid deal.",
+    "uncertain_supplier_health": "Equal nominal cost remains insufficient in stabilise/secure_supply; more expensive packages remain rejected for all goals.",
+    "short_contract": "Published leverage example: full horizon 332800 EUR; short contract 355920 EUR including 5520 EUR fallback risk; short-contract score 0.",
+    "model_context": "Nonzero cost components expose purchase cost, uncovered demand and fallback risk separately.",
+    "final_summary": "Unequal wave case counts use separate means. Partial or absent results remain unknown rather than zero."
+  },
+  "limitations": [
+    "Synthetic suppliers do not predict hosted scores. The generic cohort shows no average-score improvement.",
+    "No real-model test of the revised prompt was performed.",
+    "The scripts holdout retains 120 RFQ thread timeouts; supplier servicing is still sequential.",
+    "Supplier-health estimation and pre-session supplier dossiers remain unfinished.",
+    "Each match has its own virtual clock; five repeated waves are not a shared-host capacity qualification."
+  ],
+  "cli_sha256": "0a21174122dde5ee34139840502a9871d5fcea7672dde95574f7471261fbc93c"
+}

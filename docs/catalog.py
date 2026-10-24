@@ -3,7 +3,7 @@
 CODE = "src/tacto_negotiator/"
 DATA = "data/"
 GUIDES = ("README.md", "TUTORIAL.md", "IMPLEMENTATION.md", "DATA_GUIDE.md", "LOCAL_TESTING.md",
-          "FINAL_READINESS.md", "MODEL_SELECTION.md", "ROUTING.md", "COMPETITION.md", "WEB_UI.md")
+          "FINAL_READINESS.md", "MODEL_SELECTION.md", "ROUTING.md", "COMPETITION.md", "WEB_UI.md", "FAQ_ADVANTAGE.md")
 
 GROUPS = {
     "project": {"label": "Project setup", "color": "#e4b86b"},
@@ -220,7 +220,7 @@ SYMBOLS = {
     "LLMAgent.__init__": "Stores an injected completion function, optional data package, naive fallback and one prepared case cache.",
     "LLMAgent.decide": "Prepares a new case, calls and guards the model; failure or rejection uses naive offers and closing_move for fallback acceptance/walk-away.",
     "LLMAgent.fact": "Prefers facts embedded in the case, then looks up the public data package.",
-    "LLMAgent.render": "Builds the model prompt from prepared evidence, current costs, standard terms and the last six events per live thread.",
+    "LLMAgent.render": "Builds model context from prepared evidence, total cost and nonzero components, standard terms and the last six events per live thread. Uncovered demand and fallback risk stay visible.",
     "LLMAgent.guard": "Checks the selected thread and action, guards acceptance, completes offers and drops unknown body IDs. It does not verify claim arithmetic.",
     "RoutedAgent.__init__": "Stores fast/optional strong completions, shared context preparation, decision budgets, clock and routing telemetry.",
     "RoutedAgent.decide": "Uses the default decision ceiling when called without runner timing information.",
@@ -229,7 +229,7 @@ SYMBOLS = {
     "known_offer": "Resolves supplier standard, fixed and stated terms; identifies missing/invalid required fields and failed latest quote evidence before accepting.",
     "RoutedAgent._script": "Handles safe closure and clarification, then enumerates bounded full-term packages for routine/leverage bargaining; uncertain claims and relationship goals defer to a model.",
     "closing_move": "Uses the shared acceptance check to choose the lowest eligible standing cost, or walks away when no known offer qualifies.",
-    "acceptable_offer": "Checks quote evidence, legal terms, finite cost, must-haves and the declared alternative for every guarded acceptance path.",
+    "acceptable_offer": "Checks evidence, legal terms, finite cost, must-haves and the alternative. An exact evaluated cost tie favors a deal; unestimated relationship cost keeps ties conservative.",
     "RoutedAgent._record": "Stores and logs case ID, attempted route, reason, elapsed time, initial budget and fallback status without prompts or credentials.",
     "RoutedAgent.closing_move": "Calls the common closer and records deadline/fallback telemetry without duplicating acceptance rules.",
     "thread_events": "Restores current offer terms by matching their offer ID; includes historical timeout rounds and never assigns stale terms to a newer ID.",

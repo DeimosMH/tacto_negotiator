@@ -109,6 +109,8 @@ complete_offer fills and snaps values while preserving supplied legal supplier-s
 
 Remaining economic limits are explicit: supplier-health estimation is not implemented in the routed acceptance comparison, and checking a cited ID does not verify arbitrary prose arithmetic. Passing no supplier estimate to total_cost makes its relationship-cost component zero; it does not establish that the real relationship cost is zero.
 
+[FAQ alignment](FAQ_ADVANTAGE.md) adds exact-cost tie acceptance for non-relationship goals, explicit cost components in model context and honest unknown final totals. Equality in relationship-sensitive goals remains conservative because the missing supplier estimate can change that comparison.
+
 ## 6. Timing, parallelism and recovery
 
 The arena gives each supplier thread 60 seconds of buyer response time. Supplier processing is exempt for that supplier's thread but still consumes the wave, and other suppliers keep waiting. Document reads and model preparation after opening consume the buyer window.
