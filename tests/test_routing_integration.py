@@ -379,7 +379,7 @@ def test_provider_timeout_cancels_io_and_closes_once(arena, monkeypatch):
 
     complete = CompletionClient("gpt-6.1-sol", "local-only", base_url="http://model.test/v1",
                                 transport=httpx.MockTransport(delayed))
-    agent = RoutedAgent(complete, max_decision_seconds=0.1)
+    agent = RoutedAgent(complete, max_decision_seconds=0.1, min_model_seconds=0)
     table = RemoteTable(arena.client())
     started = time.monotonic()
     result = play(table, "case:R1-S02", agent, deadline=time.time() + 480)

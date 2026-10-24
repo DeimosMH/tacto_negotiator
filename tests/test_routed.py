@@ -398,3 +398,12 @@ def test_an_alternative_is_mirrored_once_and_never_on_the_last_move(scenario):
     threads[sid].pop(-2)
     case["round_limit"] = 2
     assert RoutedAgent(None).decide(case, threads)["message"]["action"]["term_sheet_id"] == "offer:2"
+
+
+def test_a_budget_too_short_for_the_model_counters_by_script(scenario):
+    case, threads, sid = scenario
+    after_opening(threads, sid)  # a semantic round that would normally go to the model
+    calls, clock = [], Clock()
+    agent = RoutedAgent(completion(sid, calls), clock=clock)
+    move = agent.decide_timed(case, threads, deadline=clock() + 10)  # hosted P05 v11: 10.5 s, then a timeout
+    assert calls == [] and agent.last_decision["fallback"] and "action" not in move["message"]

@@ -160,7 +160,8 @@ def test_real_deadline_route_attempts_and_fallback_are_recorded():
         observed.append(deadline - time.monotonic())
         raise TimeoutError("synthetic provider timeout")
 
-    result = run_competition({"routed": lambda: RoutedAgent(complete)}, scenarios=["contradicted_claims"],
+    result = run_competition({"routed": lambda: RoutedAgent(complete, min_model_seconds=0)},
+                             scenarios=["contradicted_claims"],
                              seeds=(0,), waves=1, decision_seconds=0.1)
     row = result["matches"][0]
     assert observed and all(0 < value <= 0.1 for value in observed)

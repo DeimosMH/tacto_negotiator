@@ -41,6 +41,7 @@ from .llm import ID_RE, SYSTEM, LLMAgent, parse
 
 log = logging.getLogger("arena")
 MAX_SCRIPT_CANDIDATES = 256
+MIN_MODEL_SECONDS = 15  # below this, a model call would time out: use the scripted fallback directly
 # shortcut: conservative phrase matching; use structured side-condition extraction for broader prose coverage.
 CONDITIONAL_WORDING = ("subject to", "provided that", "only if", "pending approval", "conditional on", "unless",
                        "please clarify", "please explain", "capacity constraint", "of our cost", "whole range",
@@ -60,12 +61,14 @@ class RoutedAgent:
     # Opus at high effort timed out at 25 s on first messages; play() still caps every decision at
     # the supplier's 60 s message limit minus a send margin.
     def __init__(self, fast, strong=None, package=None, *, max_decision_seconds=40,
+                 min_model_seconds=MIN_MODEL_SECONDS,
                  strong_min_seconds=20, clock=time.monotonic):
         if not (math.isfinite(max_decision_seconds) and max_decision_seconds > 0
                 and math.isfinite(strong_min_seconds) and strong_min_seconds > 0):
             raise ValueError("decision and strong-model budgets must be finite and positive")
         self.fast, self.strong, self.clock = fast, strong, clock
         self.max_decision_seconds, self.strong_min_seconds = max_decision_seconds, strong_min_seconds
+        self.min_model_seconds = min_model_seconds
         self.context = LLMAgent(None, package)
         self.last_decision = {}
         self.unavailable = set()  # suppliers whose reply clock runs out before a message could arrive
@@ -845,6 +848,10 @@ class RoutedAgent:
             remaining = deadline - self.clock()
             if remaining <= 0:
                 raise TimeoutError("decision budget exhausted during preparation")
+            if remaining < self.min_model_seconds:
+                # Opus at high effort needs 13-20 s; hosted P05 v11 started it with 10.5 s, timed out and
+                # accepted an open 33.00 above the bidder's 31.50 opening (0.301). Counter by script instead.
+                raise TimeoutError("too little time for a model call")
             if complex_ and self.strong is not None and remaining >= self.strong_min_seconds:
                 route, reason = "strong", "complex_tradeoffs"
             elif complex_:
