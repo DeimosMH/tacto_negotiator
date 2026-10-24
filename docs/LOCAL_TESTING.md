@@ -30,7 +30,7 @@ env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 \
 
 The cleared environment removes ARENA_TEST_URL and ARENA_TEST_KEY, so the hosted test variant skips. HTTP integration tests start uvicorn on 127.0.0.1 with a simulator-issued key that works only in that simulator. Unit tests inject model completions and mock HTTP. No real keys are read. The test fixture needs local socket permissions; a restricted sandbox can reject it even though it never contacts the internet.
 
-Verified suite in this snapshot: **146 passed, 1 hosted variant skipped**. This includes the original 59 local checks and 87 added routing, completion, client-read and integration cases. The suite checks the implemented contract and policy behavior, not real model quality or the full proposed evidence buyer.
+Verified suite in this snapshot: **216 passed, 1 hosted variant skipped**. This includes the original contract checks plus routing, provider cancellation, script coverage, budget accounting, competition and CLI cases. The suite checks the implemented contract and policy behavior; real model measurements are a separate opt-in experiment.
 
 The added test_final.py uses the actual simulator HTTP routes through FastAPI TestClient and httpx.MockTransport: no network connection is made. It drives five 480-second waves with virtual time and 150 sessions across three teams. Other tests inject model failures, slow decisions, slow suppliers, retry faults, restart/resume and an active host extension. A separate concurrent burst checks the shared client's pacing. Two diagnostic scenarios preserve failure outcomes for unbounded legacy/injected decision calls and neglected RFQ threads; passing them does not mean the agent is final-ready. See [the full scenario table and executable rehearsal](FINAL_READINESS.md).
 
@@ -40,11 +40,19 @@ The added test_final.py uses the actual simulator HTTP routes through FastAPI Te
 
 For a focused command and a small example that prints the selected routes, see [the routing guide](ROUTING.md). The tests prove behavior under their injected conditions. They do not establish actual Sol/Astra speed or success under arbitrary uncooperative transports.
 
-## What the simulator really proves
+## Parallel strategy competitions
+
+[Local competition](COMPETITION.md) documents the new ten-scenario harness, offline commands, measured OpenAI comparison and its sanitized reports. The default command uses no credentials. Paid runs require both --live and an explicitly selected --key-file; only LLM_API_KEY is extracted, and all suppliers remain local. This opt-in benchmark is separate from the credential-free unit suite above.
+
+The additional tests cover bounded full-cost package enumeration, semantic near misses, private supplier data isolation, feasible references, quote-floor consistency, parallel worker overlap, model deadlines, budget reservations and the CLI opt-in boundary. These tests inject HTTP transports and never make real provider calls.
+
+## What the base simulator really proves
 
 Its supplier starts approximately 10% above the current/fallback price (additional bidders get an offset), reduces price by a fixed 2% of its opening when sent offers, and stops at 90% of that opening. It may agree when a proposed price reaches its next threshold, emits a final offer from round five, and may walk if pushed again. Questions without term sheets keep the standing quote. Citation checks mostly test whether IDs exist, not whether the numeric claim is true or relevant.
 
 Its in-memory teams/sessions disappear when the process stops. A controllable clock tests timeouts and configurable rehearsal waves: two by default, or --rehearsal-waves 5 --rehearsal-cap 480 for the final. These mechanics are useful for protocol correctness and recovery, not supplier psychology or realistic business constraints.
+
+The competition subclass replaces this fixed concession script with seeded reservation prices, term premiums, different concession rates and delays. Its evaluator includes feasible outside options and private relationship costs. That broadens policy checks; it still does not reproduce the hosted supplier model.
 
 Inspection also finds differences from the hosted specification: create_app has no /v1/data or ZIP-download routes; its practice leaderboard ignores the requested final set; its best-score benchmark does not implement the full hidden supplier economics/alternative calculation; and request-field validation is not complete parity with every documented limit. The source calls it an exact contract simulator, but these boundaries are visible in code. Do not extend offline assertions into claims about hosted behavior.
 

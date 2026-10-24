@@ -1,6 +1,6 @@
 # Choose scripts, Sol or Astra for each decision
 
-The routed buyer chooses how to make the next decision from the information and time available. It uses a tested script for a narrow, known situation; a fast model for ordinary interpretation; and an optional stronger model for consequential complexity when enough time remains. The choice is made again after each supplier reply.
+The routed buyer chooses how to make the next decision from the information and time available. It uses tested scripts for supported quantitative decisions; a fast model for ordinary interpretation; and an optional stronger model for consequential complexity when enough time remains. The choice is made again after each supplier reply.
 
 Run it through --agent routed. The existing naive and llm agents remain available. This guide explains the new implementation; [the beginner tutorial](TUTORIAL.md) explains the surrounding negotiation loop.
 
@@ -8,7 +8,7 @@ Run it through --agent routed. The existing naive and llm agents remain availabl
 
 | Block | Files | Responsibility and boundary |
 | --- | --- | --- |
-| Routing and validation | [routed.py](../starter_kit/starter-kit/arena_kit/agents/routed.py), [policy tests](../starter_kit/starter-kit/tests/test_routed.py) | Select script/fast/strong, prepare the same context for either model, validate the proposed action and choose a deterministic fallback. It does not send arena requests. |
+| Routing and validation | [routed.py](../starter_kit/starter-kit/arena_kit/agents/routed.py), [policy tests](../starter_kit/starter-kit/tests/test_routed.py), [script coverage tests](../starter_kit/starter-kit/tests/test_script_coverage.py) | Select script/fast/strong, enumerate bounded complete packages, prepare the same context for either model, validate every action and choose a deterministic fallback. It does not send arena requests. |
 | Deadline-aware model execution | [completion.py](../starter_kit/starter-kit/arena_kit/agents/completion.py), [adapter tests](../starter_kit/starter-kit/tests/test_completion.py) | Apply one absolute deadline across concurrency queueing and HTTP response reading. Send effort and output limits to OpenAI Responses; cancel expired work, with no automatic retries. |
 | Runner and configuration | [play.py](../starter_kit/starter-kit/arena_kit/play.py), [cli.py](../starter_kit/starter-kit/arena_kit/cli.py), [integration tests](../starter_kit/starter-kit/tests/test_routing_integration.py) | Pass remaining thread/wave time to the router, use its closing guard, and construct shared completion clients with a separate agent instance for each case. |
 
@@ -23,7 +23,7 @@ Case and current supplier replies
   |
   +-- Tested rule with enough data? ----> script
   |     final/agreed offers, missing-term question,
-  |     or a narrow routine price/payment counter
+  |     complete package search, concessions or plateau closure
   |
   +-- Material complexity + configured strong model
   |   + enough decision time? ----------> strong model (optional Astra)
@@ -39,7 +39,7 @@ Model error, timeout or rejected output ---> deterministic fallback
 
 There is at most one completion request for a decision. The router does not ask Sol to classify a case and then ask Astra to solve it. A model failure goes to local fallback rather than starting another provider request with the remaining seconds.
 
-The code distinguishes a deterministic calculation from a deterministic negotiation policy. Knowing which offer is cheapest does not prove that accepting it immediately is optimal. The simple script has narrow conditions; ordinary semantic decisions continue to the model.
+The code distinguishes a deterministic calculation from a deterministic negotiation policy. Knowing which offer is cheapest does not prove that accepting it immediately is optimal. The scripts operate on public case terms and observed negotiations; they do not inspect the simulator's private floors or predict hidden supplier preferences. Compare their actual outcomes using [the local competition guide](COMPETITION.md), rather than treating script coverage alone as success.
 
 ## What each route is for
 
@@ -48,11 +48,47 @@ The code distinguishes a deterministic calculation from a deterministic negotiat
 | Decision time is exhausted or the wave is in its closing reserve | Script closure | Another model call would compete with the time needed to submit the result. |
 | Every live supplier is agreed/final or has no moves left | Script closure | Compare validated standing offers and the alternative; accept an eligible offer or walk away. |
 | A required negotiable quote term is missing from the offer and known defaults | Targeted scripted question, where a move remains | Missing information should be requested rather than invented by a larger model. |
-| Routine/leverage case with one supplier, only price/payment negotiation and no prior buyer move | One scripted opening counter at 90% of the standing unit price, if valid and cheaper under C | The anchor is a policy choice, not proof of an optimal or acceptable supplier price. Later turns use normal routing. |
+| Routine/leverage case with one supplier, only price/payment negotiation, no stated alternative and no prior buyer move | One scripted opening counter at 90% of the standing unit price, if valid and cheaper under C | Preserves the initial narrow policy; further structured replies can use bounded package search. |
+| Complete routine/leverage quote with bounded legal options | Enumerated complete packages | Compare full C, including payment/freight/coverage effects, and submit up to three validated alternatives. |
+| A must-have is currently violated but can be repaired through negotiable fields | Explicit repaired package | A cheaper invalid deal is not accepted; the proposed term sheet must satisfy the requirement. |
+| Several suppliers have complete current quotes | Full-cost package comparison | Service untried and less-visited bidders before repeatedly favoring one; rank candidates by C rather than unit price. |
+| A previous structured offer receives another complete quote | Bounded concession or validated closure | Use observed offers to narrow the price gap; close on sufficient agreement, a small cost gap, a round reserve or a genuine quote plateau. |
 | Ordinary reply or semantic choice outside those rules | Fast model | Sol is the initial default, with low effort and a bounded response. |
 | Structured evidence conflict, relationship-sensitive goal or several negotiable terms, with enough time | Optional strong model | Extra reasoning may help, but neither novelty nor model self-confidence establishes that it is needed. |
 
-The current complexity checks are explicit: category_goal is stabilise or secure_supply, at least four fields are negotiable, or a latest supplier reply reports a contradicted claim. The strong route is disabled unless a strong completion is configured. Its default minimum remaining budget is 20 seconds within a maximum 25-second decision. These are engineering defaults, not measured provider performance promises. If a hard case has less time, it uses the fast route; if there is no usable model budget, it closes deterministically.
+When no supported script applies, the model complexity checks are explicit: category_goal is stabilise or secure_supply, at least four fields are negotiable, or a latest supplier reply reports a contradicted claim. Four fields alone no longer force a model call when a bounded quantitative script can handle them. The strong route is disabled unless a strong completion is configured. Its default minimum remaining budget is 20 seconds within a maximum 25-second decision. These are engineering defaults, not measured provider performance promises. If a hard case has less time, it uses the fast route; if there is no usable model budget, it closes deterministically.
+
+## Supported quantitative scripts
+
+Package search applies only to routine/leverage cases with complete known quote terms and explicit finite option lists. It includes each supplier's standard values alongside the case's permitted options. Search is limited to **256 non-price combinations across the active suppliers in one decision**. If the limit is exceeded, an option list is missing, or the data is unsuitable, normal model routing takes over; the search never silently truncates the legal space and calls its partial result optimal.
+
+For enumerated opening packages, the anchor is 90% of the current quote's full cost C. After a structured offer, the next cost ceiling is the midpoint between the cheapest prior proposed package's C and the current quote's C, capped at that current cost. A known alternative can lower the ceiling further. Code solves each package's unit price under the same cost ceiling and verifies the rounded result. These are explicit bargaining policies, not inferred supplier floors. The original narrow first price/payment counter retains its 90%-of-unit-price anchor.
+
+The packages include favorable non-price terms, ranked by their cost at a common reference price, and, when feasible, an alternative retaining the current non-price terms. A third distinct combination can fill the remaining slot. Their final prices compensate for those trade-offs: DAP freight and longer payment may receive a higher unit price than EXW and early payment, while all packages stay under the same buyer-cost ceiling. Offering an identical unit price for both packages would let the supplier choose terms that increase the buyer's total cost. Unit-price rounding can leave small differences below the ceiling. The supplier can consider the complete trades; code does not promise that any package will be accepted.
+
+Must-have repair works through explicit outgoing terms. If lead time is negotiable over 14/28/42 days and the requirement is at most 14 days, every offered package must explicitly say 14. If that requirement is fixed or unavailable in the declared options, the script does not pretend to repair it. Acceptance still checks the current standing supplier offer, not the buyer's desired counter-offer.
+
+RFQs use the same cost function for every bidder. A higher unit price can win when delivered cost is lower. Untried suppliers are considered before suppliers that already received a structured bid; subsequent choices favor fewer bid rounds and then lower candidate C. This improves turn selection but does not implement concurrent requests within an RFQ: the runner's supplier calls are still sequential.
+
+Closure is also conditional. An agreement is considered after all live bidders have been tried or reached a terminal state. A quote plateau requires at least two buyer offers and three consecutive identical complete supplier quotes. A sufficiently small full-cost gap (within 1% of the cheapest previous proposed package) or the final available round can also trigger closure after all bidders have been tried. Every closure runs the shared guard; a plateau against a better alternative ends in a walk-away, not an inferior deal.
+
+These rules defer to a model when the latest reply reports a contradicted claim, the goal requires relationship-health reasoning, quote defaults remain unknown, or prior buyer messages contain a prose-only exchange outside the known clarification template. Current conditional-language checks include subject to, unless, pending approval and similar phrases. **This phrase detection is a conservative heuristic, not proof that arbitrary prose contains no additional conditions.** Novel semantic cases still need representative evaluation.
+
+The route reasons distinguish useful scripted work from emergency closure:
+
+| Reason | Meaning |
+| --- | --- |
+| simple_opening_counter | Original narrow price/payment anchor. |
+| enumerated_opening | Bounded full-term opening packages. |
+| must_have_repair | Explicit package satisfies a requirement violated by the current offer. |
+| rfq_package_comparison | Select a bidder and complete packages using visit count and full C. |
+| bounded_concession | Advance from a previous structured offer without exceeding the current quote's full C. |
+| agreed_package / small_cost_gap / round_reserve | Close through the guard after sufficient negotiation evidence. |
+| quote_plateau | Repeated complete quotes stopped improving after structured attempts. |
+| missing_quote_terms | Request missing information once. |
+| terminal_offers / deadline_close | Validated closing policy; report separately from supported quantitative bargaining. |
+
+A model failure preserves fallback=True and its attempted route. Count that as a failure/fallback even if the closing action itself uses deterministic code. The competition report should distinguish this from successful quantitative script coverage.
 
 The missing-term question is asked once per thread by this rule, with more than one move remaining. It asks for the missing fields and a complete term sheet. It does not repeatedly consume rounds asking the same question.
 
@@ -87,6 +123,7 @@ cd /tmp
 env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 \
   "$TACTO_PYTHON" -m pytest -q -p no:cacheprovider \
   "$TACTO_TESTS/test_routed.py" \
+  "$TACTO_TESTS/test_script_coverage.py" \
   "$TACTO_TESTS/test_completion.py" \
   "$TACTO_TESTS/test_routing_integration.py"
 ```
@@ -105,6 +142,7 @@ from arena_kit.cost import complete_offer
 from arena_kit.sim import load_cases
 
 case = load_cases()["case:S03"]
+case["buyer"]["category_goal"] = "secure_supply"  # deliberately require semantic reasoning in this demo
 supplier = case["suppliers"][0]
 threads = {supplier: [{
     "from": supplier,
@@ -132,7 +170,7 @@ print("final offer", agent.last_decision)
 PY
 ```
 
-S03 has several negotiable terms. The first two runs demonstrate fast and optional strong dispatch; the final-offer run demonstrates the scripted closing path. All completions return a fixed walk-away solely to make the example easy to inspect. The exercise does not compare the negotiation quality of real models.
+This fixture deliberately gives S03 a relationship-sensitive goal. The first two runs demonstrate fast and optional strong dispatch; the final-offer run demonstrates the existing scripted closing path, whose supplier-health limitation remains documented. The unmodified fully structured routine case can now use package scripts. All completions return a fixed walk-away solely to make the example easy to inspect. The exercise does not compare the negotiation quality of real models.
 
 ## Configure the hosted adapter
 
@@ -155,7 +193,7 @@ These settings select behavior; they do not establish model latency, quota or qu
 
 ## Modify one behavior step by step
 
-1. Find the decision you want to change in routed.py. Add a focused fixture in test_routed.py that states both the selected route and expected legal action. For a deterministic rule, also add a near-miss case that must continue to the model.
+1. Find the decision you want to change in routed.py. Add a focused fixture in test_routed.py or test_script_coverage.py that states both the selected route and expected legal action. For a deterministic rule, also add a near-miss case that must continue to the model.
 2. Change the smallest rule or constructor setting. For example, raise strong_min_seconds to require more budget before Astra, or narrow the simple price/payment rule. Do not use model-reported confidence as permission to bypass validation.
 3. Keep all routes on the same validator. A new scripted offer needs the same permitted terms and must-have checks as model output. A new acceptance must use a current supplier offer and resolved defaults.
 4. Add a delayed or malformed completion to the test. Check that fallback happens once, a late result cannot submit another action, and queue time does not create a fresh budget.

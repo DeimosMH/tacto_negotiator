@@ -28,6 +28,7 @@ Sources: [participant brief](../starter_kit/brief/brief.md), [API contract](../s
 | Routed decisions | RoutedAgent and CompletionClient | Tested scripts, fast/optional strong selection, common action validation, absolute provider deadline and local fallback |
 | Optional tools | mcp_server.py | Six read-only tools for an MCP client; not automatic LLMAgent retrieval |
 | Local verification | sim.py, sim_cases, tests | Scripted cases, controllable clock, local HTTP and mock transports |
+| Paired competitions | competition.py, compete.py, benchmark.py | Seeded private supplier profiles, parallel policy comparisons, explicit paid-model opt-in and sanitized usage accounting |
 
 Follow the actual precedence in closing_terms: buyer plan → supplier standard → fixed case terms → explicit term-sheet values. Later layers override earlier layers, with special handling of missing plan values. The docstring's prose is less precise than this loop. A valid buyer offer carries exactly the negotiable fields, so it should not override a fixed term at all.
 
@@ -60,7 +61,7 @@ Extend RoutedAgent with prepared evidence and stronger package evaluation. Keep 
 
 Evidence preparation returns a plain dictionary keyed by case/supplier/part. A claim contains its source IDs, exact values, formula, resulting number, period and relevance rationale. Store qualitative context separately so a historical note does not masquerade as a checked numeric fact. Preserve immutable prepared context between decisions, but keep each case's mutable history and used-claim tracking isolated.
 
-The evaluator reuses cost.py. Enumerate a small selection of allowed payment/volume/duration/freight/date options and plausible price anchors, deduplicate equivalent packages and retain useful trade-offs. Do not exhaustively multiply every option when that threatens the deadline. Use the same supplier standard terms for each comparison and validate complete, finite, positive prices and volumes before arithmetic.
+The evaluator reuses cost.py. RoutedAgent now enumerates at most 256 legal non-price combinations, adjusts each package's price against a common full-cost ceiling and retains up to three validated trades. See [the competition guide](COMPETITION.md) for measured coverage and the reason prices must compensate for freight/payment changes. Richer dossier-based candidate selection remains work. Use the same supplier standard terms for each comparison and validate complete, finite, positive prices and volumes before arithmetic.
 
 For stabilise and secure_supply, estimate full_cost, interest_rate and standard terms from should-cost, quotes and context. Evaluate a modest low/base/high sensitivity range. The server knows more than we do; report estimated relationship cost as an estimate. Passing no supplier estimate to total_cost makes that component zero, not known to be zero.
 

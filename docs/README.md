@@ -2,6 +2,8 @@
 
 Open [index.html](index.html) directly in your browser. It works offline with local assets, no npm install and no API keys.
 
+For the implemented scripts, parallel local scenarios and measured OpenAI comparison, open [Local competition](COMPETITION.md). It includes reproducible commands, results, limitations and a step-by-step guide to changing a scenario or policy.
+
 New to the project? Open the **Start here** tab or read [the beginner tutorial](TUTORIAL.md). It explains one negotiation, walks through a local buyer change with expected results, and shows how to modify the project and this atlas.
 
 Preparing for Sunday 13:30? Open **Sunday final** for [implementation priorities, five-wave simulations and the rehearsal guide](FINAL_READINESS.md), then read [the hosted model recommendation and qualification procedure](MODEL_SELECTION.md).
