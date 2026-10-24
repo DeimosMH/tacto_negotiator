@@ -395,10 +395,16 @@ class RoutedAgent:
                 total += (abs(ours - theirs) / max(abs(theirs), 1)) if numeric(ours) and numeric(theirs) else 1.0
             return total
 
-        candidates = [(gap, index) for index, (_, terms) in enumerate(rows) if (gap := distance(terms)) is not None]
+        # Among packages equally close to the supplier's cash terms, open with the one cheapest at the
+        # price we ask, not at its quote: there the quote's own short contract looked cheapest (fewer
+        # units at the quoted price), but deals close far below the quote. Hosted openings on a quoted
+        # 12-month term drew 0.8-1.5 % first concessions (P08 5.99, P18 6.00 of 6.05/6.10) against
+        # 5.4-11 % for 24/36 months, and their gap spent the supplier's patience for nothing.
+        candidates = [(gap, cost, index) for index, (cost, terms) in enumerate(rows)
+                      if (gap := distance(terms)) is not None]
         if not candidates:
             return None
-        base = rows[min(candidates)[1]][1]
+        base = rows[min(candidates)[2]][1]
         base_cost = decision_cost(case, base, std, sid)
         equal = self._packages(case, record["options"], base_cost, alternative, current["unit_price"],
                                price_ceiling=cap, sid=sid, standard=std)

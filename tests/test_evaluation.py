@@ -149,3 +149,21 @@ def test_an_equal_cost_sheet_at_an_implausible_price_is_not_sent():
                                                       "term_sheets": [long, short]})
     prices = [s["terms"]["unit_price"] for s in move["message"]["term_sheets"]]
     assert short["unit_price"] < 0.9 * long["unit_price"] and min(prices) >= 0.9 * max(prices)
+
+
+def test_scripted_opening_covers_the_need_when_that_is_cheaper_at_our_ask():
+    """Hosted P08/P18: openings on the quoted 12-month term drew 5.99/6.00 against 6.05/6.10 quotes,
+    24/36-month openings 5.40-5.55. At the quote price 12 months looked cheapest (fewer units at it)."""
+    from tacto_negotiator.agents.routed import RoutedAgent
+
+    feedback = json.loads((ROOT / "tests/fixtures/practice_feedback.json").read_text())
+    case = dict(feedback["cases"]["case:P08"])
+    sid = case["suppliers"][0]
+    opening = {"from": "sales@70710", "status": "open", "body": "Our quote.",
+               "term_sheets": [{"term_sheet_id": "offer:0", "terms": {
+                   "unit_price": 6.05, "payment_days": 30, "index_clause": None, "contract_months": 12}}],
+               "attachments": [{"name": "quote.pdf", "text": "Our standard terms\nPayment terms (days net) 30"}]}
+    reason, move = RoutedAgent(None)._structured_bargain(case, {sid: [opening]})
+    terms = [sheet["terms"] for sheet in move["message"]["term_sheets"]]
+    assert reason == "enumerated_opening"
+    assert all(t["contract_months"] >= 24 for t in terms) and max(t["unit_price"] for t in terms) <= 4.54
