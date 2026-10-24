@@ -59,8 +59,9 @@ class RoutedAgent:
         self.last_decision = {}
         self.unavailable = set()  # suppliers whose reply clock runs out before a message could arrive
 
-    def validate(self, case, threads, decision):
-        """One gate for scripts, model proposals and fallback. Return a wire move or None."""
+    def validate(self, case, threads, decision, *, reprice=True):
+        """One gate for scripts, model proposals and fallback. Return a wire move or None.
+        reprice=False keeps a sheet's price (a supplier's own quoted package sent back unchanged)."""
         try:
             if not isinstance(decision, dict):
                 return None
@@ -114,8 +115,8 @@ class RoutedAgent:
             # The shared concession schedule binds scripts and models: a sheet above the ask limit (or an
             # opening above the anchored price) is repriced to it, keeping the chosen terms. Rejecting
             # them sent 8 of 10 hosted v4 openings to the fallback.
-            limit = ask_limit(case, events, sid)
-            opening = not any(e.get("from") == "buyer" and e.get("term_sheets") for e in events)
+            limit = ask_limit(case, events, sid) if reprice else math.inf
+            opening = reprice and not any(e.get("from") == "buyer" and e.get("term_sheets") for e in events)
             cap = opening_price_cap(case, events, sid) if opening else math.inf
             conformed = []
             for t in clean:
@@ -434,10 +435,53 @@ class RoutedAgent:
             return best[3], best[4]
         return None
 
+    def _mirror_alternative(self, case, threads):
+        """Send back, unchanged, a cheaper alternative sheet from a supplier's final offer or agreement.
+
+        Only the standing (first) sheet can be accepted, and countering a final offer made hosted
+        suppliers walk away. Its own alternative is a package it already offered, so mirroring it is
+        no counter: earlier teams saw it become the agreed sheet. Hosted final offers carried cheaper
+        alternatives in P10 (31.70 vs 33.60, about +0.10 score), P18 (5.30 vs 5.40, +0.03) and P08."""
+        best = None
+        for sid in live_threads(threads):
+            if accepted := acceptable_offer(case, threads[sid], sid):
+                best = min(best or accepted[1], accepted[1])
+        if best is None:
+            return None
+        candidates = []
+        for sid in live_threads(threads):
+            events = threads[sid]
+            reply = latest(events)
+            if (reply.get("status") not in {"agreed", "final_offer"} or moves_left(case, events) < 2
+                    or sid in self.unavailable):
+                continue
+            sent = [s.get("terms", s) for e in events if e.get("from") == "buyer" for s in e.get("term_sheets") or []]
+            for sheet in (reply.get("term_sheets") or [])[1:]:
+                if not isinstance(sheet, dict) or not isinstance(sheet.get("terms"), dict):
+                    continue
+                accepted = acceptable_offer(case, [*events[:-1], {**reply, "term_sheets": [sheet]}], sid)
+                if not accepted or accepted[1] >= best * 0.998:
+                    continue
+                move = self.validate(case, threads, {
+                    "supplier_id": sid, "action": "send",
+                    "body": "Thank you. We accept your alternative package as quoted and attach it unchanged; "
+                            "please confirm it.",
+                    "term_sheets": [sheet["terms"]]}, reprice=False)
+                if not move:
+                    continue
+                terms = move["message"]["term_sheets"][0]["terms"]
+                _, _, std, _ = known_offer(case, events)
+                if terms in sent or decision_cost(case, terms, std, sid) > accepted[1] + 0.01:
+                    continue  # already sent once, or completing it changed the package
+                candidates.append((accepted[1], sid, move))
+        return min(candidates, key=lambda row: row[:2])[2] if candidates else None
+
     def _script(self, case, threads):
         live = live_threads(threads)
         if all(latest(threads[s]).get("status") in {"agreed", "final_offer"}
                or moves_left(case, threads[s]) <= 0 for s in live):
+            if mirror := self._mirror_alternative(case, threads):
+                return "mirror_alternative", mirror
             return "terminal_offers", closing_move(case, threads)
         for sid in live:
             _, _, _, missing = known_offer(case, threads[sid])

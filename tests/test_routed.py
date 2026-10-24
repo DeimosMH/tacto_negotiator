@@ -355,3 +355,46 @@ def test_a_stalled_supplier_lets_the_model_accept_an_open_offer(scenario):
                                            "terms": {"unit_price": price, "payment_days": 30}}]}]
     agent = RoutedAgent(completion(sid, [], json.dumps({"supplier_id": sid, "action": "accept"})))
     assert agent.decide(case, threads)["message"]["action"]["type"] == "accept"
+
+
+def _final_with_alternative(threads, sid, alternative):
+    threads[sid] += [{"from": "buyer", "body": "Our package.", "term_sheets": [
+                         {"terms": {"unit_price": 16, "payment_days": 30}}]},
+                     {"from": "supplier", "status": "final_offer", "body": "This is our final offer.",
+                      "term_sheets": [{"term_sheet_id": "offer:2", "terms": {"unit_price": 19, "payment_days": 30}},
+                                      {"term_sheet_id": "offer:2-a", "terms": alternative}]}]
+
+
+def test_a_cheaper_alternative_in_a_final_offer_is_mirrored_unchanged_then_accepted(scenario):
+    case, threads, sid = scenario
+    _final_with_alternative(threads, sid, {"unit_price": 18.5, "payment_days": 30})
+    agent = RoutedAgent(None)
+    move = agent.decide(case, threads)  # hosted P18 accepted 5.40 beside its own 5.30 alternative
+    assert agent.last_decision["reason"] == "mirror_alternative"
+    assert move["message"]["term_sheets"] == [{"terms": {"unit_price": 18.5, "payment_days": 30}}]
+    threads[sid] += [{**move["message"], "from": "buyer"},
+                     {"from": "supplier", "status": "agreed", "body": "We accept.", "term_sheets": [
+                         {"term_sheet_id": "offer:3", "terms": {"unit_price": 18.5, "payment_days": 30}},
+                         {"term_sheet_id": "offer:3-a", "terms": {"unit_price": 18.5, "payment_days": 30}}]}]
+    assert agent.decide(case, threads)["message"]["action"] == {"type": "accept", "term_sheet_id": "offer:3"}
+
+
+@pytest.mark.parametrize("alternative", [{"unit_price": 19.2, "payment_days": 30},
+                                         {"unit_price": 18.99, "payment_days": 30},
+                                         {"unit_price": 18.5, "payment_days": 31}])
+def test_a_dearer_marginal_or_invalid_alternative_leaves_the_final_offer_accepted(scenario, alternative):
+    case, threads, sid = scenario
+    _final_with_alternative(threads, sid, alternative)
+    move = RoutedAgent(None).decide(case, threads)
+    assert move["message"]["action"] == {"type": "accept", "term_sheet_id": "offer:2"}
+
+
+def test_an_alternative_is_mirrored_once_and_never_on_the_last_move(scenario):
+    case, threads, sid = scenario
+    _final_with_alternative(threads, sid, {"unit_price": 18.5, "payment_days": 30})
+    threads[sid].insert(-1, {"from": "buyer", "body": "Your alternative.", "term_sheets": [
+        {"terms": {"unit_price": 18.5, "payment_days": 30}}]})
+    assert RoutedAgent(None).decide(case, threads)["message"]["action"]["term_sheet_id"] == "offer:2"
+    threads[sid].pop(-2)
+    case["round_limit"] = 2
+    assert RoutedAgent(None).decide(case, threads)["message"]["action"]["term_sheet_id"] == "offer:2"

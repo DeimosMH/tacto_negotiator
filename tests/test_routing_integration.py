@@ -193,6 +193,15 @@ def test_recovery_without_matching_offer_cannot_accept():
     assert RoutedAgent(None).closing_move(case, {sid: events})["message"]["action"]["type"] == "walk_away"
 
 
+def test_recovery_keeps_the_current_offers_alternatives_after_its_standing_sheet():
+    events = thread_events({"offer_id": "offer:2", "status": "final_offer", "closed": None, "messages": [
+        {"from": "supplier", "status": "final_offer", "term_sheets": [
+            {"term_sheet_id": "offer:2-a", "terms": {"unit_price": 9, "payment_days": 14}},
+            {"term_sheet_id": "offer:2", "terms": {"unit_price": 10, "payment_days": 14}},
+            {"term_sheet_id": "offer:1", "terms": {"unit_price": 11, "payment_days": 14}}]}]})
+    assert [s["term_sheet_id"] for s in events[-1]["term_sheets"]] == ["offer:2", "offer:2-a"]
+
+
 def test_resumed_timeout_rounds_do_not_authorize_extra_sends(arena, monkeypatch):
     case = arena.state.cases["case:S01"]
     case["round_limit"] = 3

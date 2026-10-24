@@ -154,8 +154,10 @@ def thread_events(thread):
                         if offer_id and t.get("offer_id") == offer_id), None)
         current = {"from": "arena", "term_sheets": [
             {"term_sheet_id": offer_id, "terms": timeout["terms"]}] if timeout else [], "attachments": []}
-    restored = {**current, "term_sheets": [s for s in current.get("term_sheets") or []
-                                          if s.get("term_sheet_id") == offer_id],
+    # The current offer first, then its alternatives (`<offer_id>-a`): they can be mirrored back.
+    sheets = current.get("term_sheets") or []
+    restored = {**current, "term_sheets": [s for s in sheets if s.get("term_sheet_id") == offer_id] + [
+                    s for s in sheets if offer_id and str(s.get("term_sheet_id", "")).startswith(f"{offer_id}-")],
                 "status": "walked_away" if thread.get("closed") else thread["status"],
                 "rounds_used": sum(m.get("from") == "buyer" for m in events) + len(thread.get("timeouts", []))}
     if events and events[-1] is current:
