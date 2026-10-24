@@ -4,7 +4,7 @@ Open [index.html](index.html) directly in your browser. It works offline with lo
 
 For charts, match filters and step-by-step decision explanations, start the [local results dashboard](WEB_UI.md) at localhost:1234. The atlas explains the source; the dashboard explores saved runs.
 
-The [hosted practice log](LIVE_PRACTICE.md) records actual winsortf results, replay findings and measured policy iterations.
+The [hosted practice log](LIVE_PRACTICE.md) records actual winsortf results, replay findings and measured policy iterations. [How scoring works](EVALUATION.md) explains what the arena evaluates, which checks we reproduce exactly, and the Astra max-effort results.
 
 The atlas explains the active application in src/tacto_negotiator, its root tests and configuration, and the data snapshot. The supplied starter kit remains archived under materials/starter_kit. Guides and historical result reports are available here without appearing as program modules in the source map.
 

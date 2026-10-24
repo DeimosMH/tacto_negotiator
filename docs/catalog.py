@@ -4,7 +4,7 @@ CODE = "src/tacto_negotiator/"
 DATA = "data/"
 GUIDES = ("README.md", "BEGINNER_GUIDE.md", "TUTORIAL.md", "IMPLEMENTATION.md", "DATA_GUIDE.md", "LOCAL_TESTING.md",
           "FINAL_READINESS.md", "MODEL_SELECTION.md", "ROUTING.md", "COMPETITION.md", "WEB_UI.md", "FAQ_ADVANTAGE.md",
-          "LIVE_PRACTICE.md")
+          "LIVE_PRACTICE.md", "EVALUATION.md")
 
 GROUPS = {
     "project": {"label": "Project setup", "color": "#e4b86b"},
@@ -44,6 +44,7 @@ FILES = {
     CODE + "agents/completion.py": ("policy", "Model execution", "Deadline-aware OpenAI Responses completion client and process-environment factory.", "Includes concurrency queueing and complete-response reading in one deadline, cancels expired HTTP work and bounds generated output without automatic retries."),
     CODE + "sim.py": ("local", "Simulator", "In-memory API simulator, scripted supplier, document renderer and final rehearsal.", "Exercises the wire contract locally. It cannot predict hosted supplier reasoning or competition scores."),
     CODE + "competition.py": ("local", "Strategy competition", "Paired seeded scenarios, private synthetic supplier profiles and parallel matches across repeated virtual waves.", "Compares valid economic outcomes, route usage and real decision latency. Public cases have neutral IDs; hidden floors and feasible references stay in the evaluator. Worker queue time is outside each match's virtual clock."),
+    CODE + "evaluation.py": ("evidence", "Deal evaluation", "Offline audit of recorded hosted costs, scores and claim verdicts against public data.", "Shows which hosted checks are reproduced exactly; supplier reasoning and free-text claim interpretation stay out of scope."),
     CODE + "benchmark.py": ("local", "Model evaluation", "Explicit model-access preflight, literal-key reader and shared conservative API-spend ledger.", "Reserves request cost before concurrent calls, reconciles known usage and retains unknown-cost reservations. It supports expressly enabled paid evaluations against local suppliers; no arena client is involved."),
     CODE + "compete.py": ("local", "Strategy competition", "Command-line strategy factories, optional paid-model setup and atomic sanitized competition reports.", "Provides reproducible scripts-only runs by default. Model strategies require explicit --live and --key-file, use one shared budget and save progress without prompts or raw model responses."),
     CODE + "web.py": ("local", "Results dashboard", "Loopback HTTP server for saved competition reports and the packaged browser interface.", "Projects selected public report fields and serves explicit routes without reading credentials, starting negotiations or calling providers."),
@@ -63,6 +64,8 @@ FILES = {
     "tests/test_routing_integration.py": ("local", "Routing checks", "Routed runner/CLI integration: remaining budgets, document failures, fallback telemetry and five virtual waves.", "Checks that actual available time reaches the router and that closing validation and failed-quote evidence survive the runner boundary."),
     "tests/test_client_deadline.py": ("local", "Routing checks", "Per-call read timeout/retry overrides and unchanged POST retry/idempotency tests.", "Keeps short timed-agent metadata reads separate from the longer supplier-response timeout without changing shared client defaults."),
     "tests/test_script_coverage.py": ("local", "Routing checks", "Deterministic multi-term bargaining, bidder rotation, plateau handling and semantic defer checks.", "Tests expanded script coverage using ordinary public case fields, without access to synthetic supplier floors."),
+    "tests/test_evaluation.py": ("local", "Evidence checks", "Requires the offline audit to match every recorded hosted cost, score and claim verdict.", "Catches drift between local claim and scoring rules and the hosted arena."),
+    "tests/fixtures/practice_feedback.json": ("local", "Fixtures", "32 completed winsortf practice replays: public case data, openings, results and traces.", "Independent hosted ground truth for the evaluation audit; it contains no credentials."),
     "tests/test_dossier.py": ("local", "Evidence checks", "Related supplier evidence, Sunday overlay and semantic routing checks.", "Ensures material correspondence reaches decisions without mixing unrelated suppliers or contacting the arena."),
     "tests/test_competition.py": ("local", "Strategy competition", "Paired waves, reference feasibility, hidden-data separation, neutral labels, worker overlap and audited outcomes.", "Verifies the harness itself before scores are used to compare policies, including the actual-package floor regression and keeping failed-call latency in the report."),
     "tests/test_benchmark.py": ("local", "Model evaluation", "Literal credential parsing, pricing/reservation accounting, access preflight and bounded model wrappers.", "Uses temporary fake keys and mock HTTP to check that the paid-evaluation controls work without spending money."),
