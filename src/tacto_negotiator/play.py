@@ -19,7 +19,7 @@ from concurrent.futures import ThreadPoolExecutor
 import httpx
 
 from .client import ArenaError
-from .cost import RELATIONSHIP_GOALS, must_haves_ok, total_cost, valid_value
+from .cost import RELATIONSHIP_GOALS, cheapest_price, decision_cost, must_haves_ok, total_cost, valid_value
 from .docs import read_document, standard_terms
 
 log = logging.getLogger("arena")
@@ -237,7 +237,7 @@ def known_offer(case, events):
     return sheet, terms, std, missing
 
 
-def acceptable_offer(case, events):
+def acceptable_offer(case, events, sid=None):
     """Return a valid standing offer no dearer than the alternative; an exact cost tie favors a deal."""
     try:
         sheet, terms, std, missing = known_offer(case, events)
@@ -251,7 +251,7 @@ def acceptable_offer(case, events):
                 return None
         if not must_haves_ok(case, terms, std):
             return None
-        cost = total_cost(case, terms, std)
+        cost = decision_cost(case, terms, std, sid)
         alt = case["buyer"].get("alternative") or {}
         if alt.get("kind") not in (None, "none"):
             other = alt.get("terms", {})
@@ -277,7 +277,23 @@ ANCHOR_BY_GOAL = {"leverage": 0.20, "routine": 0.18, "quality_first": 0.15, "sec
 GAP_STEP, HOLD_STEP = 0.30, 0.15
 
 
-def ask_limit(case, events):
+def opening_price_cap(case, events, sid=None):
+    """Highest unit price of an opening sheet: the anchored quote price, never below the price where
+    the supplier-health term makes C rise. A cost limit alone let a longer contract carry a far higher
+    price (hosted P18 opened at 5.60 against a 6.10 quote; the best attainable was about 4.70)."""
+    try:
+        _, terms, std, missing = known_offer(case, events)
+        if missing:
+            return math.inf
+        resolved = {**std, **case.get("fixed_terms", {}), **terms}
+        cap = round(resolved["unit_price"] * (1 - ANCHOR_BY_GOAL.get(case["buyer"].get("category_goal"), 0.15)), 2)
+        floor = cheapest_price(case, {f: resolved[f] for f in case["negotiable"]}, std, sid)
+        return max(cap, floor or 0)
+    except (KeyError, TypeError, ValueError, OverflowError, AttributeError):
+        return math.inf
+
+
+def ask_limit(case, events, sid=None):
     """Highest buyer cost C our next term sheet in this thread may carry (excluding supplier health).
 
     Suppliers concede only in response to movement, so every round moves - but by a share of the
@@ -287,21 +303,20 @@ def ask_limit(case, events):
         if missing:
             return math.inf
         resolved = {**std, **case.get("fixed_terms", {}), **terms}
-        current = total_cost(case, terms, std)
+        current = decision_cost(case, terms, std, sid)
         sent = [e for e in events if e.get("from") == "buyer" and e.get("term_sheets")]
         if not sent:
-            anchor = ANCHOR_BY_GOAL.get(case["buyer"].get("category_goal"), 0.15)
-            opening = {**resolved, "unit_price": round(resolved["unit_price"] * (1 - anchor), 2)}
-            return min(current, total_cost(case, {f: opening[f] for f in case["negotiable"]}, std))
-        ours = min(total_cost(case, s.get("terms", s)) for s in sent[-1]["term_sheets"])
+            opening = {**resolved, "unit_price": opening_price_cap(case, events, sid)}
+            return min(current, decision_cost(case, {f: opening[f] for f in case["negotiable"]}, std, sid))
+        ours = min(decision_cost(case, s.get("terms", s), std, sid) for s in sent[-1]["term_sheets"])
         if current <= ours:
             return current
         step = GAP_STEP
         if len(sent) >= 2:  # the supplier's last concession, measured against the gap before it
-            before = min(total_cost(case, s.get("terms", s)) for s in sent[-2]["term_sheets"])
+            before = min(decision_cost(case, s.get("terms", s), std, sid) for s in sent[-2]["term_sheets"])
             index = events.index(sent[-1])
             _, prior_terms, prior_std, _ = known_offer(case, events[:index])
-            previous = total_cost(case, prior_terms, prior_std)
+            previous = decision_cost(case, prior_terms, prior_std, sid)
             if previous > before and previous - current > 0.5 * (previous - before):
                 step = HOLD_STEP
         return ours + step * (current - ours)
@@ -317,7 +332,7 @@ def closing_move(case, threads):
         raise ValueError("no live supplier belongs to this case")
     best = None
     for sid in live:
-        if accepted := acceptable_offer(case, threads[sid]):
+        if accepted := acceptable_offer(case, threads[sid], sid):
             sheet_id, c = accepted
             best = min(best or (c, sid, sheet_id), (c, sid, sheet_id))
     if best is None:

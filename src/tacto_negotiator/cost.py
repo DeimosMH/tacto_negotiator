@@ -254,3 +254,37 @@ def complete_offer(case, terms, standard=None):
             value = snap(case, field, value)
         out[field] = round(value, 2) if field == "unit_price" and value is not None else value
     return out
+
+
+def decision_cost(case, terms, standard=None, sid=None):
+    """C as decisions should see it: with the supplier-health term when the case carries an estimate
+    of supplier `sid` (`case["_supplier_estimates"]`, built from should-cost data). The supplier's own
+    standard terms come from its record, overridden by what its quote states."""
+    estimate = (case.get("_supplier_estimates") or {}).get(sid)
+    if estimate:
+        estimate = {**estimate, "standard": {**estimate["standard"], **(standard or {})}}
+    return total_cost(case, terms, standard, estimate)
+
+
+def cheapest_price(case, terms, standard=None, sid=None):
+    """The unit price at which `decision_cost` is lowest for otherwise fixed terms, or None without a
+    health estimate. Below it, squeezing the supplier's margin costs more than the price saves."""
+    if not (case.get("_supplier_estimates") or {}).get(sid) or not terms.get("unit_price"):
+        return None
+    quoted = terms["unit_price"]
+    best = None
+    for step in range(401):  # 50 %-100 % of the given price, then refined around the best point
+        price = round(quoted * (0.5 + step / 800), 2)
+        cost = decision_cost(case, {**terms, "unit_price": price}, standard, sid)
+        if math.isfinite(cost) and (best is None or cost < best[0]):
+            best = (cost, price)
+    if best is None:
+        return None
+    for cents in range(-150, 151):
+        price = round(best[1] + cents / 100, 2)
+        if price > 0:
+            cost = decision_cost(case, {**terms, "unit_price": price}, standard, sid)
+            if math.isfinite(cost) and cost < best[0]:
+                best = (cost, price)
+    return best[1]
+

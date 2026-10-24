@@ -28,3 +28,21 @@ def test_forecast_claims_count_once_per_case_and_rival_quotes_once_per_supplier(
     assert [r["result"] for r in checker.check("sup:X", claims)] == ["verified", "duplicate", "verified"]
     assert [r["result"] for r in checker.check("sup:Y", claims[2:])] == ["verified"]
     assert [r["result"] for r in checker.check("sup:Y", claims[2:])] == ["duplicate"]
+
+
+def test_supplier_estimates_reproduce_hosted_health_charges():
+    from tacto_negotiator.cost import decision_cost, total_cost
+
+    feedback = json.loads((ROOT / "tests/fixtures/practice_feedback.json").read_text())
+    package = DataPackage(ROOT / "data")
+    checked = 0
+    for session in feedback["sessions"]:
+        result, case = session["result"], dict(feedback["cases"][session["case_id"]])
+        if not result["deal"] or case["buyer"].get("category_goal") not in ("stabilise", "secure_supply"):
+            continue
+        case["_supplier_estimates"] = package.supplier_estimates(case)
+        sid, standard = result["supplier_id"], session["threads"][result["supplier_id"]]["standard"]
+        health = decision_cost(case, result["terms"], standard, sid) - total_cost(case, result["terms"], standard)
+        assert abs(health - result["cost_breakdown"].get("relationship", 0)) < 400, session["session_id"]
+        checked += 1
+    assert checked >= 8

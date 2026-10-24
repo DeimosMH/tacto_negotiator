@@ -18,7 +18,7 @@ import re
 
 import httpx
 
-from ..cost import complete_offer, cost_breakdown, must_haves_ok, total_cost
+from ..cost import complete_offer, cost_breakdown, decision_cost, must_haves_ok, total_cost
 from ..docs import standard_terms
 from ..play import acceptable_offer, ask_limit, closing_move, latest, live_threads, moves_left, standing
 from .naive import NaiveAgent
@@ -171,8 +171,11 @@ class LLMAgent:
             events = threads[sid]
             sheet_id, terms = standing(events)
             std = standard_terms(events)
-            c = total_cost(case, terms, std) if sheet_id else math.inf
-            components = ({k: round(v, 2) for k, v in cost_breakdown(case, terms, std).items() if v}
+            estimate = (case.get("_supplier_estimates") or {}).get(sid)
+            if estimate:
+                estimate = {**estimate, "standard": {**estimate["standard"], **std}}
+            c = decision_cost(case, terms, std, sid) if sheet_id else math.inf
+            components = ({k: round(v, 2) for k, v in cost_breakdown(case, terms, std, estimate).items() if v}
                           if math.isfinite(c) else {})
             c = f"{c:,.0f}" if c < math.inf else "-"
             out.append(
@@ -180,28 +183,31 @@ class LLMAgent:
                 f"{moves_left(case, events)} messages left; standing {sheet_id} "
                 f"{json.dumps(terms)} -> C = {c}; standard terms {json.dumps(std)}"
             )
-            if math.isfinite(limit := ask_limit(case, events)) and moves_left(case, events) > 0:
+            if math.isfinite(limit := ask_limit(case, events, sid)) and moves_left(case, events) > 0:
                 out.append(f"ASK LIMIT: every term sheet you send to {sid} now must have C <= {limit:,.0f} "
                            "(an ambitious opening, then 30% of the remaining gap per round). Sheets above it are "
                            "rejected. Accepting a standing offer is not limited.")
             if components:
-                out.append(f"C COMPONENTS (EUR, nonzero; supplier health not estimated): {json.dumps(components)}")
+                health = ("relationship = estimated supplier-health cost: pushing the price below the supplier's "
+                          "sustainable margin raises C" if estimate else "supplier health not estimated")
+                out.append(f"C COMPONENTS (EUR, nonzero; {health}): {json.dumps(components)}")
                 comparisons = []
-                current_cost = total_cost(case, terms, std)
+                current_cost = decision_cost(case, terms, std, sid)
                 for field, options in case.get("term_options", {}).items():
                     for value in options[:20]:
-                        variant_cost = total_cost(case, {**terms, field: value}, std)
+                        variant_cost = decision_cost(case, {**terms, field: value}, std, sid)
                         if math.isfinite(variant_cost):
                             comparisons.append({"field": field, "value": value,
                                                 "cost_eur": variant_cost,
                                                 "must_haves_ok": must_haves_ok(case, {**terms, field: value}, std),
                                                 "delta_eur": round(variant_cost - current_cost, 2)})
                 out.append("TERM TRADEOFFS (one field changed, other terms and price held fixed; "
-                           "not supplier commitments; health excluded): " + json.dumps(comparisons))
+                           "not supplier commitments; supplier health only when estimated): "
+                           + json.dumps(comparisons))
                 alternatives = [{"term_sheet_id": sheet.get("term_sheet_id"), "terms": sheet["terms"],
-                                 "cost_eur": total_cost(case, sheet["terms"], std)}
+                                 "cost_eur": decision_cost(case, sheet["terms"], std, sid)}
                                 for sheet in latest(events).get("term_sheets", [])[1:]
-                                if math.isfinite(total_cost(case, sheet["terms"], std))]
+                                if math.isfinite(decision_cost(case, sheet["terms"], std, sid))]
                 if alternatives:
                     out.append("SUPPLIER ALTERNATIVES: " + json.dumps(alternatives))
             for m in events[-6:]:
@@ -220,7 +226,7 @@ class LLMAgent:
             return {"supplier_id": sid, "message": {"action": {"type": "walk_away"}}}
         _, terms = standing(events)
         if kind == "accept":
-            if accepted := acceptable_offer(case, events):
+            if accepted := acceptable_offer(case, events, sid):
                 return {
                     "supplier_id": sid,
                     "message": {"action": {"type": "accept", "term_sheet_id": accepted[0]}},

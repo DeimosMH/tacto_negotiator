@@ -59,8 +59,9 @@ def test_full_term_opening_offers_cheaper_packages_and_a_familiar_tradeoff(negot
     packages = [sheet["terms"] for sheet in move["message"]["term_sheets"]]
     assert calls == [] and agent.last_decision["reason"] == "enumerated_opening"
     assert packages[0] == {"unit_price": 90.2, "payment_days": 60, "incoterm": "DAP"}  # 18 % routine anchor
-    baseline = next(t for t in packages if t["payment_days"] == 14 and t["incoterm"] == "EXW")
-    assert baseline["unit_price"] <= packages[0]["unit_price"]  # both may sit at the anchored price cap
+    # sheets dearer for us than the cheapest are dropped: the supplier would pick exactly those
+    cheapest = min(total_cost(case, t) for t in packages)
+    assert all(total_cost(case, t) <= cheapest * 1.003 + 0.01 for t in packages)
     assert len(packages) <= 3 and all(set(t) == set(case["negotiable"]) for t in packages)
     assert total_cost(case, packages[0]) < total_cost(case, threads["sup:A"][0]["term_sheets"][0]["terms"])
     assert not move["message"].get("action")
@@ -242,5 +243,5 @@ def test_bounded_search_parses_the_quote_once_per_decision_stage(negotiation):
     with patch("tacto_negotiator.docs.quote_terms", wraps=quote_terms) as parsing:
         move = agent.decide(case, threads)
     assert not calls and move["message"]["term_sheets"]
-    assert parsing.call_count <= 7  # constant per stage, independent of the 256 candidate packages
+    assert parsing.call_count <= 12  # constant per stage, independent of the 256 candidate packages
     assert all(must_haves_ok(case, sheet["terms"]) for sheet in move["message"]["term_sheets"])

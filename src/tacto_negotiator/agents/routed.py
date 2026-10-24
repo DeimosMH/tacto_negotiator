@@ -10,7 +10,15 @@ import logging
 import math
 import time
 
-from ..cost import RELATIONSHIP_GOALS, complete_offer, must_haves_ok, total_cost, valid_value
+from ..cost import (
+    RELATIONSHIP_GOALS,
+    cheapest_price,
+    complete_offer,
+    decision_cost,
+    must_haves_ok,
+    total_cost,
+    valid_value,
+)
 from ..play import (
     ANCHOR_BY_GOAL,
     CLOSE_BEFORE_CAP_S,
@@ -21,6 +29,7 @@ from ..play import (
     latest,
     live_threads,
     moves_left,
+    opening_price_cap,
     standing,
 )
 from .llm import ID_RE, SYSTEM, LLMAgent, parse
@@ -60,7 +69,7 @@ class RoutedAgent:
                 return {"supplier_id": sid, "message": {"action": {"type": "walk_away"}}}
             events = threads[sid]
             if action == "accept":
-                accepted = acceptable_offer(case, events)
+                accepted = acceptable_offer(case, events, sid)
                 return {"supplier_id": sid, "message": {"action": {
                     "type": "accept", "term_sheet_id": accepted[0]}}} if accepted else None
             _, terms, std, _ = known_offer(case, events)
@@ -93,13 +102,20 @@ class RoutedAgent:
                 complete = complete_offer(case, {**std, **terms, **proposed}, std)
                 if set(complete) != set(case["negotiable"]) or any(not valid_value(f, v) for f, v in complete.items()):
                     return None
-                if not must_haves_ok(case, complete) or not math.isfinite(total_cost(case, complete)):
+                if not must_haves_ok(case, complete) or not math.isfinite(decision_cost(case, complete, std, sid)):
                     return None
                 if complete not in clean:
                     clean.append(complete)
-            limit = ask_limit(case, events)  # the shared concession schedule binds scripts and models
-            if any(total_cost(case, t) > limit * 1.005 + 0.01 for t in clean):
+            limit = ask_limit(case, events, sid)  # the shared concession schedule binds scripts and models
+            if any(decision_cost(case, t, std, sid) > limit * 1.005 + 0.01 for t in clean):
                 return None
+            if clean and not any(e.get("from") == "buyer" and e.get("term_sheets") for e in events):
+                cap = opening_price_cap(case, events, sid)
+                if any(t["unit_price"] > cap + 0.005 for t in clean):
+                    return None
+            if clean:  # the supplier picks the sheet dearest for us (hosted P03): keep equal-cost sheets only
+                cheapest = min(decision_cost(case, t, std, sid) for t in clean)
+                clean = [t for t in clean if decision_cost(case, t, std, sid) <= cheapest * 1.003 + 0.01]
             move = {"supplier_id": sid, "message": {
                 "subject": subject, "body": body, "term_sheets": [{"terms": t} for t in clean]}}
             return move if len(json.dumps({"message": move["message"]}).encode()) <= 64_000 else None
@@ -114,7 +130,14 @@ class RoutedAgent:
                  case["case_id"], route, reason,
                  self.last_decision["elapsed_s"], self.last_decision["budget_s"], fallback)
 
+    def _prepare(self, case):
+        """Attach supplier-health estimates once per case (only for relationship goals with data)."""
+        package = getattr(self.context, "package", None)
+        if "_supplier_estimates" not in case and package is not None and hasattr(package, "supplier_estimates"):
+            case["_supplier_estimates"] = package.supplier_estimates(case)
+
     def closing_move(self, case, threads):
+        self._prepare(case)
         start = self.clock()
         move = closing_move(case, threads)
         if self.last_decision.get("case_id") == case["case_id"] and self.last_decision.get("fallback"):
@@ -146,7 +169,8 @@ class RoutedAgent:
                 quotes.append(None if missing else {**std, **case.get("fixed_terms", {}), **terms})
         return len(quotes) >= 3 and quotes[-1] is not None and quotes[-1] == quotes[-2] == quotes[-3]
 
-    def _packages(self, case, options, target_cost, alternative, reference_price, *, price_ceiling=math.inf):
+    def _packages(self, case, options, target_cost, alternative, reference_price, *, price_ceiling=math.inf,
+                  sid=None, standard=None):
         """Price each trade under the same full-cost ceiling, including the outside option."""
         fields = [field for field in case["negotiable"] if field != "unit_price"]
         rows = []
@@ -162,15 +186,19 @@ class RoutedAgent:
             proposal["unit_price"] = min(price_ceiling, math.floor((ceiling - base) / slope * 100) / 100)
             if proposal["unit_price"] <= 0:
                 continue
-            cost = total_cost(case, proposal)
+            floor = cheapest_price(case, proposal, standard, sid)  # never squeeze into the health penalty
+            if floor and proposal["unit_price"] < floor:
+                proposal["unit_price"] = floor
+            cost = decision_cost(case, proposal, standard, sid)
             if cost > ceiling:
                 proposal["unit_price"] = round(proposal["unit_price"] - 0.01, 2)
-                cost = total_cost(case, proposal)
+                cost = decision_cost(case, proposal, standard, sid)
             if proposal["unit_price"] <= 0 or not math.isfinite(cost) or cost > ceiling or cost >= alternative:
                 continue
             if must_haves_ok(case, proposal):
                 rows.append((cost, proposal))
-        return sorted(rows, key=lambda row: total_cost(case, {**row[1], "unit_price": reference_price}))
+        return sorted(rows, key=lambda row: decision_cost(case, {**row[1], "unit_price": reference_price},
+                                                          standard, sid))
 
     def _forecast_evidence(self, case, threads):
         """One forecast argument per case: hosted replays mark any later `fc:` claim duplicate, even for
@@ -195,11 +223,11 @@ class RoutedAgent:
                 "please reflect this additional business in your price.")
 
     def _rival_evidence(self, case, threads, sid):
-        current = acceptable_offer(case, threads[sid])
+        current = acceptable_offer(case, threads[sid], sid)
         cited = {ref for message in threads[sid] if message.get("from") == "buyer"
                  for ref in ID_RE.findall(message.get("body", ""))}
         rivals = [(accepted[1], other, accepted[0]) for other in live_threads(threads) if other != sid
-                  if (accepted := acceptable_offer(case, threads[other])) and accepted[0] not in cited
+                  if (accepted := acceptable_offer(case, threads[other], other)) and accepted[0] not in cited
                   and (not current or accepted[1] < current[1])]
         if not rivals:
             return ""
@@ -268,21 +296,24 @@ class RoutedAgent:
             sid, current, sent = record["sid"], record["current"], record["sent"]
             if record["terminal"] or record["plateau"]:
                 continue
-            current_cost = total_cost(case, current, record["std"])
-            target_cost = ask_limit(case, threads[sid])
+            current_cost = decision_cost(case, current, record["std"], sid)
+            target_cost = ask_limit(case, threads[sid], sid)
             if sent:
                 prior = [sheet["terms"] for sheet in sent[-1]["term_sheets"]]
                 if any(set(sheet) != set(case["negotiable"]) or any(not valid_value(f, v) for f, v in sheet.items())
                        for sheet in prior):
                     return None
-                previous_cost = min(total_cost(case, sheet) for sheet in prior)
+                previous_cost = min(decision_cost(case, sheet, record["std"], sid) for sheet in prior)
                 small_gap = current_cost <= previous_cost * 1.002
                 if tried and (small_gap or moves_left(case, threads[sid]) <= 1):
                     if self.validate(case, threads, {"supplier_id": sid, "action": "accept"}):
                         return "small_cost_gap" if small_gap else "round_reserve", closing_move(case, threads)
             anchor = ANCHOR_BY_GOAL.get(case["buyer"].get("category_goal"), 0.15)
             rows = self._packages(case, record["options"], target_cost, alternative, current["unit_price"],
-                                  price_ceiling=math.inf if sent else round(current["unit_price"] * (1 - anchor), 2))
+                                  price_ceiling=math.inf if sent else max(
+                                      round(current["unit_price"] * (1 - anchor), 2),
+                                      opening_price_cap(case, threads[sid], sid)),
+                                  sid=sid, standard=record["std"])
             if not rows:
                 continue
             chosen = [rows[0][1]]
@@ -340,7 +371,8 @@ class RoutedAgent:
                 d = {"supplier_id": sid, "action": "send", "body": "Thank you. Please consider this price proposal.",
                      "term_sheets": [complete_offer(case, proposal, std)]}
                 move = self.validate(case, threads, d)
-                if move and total_cost(case, move["message"]["term_sheets"][0]["terms"]) < total_cost(case, terms, std):
+                if move and (decision_cost(case, move["message"]["term_sheets"][0]["terms"], std, sid)
+                             < decision_cost(case, terms, std, sid)):
                     return "simple_opening_counter", move
         return self._structured_bargain(case, threads)
 
@@ -348,6 +380,7 @@ class RoutedAgent:
         return self.decide_timed(case, threads, deadline=self.clock() + self.max_decision_seconds)
 
     def decide_timed(self, case, threads, *, deadline, wave_seconds_left=None):
+        self._prepare(case)
         start = self.clock()
         if not math.isfinite(deadline):
             raise ValueError("deadline must be finite")
@@ -393,10 +426,12 @@ class RoutedAgent:
             # Providers enforce cancellation; this also discards late results from injected completions.
             move = closing_move(case, threads)
             action = move["message"].get("action", {}).get("type")
-            # Accepting an untouched opening after a failed model call scored 0 in hosted P01.
-            untouched = action == "accept" and not any(m.get("from") == "buyer" for m in threads[move["supplier_id"]])
+            # Accepting an open_offer opening after a failed model call scored 0 in hosted P01.
+            # Accepting an offer the supplier still treats as open, with moves left, after a model failure
+            # (hosted P01 accepted 135.7 for 0.41 after a round-2 timeout; another run reached 0.937).
+            open_offer = action == "accept" and latest(threads[move["supplier_id"]]).get("status") == "open"
             # Walking away with moves left forfeits the case (hosted P10 walked in round 1): counter instead.
-            if (self.clock() < thread_deadline - 1 and (untouched or action == "walk_away")
+            if (self.clock() < thread_deadline - 1 and (open_offer or action == "walk_away")
                     and any(moves_left(case, threads[sid]) > 1 for sid in live_threads(threads))):
                 repair = self._structured_bargain(case, threads)
                 if repair and not repair[1]["message"].get("action"):

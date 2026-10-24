@@ -147,6 +147,28 @@ class DataPackage:
                                  "note": "steepest recent fall: cite both IDs and this change"}
         return selected
 
+    def supplier_estimates(self, case):
+        """{supplier: estimate} for the supplier-health term of relationship goals, from should-cost.
+
+        Fit to 10 hosted relationship deals (max error EUR 349; EUR 144,100 predicted for a charged
+        EUR 143,186): full cost 0.98 x the should-cost estimate, 7 % cost of money, standard payment
+        and Incoterm from the supplier record. Suppliers without data get no estimate."""
+        if case["buyer"].get("category_goal") not in ("stabilise", "secure_supply") or not self.db:
+            return {}
+        out = {}
+        for sid in case["suppliers"]:
+            try:
+                record = self.query("SELECT payment_days, incoterm FROM suppliers WHERE id = ?", (sid,))
+                costs = [row for row in self.query("SELECT * FROM should_cost WHERE supplier_id = ?", (sid,))
+                         if row["part_id"] in case["parts"] and row["unit_cost"]]
+            except Exception:  # an older or partial package: decide without the estimate
+                continue
+            if record and costs:
+                unit = costs[0]["unit_cost"] / (costs[0].get("price_unit") or 1)
+                standard = {k: v for k, v in record[0].items() if v is not None}
+                out[sid] = {"standard": standard, "interest_rate": 0.07, "full_cost": round(0.98 * unit, 4)}
+        return out
+
     def _steepest_fall(self, refs):
         """The steepest index fall of 3-12 months ending in the series' last 6 months, at least -1 %.
 
