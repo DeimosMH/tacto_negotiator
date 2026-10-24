@@ -109,3 +109,24 @@ def test_indexed_supplier_document_round_trip_and_safe_closure():
 
     text = read_document("quote.pdf", pdf("Quote", [("Our standard terms", {"index_clause": None})]))
     assert quote_terms(text)["standard"]["index_clause"] is None
+
+
+def test_a_quote_skipped_for_lack_of_time_is_read_once_before_deciding():
+    import time
+
+    from tacto_negotiator.play import reread_skipped_documents
+
+    class Table:
+        calls = 0
+
+        def attachment(self, attachment_id, **options):
+            Table.calls += 1
+            return b"not a pdf"
+
+    message = {"from": "sales@a", "attachments": [{"attachment_id": "att:1", "name": "notes.txt"}]}
+    threads = {"sup:A": [message]}
+    fetch_documents(Table(), message, deadline=time.monotonic() - 1)  # no budget left: skipped
+    assert Table.calls == 0 and message["attachments"][0]["read_failed"]
+    reread_skipped_documents(Table(), threads)
+    reread_skipped_documents(Table(), threads)
+    assert Table.calls == 1 and message["attachments"][0]["text"] == "not a pdf"

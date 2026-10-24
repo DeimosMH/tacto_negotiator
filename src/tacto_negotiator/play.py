@@ -185,6 +185,7 @@ def fetch_documents(table, message, *, deadline=None):
             if deadline is not None:
                 left = deadline - time.monotonic()
                 if left <= 0:
+                    att["skipped"] = True  # never requested: retried once by reread_skipped_documents
                     raise TimeoutError("no budget for an attachment read")
                 options = {"timeout": left, "retries": 0}
             parsed = read_document(att["name"], table.attachment(att["attachment_id"], **options))
@@ -197,6 +198,20 @@ def fetch_documents(table, message, *, deadline=None):
             att["read_failed"] = True
             log.warning("attachment unavailable (%s); defaults must not be assumed", type(error).__name__)
     return message
+
+
+def reread_skipped_documents(table, threads, seconds=3.0):
+    """Read each thread's latest documents that were skipped for lack of time, once. A slow reply can
+    arrive after the read deadline; without its quote an agreed package looks unverifiable and the
+    case closes on a worse (or stale) offer, which costs far more than a few seconds. Reads that
+    actually failed or timed out are not repeated."""
+    for events in threads.values():
+        message = latest(events)
+        failed = [att for att in message.get("attachments") or [] if att.pop("skipped", False)]
+        for att in failed:
+            att.pop("read_failed")
+        if failed:
+            fetch_documents(table, message, deadline=time.monotonic() + seconds)
 
 
 def known_offer(case, events):
@@ -296,6 +311,7 @@ def play(table, case_id, agent, deadline=None):
     while live_threads(threads):
         decision_deadline = None
         if timed_decide:
+            reread_skipped_documents(table, threads)
             if get_deadlines := getattr(table, "thread_deadlines", None):
                 thread_deadlines = get_deadlines(threads, deadline=read_deadline())
                 received.update({sid: expires - MOVE_LIMIT_S for sid, expires in thread_deadlines.items()})
