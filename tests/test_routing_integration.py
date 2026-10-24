@@ -94,6 +94,52 @@ def test_other_rfq_threads_keep_aging_during_a_supplier_reply(monkeypatch):
     assert len(table.sent) == len(table.closed) == 1
 
 
+def test_idle_rfq_threads_are_messaged_while_another_supplier_replies(monkeypatch):
+    monkeypatch.setattr(sys.modules["tacto_negotiator.play"], "CONCURRENT_BELOW_S", 61)  # every idle thread is due
+
+    class Table(LocalTable):
+        def __init__(self):
+            super().__init__(Clock())
+            self.lock, self.busy, self.overlap = threading.Lock(), set(), 0
+
+        def send(self, sid, message):
+            with self.lock:
+                assert sid not in self.busy  # one pending message per thread
+                self.busy.add(sid)
+                self.overlap = max(self.overlap, len(self.busy))
+                self.sent.append((sid, message))
+            time.sleep(0.2)  # the supplier is writing its reply
+            with self.lock:
+                self.busy.discard(sid)
+            return {"from": sid, "status": "open", "term_sheets": self.threads[sid][0]["term_sheets"]}
+
+        def close(self, sid, message):
+            assert not self.busy  # a closing action waits for every pending reply
+            return super().close(sid, message)
+
+    class Agent:
+        def __init__(self):
+            self.unavailable, self.decisions, self.concurrent = set(), 0, []
+
+        def decide_timed(self, case, threads, *, deadline, wave_seconds_left):
+            self.decisions += 1
+            if self.decisions == 1:
+                return {"supplier_id": case["suppliers"][0], "message": {"body": "First."}}
+            return walk(case, threads)
+
+        def concurrent_move(self, case, threads):
+            free = [sid for sid in threads if sid not in self.unavailable]
+            self.concurrent.append(free)
+            return ("idle_thread", {"supplier_id": free[0], "message": {"body": "Meanwhile."}}) if free else None
+
+    table, agent = Table(), Agent()
+    play(table, table.case["case_id"], agent)
+    first, second = table.case["suppliers"]
+    assert table.overlap == 2 and agent.concurrent == [[second]] and agent.decisions == 2
+    assert sorted(sid for sid, _ in table.sent) == [first, second] and len(table.closed) == 1
+    assert [m.get("body", m["from"]) for m in table.threads[second]] == [second, "Meanwhile.", second]
+
+
 def test_a_late_custom_completion_cannot_submit_its_counteroffer(monkeypatch):
     clock = Clock()
     runner_clock(monkeypatch, clock)

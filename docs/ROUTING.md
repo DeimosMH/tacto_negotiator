@@ -70,7 +70,7 @@ The packages include favorable non-price terms, ranked by their cost at a common
 
 Must-have repair works through explicit outgoing terms. If lead time is negotiable over 14/28/42 days and the requirement is at most 14 days, every offered package must explicitly say 14. If that requirement is fixed or unavailable in the declared options, the script does not pretend to repair it. Acceptance still checks the current standing supplier offer, not the buyer's desired counter-offer.
 
-RFQs use the same cost function for every bidder. A higher unit price can win when delivered cost is lower. Untried suppliers are considered before suppliers that already received a structured bid; subsequent choices favor fewer bid rounds and then lower candidate C. This improves turn selection but does not implement concurrent requests within an RFQ: the runner's supplier calls are still sequential.
+RFQs use the same cost function for every bidder. A higher unit price can win when delivered cost is lower. Untried suppliers are considered before suppliers that already received a structured bid; subsequent choices favor fewer bid rounds and then lower candidate C. While one supplier replies, `play()` lets the agent's scripted `concurrent_move` message other idle RFQ threads whose 60 s clock would run out before that reply is in (one pending message per thread; closing actions and model calls wait for every reply).
 
 Closure is also conditional. An agreement is considered after all live bidders have been tried or reached a terminal state. A quote plateau requires at least two buyer offers and three consecutive identical complete supplier quotes. A sufficiently small full-cost gap (within 1% of the cheapest previous proposed package) or the final available round can also trigger closure after all bidders have been tried. Every closure runs the shared guard; a plateau against a better alternative ends in a walk-away, not an inferior deal.
 
@@ -120,7 +120,7 @@ CompletionClient waits for a shared concurrency slot only until that deadline, t
 
 The adapter creates an HTTP client for each call and closes it after use. It does not yet pool warmed connections across worker calls. That is a possible optimization after measurements; it does not change the deadline contract.
 
-The arena HTTP timeout is separate. A supplier can take about a minute to answer, and its response time still consumes wave time. Requests to suppliers within one RFQ remain sequential. Budgeting against the earliest thread prevents spending an available window on the wrong model call, but it cannot make a synchronous supplier request service the other threads. See [Sunday readiness](FINAL_READINESS.md).
+The arena HTTP timeout is separate. A supplier can take about a minute to answer, and its response time still consumes wave time. Budgeting against the earliest thread prevents spending an available window on the wrong model call; idle RFQ threads are served by scripted concurrent messages while a supplier replies. See [Sunday readiness](FINAL_READINESS.md).
 
 An injected completion used with RoutedAgent must honor deadline itself. Python cannot safely stop an arbitrary blocking function. The supplied CompletionClient provides that behavior; the legacy --agent llm path still uses its earlier completion interface and is not upgraded by selecting a model name.
 

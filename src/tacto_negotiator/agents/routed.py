@@ -339,8 +339,11 @@ class RoutedAgent:
         for values in itertools.product(*options):
             proposal = dict(zip(fields, values, strict=True))
             # Routine/leverage C is affine in price for fixed terms; the reference price limits rounding error.
-            base = total_cost(case, {**proposal, "unit_price": 0})
-            reference_cost = total_cost(case, {**proposal, "unit_price": reference_price})
+            # With the supplier's standard terms (e.g. its ppm commitment): priced without them, every package
+            # exceeded a binding ask limit, so hosted P05 rounds 3+ went to the model (13-21 s) and then closed
+            # on TimeoutError with 3.6-13.9 s budgets (0.52-0.77 instead of 0.84).
+            base = total_cost(case, {**proposal, "unit_price": 0}, standard)
+            reference_cost = total_cost(case, {**proposal, "unit_price": reference_price}, standard)
             slope = (reference_cost - base) / reference_price
             if not math.isfinite(slope) or slope <= 0:
                 continue
@@ -662,6 +665,20 @@ class RoutedAgent:
                              < decision_cost(case, terms, std, sid)):
                     return "simple_opening_counter", move
         return self._structured_bargain(case, threads)
+
+    def concurrent_move(self, case, threads):
+        """(reason, move) - a scripted message to a supplier not in `self.unavailable` (busy or about
+        to time out), sent while another supplier of an RFQ is still replying; else None. Never a
+        model call and never a closing action: those wait until every pending reply is in. Hosted P05
+        blocked 18-47 s per send while the other bidders' 60 s clocks ran, losing them to timeouts."""
+        self._prepare(case)
+        try:
+            scripted = self._script(case, threads)
+        except (KeyError, TypeError, ValueError, OverflowError, AttributeError, StopIteration):
+            return None
+        if not scripted or scripted[1]["message"].get("action") or scripted[1]["supplier_id"] in self.unavailable:
+            return None
+        return scripted
 
     def decide(self, case, threads):
         return self.decide_timed(case, threads, deadline=self.clock() + self.max_decision_seconds)

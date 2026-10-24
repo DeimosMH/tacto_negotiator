@@ -20,6 +20,7 @@ from .cost import closing_terms, cost_breakdown, must_haves_ok, score, total_cos
 from .docs import read_document
 from .play import (
     CLOSE_BEFORE_CAP_S,
+    CONCURRENT_BELOW_S,
     MIN_DECISION_S,
     MOVE_LIMIT_S,
     SEND_MARGIN_S,
@@ -356,6 +357,22 @@ def _action_summary(decision, case, offers):
     return out
 
 
+def _submit(sim, session, case, decision, trace):
+    """Send one move to the simulator and trace the reply; returns a rejection other than 409 (late,
+    ended), which the caller counts and raises."""
+    trace["sent_action"] = _action_summary(decision, case, session["offers"])
+    try:
+        reply = sim.message("local", session["id"], decision["supplier_id"], decision["message"])
+    except Fail as failure:
+        trace["submission_error"] = failure.status
+        return None if failure.status == 409 else failure
+    sheet = (reply.get("term_sheets") or [{}])[0]
+    trace["supplier_reply"] = {"supplier_id": decision["supplier_id"], "status": reply.get("status"),
+                               "unit_price": sheet.get("terms", {}).get("unit_price"),
+                               "term_sheet_id": sheet.get("term_sheet_id")}
+    return None
+
+
 def _match(variant, factory, scenario, wave, waves, decision_seconds):
     started = time.monotonic()
     sim = (scenario.sim or CompetitionSim)(scenario, waves)
@@ -431,18 +448,38 @@ def _match(variant, factory, scenario, wave, waves, decision_seconds):
                 decision = getattr(agent, "closing_move", closing_move)(case, fresh)
                 trace["fallback"] = True
                 trace["deadline_override"] = True
-            trace["sent_action"] = _action_summary(decision, case, session["offers"])
-            try:
-                reply = sim.message("local", session["id"], decision["supplier_id"], decision["message"])
-                sheet = (reply.get("term_sheets") or [{}])[0]
-                trace["supplier_reply"] = {"supplier_id": decision["supplier_id"], "status": reply.get("status"),
-                                           "unit_price": sheet.get("terms", {}).get("unit_price"),
-                                           "term_sheet_id": sheet.get("term_sheet_id")}
-            except Fail as failure:
-                trace["submission_error"] = failure.status
-                if failure.status != 409:
-                    invalid_moves += int(failure.status == 422)
-                    raise
+            sent_at = sim.now
+            if failure := _submit(sim, session, case, decision, trace):
+                invalid_moves += int(failure.status == 422)
+                raise failure
+            # As play(): while that supplier replies, scripted messages go to the other idle RFQ threads.
+            # Each is sent at the same virtual time; the clock then moves to the slowest reply.
+            concurrent = getattr(agent, "concurrent_move", None)
+            if concurrent and not decision["message"].get("action") and len(live) > 1:
+                ends, busy = [sim.now], {decision["supplier_id"]}
+                while session["status"] != "ended" and len(busy) < len(live):
+                    due = {sid for sid in live if SEND_MARGIN_S + MIN_DECISION_S
+                           < session["threads"][sid]["last_at"] + MOVE_LIMIT_S - sent_at < CONCURRENT_BELOW_S}
+                    if not due - busy:
+                        break
+                    agent.unavailable = set(live) - (due - busy)
+                    prep = time.monotonic()
+                    picked = concurrent(case, threads)
+                    sent_at += time.monotonic() - prep
+                    if not picked:
+                        break
+                    reason, move = picked
+                    busy.add(move["supplier_id"])
+                    sim.now = sent_at
+                    extra = {"route": "script", "reason": reason, "concurrent": True, "fallback": False,
+                             "decision_wall_s": 0.0, "budget_s": 0.0, "model_attempts": 0, "forced_close": False,
+                             "sent_action": _action_summary(move, case, session["offers"])}
+                    decisions.append(extra)
+                    if failure := _submit(sim, session, case, move, extra):
+                        invalid_moves += int(failure.status == 422)
+                        raise failure
+                    ends.append(sim.now)
+                sim.now = max(ends)
         else:
             raise RuntimeError("synthetic move limit exceeded")
     except Exception as failure:

@@ -56,7 +56,7 @@ The archived kit in `materials/starter_kit` matches upstream's latest commit (`7
 
 ## What to build next
 
-The strongest remaining implementation opportunity is **concurrent servicing of RFQ suppliers**. The holdout still loses other supplier threads while waiting synchronously on one reply. A faster buyer model cannot eliminate that wait. Keep this above more elaborate model routing; see [Sunday readiness](FINAL_READINESS.md).
+**Concurrent servicing of RFQ suppliers** is implemented for scripted moves: While one supplier replies, `play()` lets the agent's scripted `concurrent_move` message other idle RFQ threads whose 60 s clock would run out before that reply is in (one pending message per thread; closing actions and model calls wait for every reply). Model-led negotiations still message one supplier at a time; see [Sunday readiness](FINAL_READINESS.md).
 
 Next, prepare concise supplier evidence before opening sessions: current IDs, units, dates, relevant correspondence and a few priced trade-offs. The shared ID cache helps, but full pre-session dossiers and grounded claim arithmetic remain unfinished. Cache against a specific release; avoid stale evidence after a data update.
 

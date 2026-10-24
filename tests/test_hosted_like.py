@@ -64,3 +64,17 @@ def test_replicas_use_recorded_hosted_references_and_seeded_private_profiles():
     assert len(first) == 10 and [s.profiles for s in first] == [s.profiles for s in again]
     assert [s.profiles for s in first] != [s.profiles for s in other]
     assert all(s.reference["c_open"] > s.reference["c_best"] for s in first)
+
+
+def test_rfq_rounds_stay_scripted_and_idle_bidders_are_served_while_another_replies():
+    from tacto_negotiator.agents.routed import RoutedAgent
+    from tacto_negotiator.compete import unavailable
+    from tacto_negotiator.competition import _match
+
+    rfq = next(s for s in build_replica_scenarios(0) if s.name == "P05")  # three bidders, 15-40 s replies
+    row = _match("scripts", lambda: RoutedAgent(unavailable), rfq, 1, 5, 25)
+    # Bounded RFQ concessions are priced with each bidder's standard terms: no model (here failing) call.
+    assert row["model_attempts"] == 0 and row["routes"] == {"script": len(row["decisions"])}
+    concurrent = [d for d in row["decisions"] if d.get("concurrent")]
+    assert concurrent and all(d["sent_action"]["action"] == "send" for d in concurrent)
+    assert row["thread_timeouts"] == 0 and row["score"] > 0.84

@@ -119,7 +119,7 @@ For routed decisions, play leaves a five-second send margin and starts wave clos
 
 CompletionClient budgets provider queueing and response reading together, explicitly sends reasoning effort and a 4,096-token default output cap, and does not retry. Expired async I/O is cancelled and incomplete/late output is rejected. Cancellation is cooperative, not an operating-system hard kill. Routed arena reads use remaining per-phase timeouts of at most five seconds and disable retries; this is not a hard whole-operation bound on pacing, all HTTP phases or supplier POST retries.
 
-play_all and play_waves parallelize cases. Requests to suppliers inside one RFQ remain sequential, so a slow reply can cause other threads to time out even when the buyer decides quickly. The [final-readiness guide](FINAL_READINESS.md) separates the implemented deadline controls from this remaining scheduling problem.
+play_all and play_waves parallelize cases. While one supplier replies, `play()` lets the agent's scripted `concurrent_move` message other idle RFQ threads whose 60 s clock would run out before that reply is in (one pending message per thread; closing actions and model calls wait for every reply). See the [final-readiness guide](FINAL_READINESS.md).
 
 One shared ArenaClient paces requests at nine calls/second against the documented ten-per-key allowance. Independent clients or processes do not share that limiter. Retries of one logical POST retain X-Move-Id. The final runner can resume known sessions, but an isolated case exception is not automatically rescheduled by the same run.
 

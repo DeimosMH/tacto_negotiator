@@ -30,6 +30,10 @@ MOVE_LIMIT_S = 60
 REFRESH_S = 10  # the authoritative timer refresh (with any changed threads and their documents)
 MIN_DECISION_S = 3  # a thread with less time than this is left to time out rather than messaged
 SEND_MARGIN_S = 5  # leave time for validation, shared pacing and submitting the move
+# While one RFQ supplier replies (hosted 18-47 s), the agent's scripted `concurrent_move` messages
+# another idle thread whose clock would run out before that reply is in and decided. Earlier, the
+# message waits: it can then cite the reply (replica P05 lost 0.014 sending every opening at once).
+CONCURRENT_BELOW_S = 50
 # In the Live Final, close this long before the wave's cap - or the slowest round of the case so far
 # (your decision plus a supplier reply of up to about a minute) plus a margin, if that is longer.
 CLOSE_BEFORE_CAP_S, ROUND_MARGIN_S = 90, 15
@@ -400,6 +404,43 @@ def play(table, case_id, agent, deadline=None):
         # 10 s, still bounded by the thread clocks: 5 s reads timed out under parallel load
         return fetch_documents(table, message, deadline=read_deadline(REFRESH_S) if timed_decide else None)
 
+    concurrent = getattr(agent, "concurrent_move", None) if timed_decide else None
+    concurrent_sent = {}
+
+    def send(supplier, message):
+        try:
+            reply = table.send(supplier, message)
+        except ArenaError as e:
+            if e.status != 409:
+                raise
+            reply = e
+        return reply, time.monotonic()
+
+    def send_all(supplier, message):
+        """Send the decided message; while that supplier replies, let the agent's scripted
+        `concurrent_move` message other RFQ threads that would otherwise time out (one pending
+        message per thread). Returns {supplier: (reply or 409 error, time of the reply)}."""
+        if concurrent is None or len(live_threads(threads)) < 2:
+            return {supplier: send(supplier, message)}
+        concurrent_sent.clear()
+        with ThreadPoolExecutor(max_workers=len(threads)) as pool:
+            pending = {supplier: pool.submit(send, supplier, message)}
+            while True:
+                now = time.monotonic()
+                due = {s for s in live_threads(threads) if s not in pending
+                       and SEND_MARGIN_S + MIN_DECISION_S < received[s] + MOVE_LIMIT_S - now < CONCURRENT_BELOW_S}
+                if not due:
+                    break
+                agent.unavailable = set(threads) - due
+                picked = concurrent(case, threads)
+                if not picked:
+                    break
+                other = picked[1]
+                log.info("%s concurrent %s", other["supplier_id"], picked[0])
+                concurrent_sent[other["supplier_id"]] = other["message"]
+                pending[other["supplier_id"]] = pool.submit(send, other["supplier_id"], other["message"])
+            return {s: future.result() for s, future in pending.items()}
+
     for events in threads.values():
         for m in events:
             read(m)
@@ -451,32 +492,42 @@ def play(table, case_id, agent, deadline=None):
         ):
             decision = close(case, threads)
         sid, msg = decision["supplier_id"], decision["message"]
-        try:
-            if msg.get("action"):
+        if msg.get("action"):
+            try:
                 log.info("%s %s", sid, msg["action"])
                 return table.close(sid, msg)
-            reply = table.send(sid, msg)
-        except ArenaError as e:
-            if e.status != 409:
-                raise
-            log.info("%s: %s", sid, e.detail)
-            reply = table.missed(sid, e)  # e.g. late, or the thread or the case has ended
-            received[sid] = time.monotonic()
-            if "messages" in reply:
-                threads[sid] = reply["messages"]
-                if live_threads(threads):
-                    for message in threads[sid]:
-                        read(message)
-                continue  # the rejected request is not a buyer move
-            if msg.get("action") and "result" not in reply:  # the case goes on: decide again
-                threads[sid].append(read(reply))
+            except ArenaError as e:
+                if e.status != 409:
+                    raise
+                outcomes = {sid: (e, time.monotonic())}
+        else:
+            outcomes = send_all(sid, msg)
+        ended = None
+        for supplier, (reply, replied_at) in sorted(outcomes.items(), key=lambda item: item[1][1]):
+            sent = msg if supplier == sid else concurrent_sent[supplier]
+            if isinstance(reply, ArenaError):
+                log.info("%s: %s", supplier, reply.detail)
+                reply = table.missed(supplier, reply)  # e.g. late, or the thread or the case has ended
+                received[supplier] = time.monotonic()
+                if "messages" in reply:
+                    threads[supplier] = reply["messages"]
+                    if live_threads(threads):
+                        for message in threads[supplier]:
+                            read(message)
+                    continue  # the rejected request is not a buyer move
+                if sent.get("action") and "result" not in reply:  # the case goes on: decide again
+                    threads[supplier].append(read(reply))
+                    continue
+            if "result" in reply:  # the reply ended the case, e.g. the last supplier walked away
+                ended = ended or reply["result"]
                 continue
-        if "result" in reply:  # the reply ended the case, e.g. the last supplier walked away
-            return reply["result"]
-        received[sid] = time.monotonic()
-        threads[sid] += [{**msg, "from": "buyer"}, read(reply)]
-        slowest = max(slowest, time.monotonic() - t0)
-        log.info("%s %s %s", sid, reply.get("status"), standing(threads[sid])[1])
+            received[supplier] = replied_at
+            threads[supplier] += [{**sent, "from": "buyer"}, read(reply)]
+            log.info("%s %s %s", supplier, reply.get("status"), standing(threads[supplier])[1])
+        if ended:
+            return ended
+        if all(not isinstance(reply, ArenaError) for reply, _ in outcomes.values()):
+            slowest = max(slowest, time.monotonic() - t0)
     return table.result()
 
 
