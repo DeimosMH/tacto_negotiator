@@ -124,7 +124,7 @@ class AtlasTests(unittest.TestCase):
             self.assertFalse(path.startswith(("http:", "https:", "//")))
             self.assertTrue((build.ROOT / "docs" / path).is_file())
         self.assertIn("connect-src 'none'", html)
-        for guide in ("README.md", "TUTORIAL.md", "IMPLEMENTATION.md", "DATA_GUIDE.md", "LOCAL_TESTING.md", "FINAL_READINESS.md", "MODEL_SELECTION.md"):
+        for guide in ("README.md", "TUTORIAL.md", "IMPLEMENTATION.md", "DATA_GUIDE.md", "LOCAL_TESTING.md", "FINAL_READINESS.md", "MODEL_SELECTION.md", "ROUTING.md"):
             text = self.nodes["docs/" + guide]["content"]
             for target in re.findall(r"\]\(([^)]+)\)", text):
                 if "://" in target or target.startswith("#"):

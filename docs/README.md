@@ -6,6 +6,8 @@ New to the project? Open the **Start here** tab or read [the beginner tutorial](
 
 Preparing for Sunday 13:30? Open **Sunday final** for [implementation priorities, five-wave simulations and the rehearsal guide](FINAL_READINESS.md), then read [the hosted model recommendation and qualification procedure](MODEL_SELECTION.md).
 
+The implemented **Routing guide** explains [how a decision selects a script, Sol or optional Astra](ROUTING.md), including the deadline adapter, configuration, local examples and how to change a rule.
+
 For a local HTTP URL, run this from the repository root:
 
 ```sh
@@ -22,7 +24,7 @@ Then open http://127.0.0.1:8000. The entire explanation is embedded in data.js; 
 - The landing page shows the whole project grouped by responsibility and subgroup. Select a group to inspect its members, or switch to All files for the complete graph.
 - Selecting a file shows its incoming and outgoing neighbors. Solid edges describe existing imports, joins, configuration or reviewed interactions. Dashed edges describe proposed agent responsibilities. The relationship list includes direction, meaning and evidence, and is a keyboard-accessible alternative to the graph.
 - Use the graph controls to zoom, drag its background to pan, or Fit to reset. Group boundaries and node colors follow the legend. Nodes can be activated with Enter or Space. Browser Back/Forward restores selections.
-- Start here contains the beginner walkthrough. Sunday final contains priorities, simulation results and model selection. Implementation, Data guide and Local checks contain the deeper design notes. Proposed nodes are clearly labelled; the full proposed buyer remains unimplemented.
+- Start here contains the beginner walkthrough. Sunday final contains priorities and simulation results; Routing guide explains the implemented routed buyer. Implementation, Data guide and Local checks contain the deeper design notes. Proposed nodes mark remaining evidence, evaluation and scheduling work.
 
 ## Refresh and verify
 

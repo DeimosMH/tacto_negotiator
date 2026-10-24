@@ -2,7 +2,7 @@
 
 **Initial choice: hosted GPT-6.1 Sol at low reasoning effort, with deterministic Python for costs, constraints, timing and fallback.** This is a provisional engineering choice for the requested reliability/latency priority. It is not a measured winner: no real model API was called, and the local simulator cannot rank negotiation skill. Promote a model only after the qualification below. See [Sunday priorities and simulations](FINAL_READINESS.md).
 
-Use GPT-6 Astra for difficult preparation and analysis before a live session, if it improves those tasks. During the final, use one qualified primary provider; an immediate local fallback has a more predictable response time than sequentially trying several providers. A second hosted provider is useful as a prequalified replacement between decisions, when enough budget remains.
+The implemented [routed buyer](ROUTING.md) uses scripts for narrow known actions, Sol as its default completion and optional Astra for structured complexity when enough budget remains. Astra is disabled until configured. Each decision makes at most one completion request; failures use a local fallback. Use Astra for difficult preparation before a live session as well, if evaluation shows it improves those tasks.
 
 ## Requested candidates and their roles
 
@@ -32,23 +32,21 @@ Do not infer cross-provider speed from published relative labels or token-genera
 
 A MILP solver becomes useful only if a future case couples many products, capacity constraints and sourcing allocations. The present per-case term-sheet contract can begin with bounded enumeration; no new solver dependency is needed. Embeddings or learned reranking can be considered if deterministic dossier retrieval later misses relevant prose. Do not train a policy against this simulator's fixed 2% concession script and treat the score as evidence of real negotiation ability.
 
-## Adapter changes needed before relying on this choice
+## Implemented adapter and remaining qualification
 
-The current [llm_from_env](../starter_kit/starter-kit/arena_kit/agents/llm.py) does not implement a deadline-aware model gateway. The source has been inspected; these are implementation gaps, not tasks already completed by the documentation:
+The --agent routed path uses [CompletionClient](../starter_kit/starter-kit/arena_kit/agents/completion.py). It sends requests through OpenAI Responses, explicitly sets reasoning effort and a default 4,096-token output cap, and includes shared-provider queue time and HTTP reading in the supplied absolute deadline. It performs no automatic retries. Timed-out async I/O is cancelled and incomplete or late output is rejected; RoutedAgent then uses local fallback.
 
-1. The OpenAI-compatible branch sends model and messages only. **LLM_EFFORT currently has no effect on that branch.** Wire the selected provider's supported effort parameter explicitly. For GPT-6.1 Sol, use low, not none/minimal. Avoid adding unsupported parameters to every compatible endpoint.
-2. Bound generated output as well as elapsed time. Start with a concise email and one JSON object; measure the reasoning/output token allowance needed to finish it without truncation. The Anthropic branch currently allows 16,000 output tokens.
-3. A nominal 45-second HTTP timeout is not a whole-decision deadline. Disable implicit SDK retry loops or fit them inside a shared absolute deadline, including queue time and fallback. Handle cancellation and discard late results.
-4. Warm reusable client connections, reuse stable prompt context, and limit concurrent provider work. Share one prepared data snapshot; do not rebuild it for each round.
-5. Validate model output into a bounded action schema. Check types, finite amounts, allowed fields, live supplier/offer ownership, evidence IDs and actual arithmetic. Keep code-computed cost comparisons authoritative.
+Fast and strong calls share one concurrency limit. A fresh HTTP client is created and closed for each call, so persistent connection warming remains an optimization to evaluate. Cancellation is cooperative I/O rather than a hard operating-system kill; an uncooperative resolver or injected transport requires stronger isolation. The router applies common structured-action checks, including finite values, permitted terms and guarded acceptance.
 
-The current compatible branch can send plain messages to GPT-6.1 Sol via Chat Completions. If adding model tool calls, use its supported Responses interface; that is an adapter change. Merely changing LLM_MODEL cannot make effort controls, cancellation or tool support appear. [GPT-6.1 Sol capabilities](https://developers.openai.com/api/docs/models/gpt-6.1-sol).
+The legacy --agent llm path still uses [llm_from_env](../starter_kit/starter-kit/arena_kit/agents/llm.py): **LLM_EFFORT has no effect on its OpenAI-compatible branch**, its nominal 45-second timeout does not cover an entire decision, and the Anthropic branch allows 16,000 output tokens. Choose the routed path to use the new adapter. Changing only LLM_MODEL does not change those legacy behaviors.
 
-The fallback closing fix in this change checks defaults, must-haves and the alternative. It does not finish the universal guard, supplier-health estimation, provider cancellation or RFQ scheduling. Those remain P0/P1 items in [the readiness plan](FINAL_READINESS.md).
+For GPT-6.1 Sol use a supported effort such as low, not none/minimal. The routed adapter uses Responses for plain structured decision text; it does not add model tool calls. [GPT-6.1 Sol capabilities](https://developers.openai.com/api/docs/models/gpt-6.1-sol).
+
+Real-world latency, output-budget adequacy and model quality still need qualification. Complete dossier preparation, evidence-claim arithmetic, supplier-health estimation and concurrent RFQ scheduling also remain work; see [the readiness plan](FINAL_READINESS.md).
 
 ## How to qualify the choice step by step
 
-First complete the local adapter/scheduler tests using injected completions. The existing test suite makes no external calls. Real provider measurements would be a separate evaluation using explicitly configured hosted access, with the arena still local.
+Start with the local [routing and adapter tests](ROUTING.md), which use injected completions and transports. They make no external calls. Real provider measurements are a separate evaluation using explicitly configured hosted access, with the arena still local.
 
 1. Freeze representative prompts: opening offer, conflicting evidence, missing quote defaults, final offer, valid alternative, multi-supplier RFQ, stabilise/secure_supply, and a nearly expired decision. Include a known acceptable action and numeric checks for each.
 2. Compare the same dossier and candidate packages across models. Use each provider's lowest supported effort that passes the quality checks. Keep the total decision budget identical.

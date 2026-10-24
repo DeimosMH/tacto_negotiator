@@ -1,8 +1,8 @@
 # Build an evidence-driven buyer
 
-This is a proposed implementation plan, grounded in the supplied presentation, brief, data and source code. The repository currently contains a reusable starter kit and two example buyers. The proposed components in the map are design elements, not implemented files. No competition agent is added by this documentation work.
+This implementation plan is grounded in the supplied presentation, brief, data and source code. The repository contains the starter kit's two example buyers and the implemented RoutedAgent, which chooses scripts, a fast model or an optional stronger model per decision. Proposed components in the map describe the remaining evidence buyer responsibilities, not files that already exist.
 
-For the deadline-driven implementation order, start with [Sunday final readiness](FINAL_READINESS.md). That follow-up adds local five-wave tests, configurable rehearsal waves, guarded fallback closure and a post-decision deadline check. [Model selection](MODEL_SELECTION.md) recommends a hosted primary and explains what its adapter still needs.
+For the deadline-driven implementation order, start with [Sunday final readiness](FINAL_READINESS.md). The [routing guide](ROUTING.md) explains the implemented policy, deadline-aware completion adapter and runner integration. [Model selection](MODEL_SELECTION.md) recommends a hosted primary and explains the remaining qualification work.
 
 ## 1. The system we are building
 
@@ -25,6 +25,7 @@ Sources: [participant brief](../starter_kit/brief/brief.md), [API contract](../s
 | Evidence | DataPackage in data.py | Read-only SQL, citable lookup, document paths, release overlays |
 | Documents | docs.py | PDF/XLSX text and quote-standard extraction |
 | Baselines | NaiveAgent and LLMAgent | decide interface and an injectable completion function |
+| Routed decisions | RoutedAgent and CompletionClient | Tested scripts, fast/optional strong selection, common action validation, absolute provider deadline and local fallback |
 | Optional tools | mcp_server.py | Six read-only tools for an MCP client; not automatic LLMAgent retrieval |
 | Local verification | sim.py, sim_cases, tests | Scripted cases, controllable clock, local HTTP and mock transports |
 
@@ -55,7 +56,7 @@ Sources: [play.py](../starter_kit/starter-kit/arena_kit/play.py), [client.py](..
 
 ## 4. The smallest useful additions
 
-Start with a proposed EvidenceBuyer beside the existing agents, plus a small preparation helper. Keep validation and evaluation as functions until their size justifies another module. The six proposed nodes in the map are responsibilities, not a requirement for six services or files.
+Extend RoutedAgent with prepared evidence and stronger package evaluation. Keep these additions as small helpers until their size justifies another module. The six proposed nodes in the map are remaining responsibilities, not a requirement for six services or files. The current routing and validation foundation does not yet implement the full evidence buyer.
 
 Evidence preparation returns a plain dictionary keyed by case/supplier/part. A claim contains its source IDs, exact values, formula, resulting number, period and relevance rationale. Store qualitative context separately so a historical note does not masquerade as a checked numeric fact. Preserve immutable prepared context between decisions, but keep each case's mutable history and used-claim tracking isolated.
 
@@ -65,7 +66,7 @@ For stabilise and secure_supply, estimate full_cost, interest_rate and standard 
 
 The model sees only the useful evidence, candidate packages and concise thread context. It chooses a trade, asks a question or proposes closure. Code does arithmetic and checks claims. Keep the provider injectable so the same agent can run with deterministic canned completions in tests.
 
-Wire the new agent into cli.agent_factory and its allowed command-line choices. Add a preparation step before RemoteTable.open, including the final-wave runner path; LLMAgent.prepare currently runs from its first decide call after play has already opened the session and fetched attachments. Warming DataPackage._ids in the CLI does not precompute case dossiers.
+The routed agent is wired into cli.agent_factory and both --agent choice lists. A complete evidence preparation step before RemoteTable.open remains work, including the final-wave path. LLMAgent.prepare, which supplies routed prompt preparation too, currently runs from deciding after the session opens. Warming DataPackage._ids in the CLI does not precompute case dossiers.
 
 Sources: [LLMAgent](../starter_kit/starter-kit/arena_kit/agents/llm.py), [cost helpers](../starter_kit/starter-kit/arena_kit/cost.py), [CLI](../starter_kit/starter-kit/arena_kit/cli.py).
 
@@ -73,7 +74,9 @@ Sources: [LLMAgent](../starter_kit/starter-kit/arena_kit/agents/llm.py), [cost h
 
 Validation must cover model output, deterministic fallback and deadline closure. LLMAgent.guard checks model decisions. On model failure or rejection, the agent uses NaiveAgent for offers and now routes its closing actions through closing_move, which checks supplier defaults, must-haves and the alternative. NaiveAgent used directly still lacks those closing checks. Both the model guard and closing_move omit a supplier-health estimate; finite-value and complete action-schema validation also remain work. Do not call these paths universally safe.
 
-The proposed guard checks that the supplier is part of the case and its thread remains live. On accept, it verifies ownership and freshness of the standing term-sheet ID, resolves standard/fixed terms, checks must-haves and compares total cost with a valid alternative under consistent assumptions. When no safe acceptance exists, walking away is preferable to an invalid deal. A walk-away action ends the whole case, including other RFQ threads.
+RoutedAgent adds a shared validator for its script, fast, strong and fallback decisions, including finite values, allowed terms, live supplier/offer ownership, known quote defaults, must-haves and the alternative. Failed latest-quote reads block acceptance; a later successful quote can supersede them. The runner invokes its closing_move hook for routed deadline closure. This narrows the structured-action gap; supplier-health estimation and verification of natural-language evidence arithmetic remain incomplete.
+
+Extend the routed guard as new evidence and supplier estimates become available. On accept, keep ownership and freshness checks, resolve standard/fixed terms, and compare deal and alternative under consistent assumptions. When no safe acceptance exists, walking away is preferable to an invalid deal. A walk-away action ends the whole case, including other RFQ threads.
 
 On send, require a bounded subject/body, at most three distinct term sheets, exactly the negotiable keys, allowed values or permitted supplier-standard values, and finite positive numeric inputs where appropriate. Enforce the documented body, reference, attachment and total-request limits. complete_offer fills and snaps values; it is not a full trust-boundary validator. Guard failed validation without consuming a network round, and cap corrective retries rather than looping until timeout.
 
@@ -83,13 +86,13 @@ Check evidence values as well as IDs. LLMAgent removes unknown IDs in its body b
 
 The public contract gives each thread 60 seconds after the supplier's reply. Up to roughly a minute of supplier processing does not consume that thread's buyer response budget. Downloading documents and preparing a decision after opening do consume time. Each final wave has a nominal eight-minute cap, but seconds_left is authoritative if the host changes it.
 
-The existing runner parallelizes cases, not decisions within one RFQ case. play() sends to one selected supplier synchronously. Another live thread can still be waiting while this call is in flight. Start with precomputed dossiers and fast deterministic candidate evaluation; measure this against delayed multi-supplier fixtures. If that is insufficient, extend scheduling to service the earliest thread deadline, serialize state-changing decisions per case and revalidate standing offers before accepting. Do not have parallel workers independently close the same case.
+The runner parallelizes cases, not supplier requests within one RFQ. Routed decisions receive a budget based on the earliest live thread deadline, but play() still sends to one selected supplier synchronously. Another thread can wait while that call is in flight. Extend scheduling to service other live threads during supplier processing, serialize state-changing decisions per case and revalidate standing offers before accepting. Do not have parallel workers independently close the same case.
 
 Share one ArenaClient across final case workers so its nine-calls-per-second pacing applies across them. The protocol allows ten calls per key per second and ten open sessions. Multiple independent clients/processes do not share that limiter. Supplier HTTP timeout is 180 seconds; this is separate from the buyer's 60-second decision budget. A model client's nominal timeout and retries are not proof of an end-to-end deadline. Reserve time for validation, pacing, transport and a deterministic fallback.
 
 Keep the existing X-Move-Id on retries of one logical POST. Distinguish a short Retry-After rate limit from exhausted daily quota or open-session capacity. A 422 consumes no round, but repeated invalid requests still cost time. On 409, read current state rather than replaying an old acceptance blindly. Final one-session conflicts can resume through RemoteTable when the runner supplies the case metadata.
 
-The runner closes near the cap using a 90-second minimum buffer or its slowest observed round plus 15 seconds, checking both before and after deciding. It still cannot interrupt a blocked model call. Extend the same validated closing policy there. Reuse the existing polling of /v1/cases?set=final. During the final the agent must not read event feeds, screen, leaderboards or results. This restriction comes from the supplied challenge rules; the graph's external arena node is explanatory and performs no requests.
+The runner closes near the cap using a 90-second minimum buffer or its slowest observed round plus 15 seconds, checking both before and after deciding. Routed calls use an absolute provider deadline and cooperative async cancellation; legacy arbitrary blocking functions remain outside that cancellation contract. The runner uses the routed agent's closing guard when present. Reuse the existing polling of /v1/cases?set=final. During the final the agent must not read event feeds, screen, leaderboards or results. This restriction comes from the supplied challenge rules; the graph's external arena node is explanatory and performs no requests.
 
 ## 7. Data dependencies and release handling
 
@@ -103,8 +106,8 @@ Never rewrite the package to normalize it. Keep raw identifiers and unit labels 
 
 1. Reproduce the existing local contract suite with hosted parametrizations disabled. Preserve the known cost example: 347,904 opening, 332,800 deal, 324,224 best; score rounds to 0.64.
 2. Add prepared dossiers and evidence calculation tests: same-series index windows, actual publication endpoints, price-unit comparisons, alias handling and no duplicate receipt/invoice aggregation.
-3. Add the shared guard and test both model and fallback acceptance against must-haves, missing standard terms, stale offers, NaN/infinite values, invalid enum choices and a better alternative.
-4. Implement the buyer policy with injected completions. Run all three local demos and compare against the naive baseline. Assert valid closure and data integrity; do not optimize solely for the scripted supplier's score.
+3. Extend the existing routed guard tests as new evidence and supplier-health inputs are added. Preserve tests for must-haves, missing standard terms, stale offers, NaN/infinite values, invalid options and a better alternative.
+4. Extend the routed policy with injected completions. Run all three local demos and compare against the naive baseline. Assert valid closure and data integrity; do not optimize solely for the scripted supplier's score.
 5. Add deterministic supplier scenarios for cash pressure, frozen prices, full capacity, competing offers and no-deal preferences. These are policy tests, not a reconstruction of hidden suppliers.
 6. Test concurrent RFQ timing, slow documents/completions, short transient errors, exhausted quota, resume after interruption and final-wave closure. Use the controllable clock where possible.
 7. Record a local decision journal: input case, offer IDs, evidence IDs/calculations, candidate cost breakdowns, chosen action and reason. Never include keys. Keep cost and result checks separate from subjective email quality.

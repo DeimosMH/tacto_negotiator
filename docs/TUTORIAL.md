@@ -2,7 +2,7 @@
 
 Start here if the project is new to you. You will follow one negotiation, run it on your own computer, change the buyer's behavior and check the result. Basic Python knowledge is enough for the coding steps. You do not need an AI model, a paid account or an arena API key.
 
-The first two sections explain the system. Steps 1–6 are a local exercise. Step 7 explains how to move your experiment into the starter kit. Step 8 shows how to update this documentation site. The exercise creates a temporary Python file; the proposed competition buyer in the Implementation guide remains future work.
+The first two sections explain the system. Steps 1–6 are a local exercise. Step 7 explains how to move your experiment into the starter kit. Step 8 shows how to update this documentation site. The exercise creates a temporary Python file. After it, the [routing guide](ROUTING.md) introduces the implemented script/fast/strong buyer; the full evidence buyer in the Implementation guide remains further work.
 
 ## What are we trying to do?
 
@@ -46,6 +46,8 @@ Case + conversation history
 ```
 
 For the naive example buyer, a decision is ordinary Python logic. The LLM example buyer asks a language model for a proposed decision, then applies some checks. Both implement the same decide(case, threads) method. You can change the decision policy without rewriting HTTP, PDF reading or the negotiation loop.
+
+RoutedAgent implements that same method and also accepts timing information from the runner through decide_timed. It chooses a known script, the fast model or an optional stronger model for the current decision. The [routing walkthrough](ROUTING.md) follows those branches and shows how to test them without a provider.
 
 The returned dictionary has supplier_id and message. For example, a buyer proposing a price and payment period in case S01 returns this shape:
 
@@ -244,6 +246,8 @@ Use this table when your next change has a different goal:
 | Evidence given to the model | LLMAgent.prepare and DataPackage | Exact IDs, units, relevance and preparation time. Preparation currently starts after opening the session. |
 | Email wording | SYSTEM and rendering in agents/llm.py | Model output still passes the guard and says the same thing as its term sheets. |
 | Acceptance or fallback behavior | LLMAgent.guard, fallback path and play.closing_move | LLMAgent fallback closure now uses closing_move; direct NaiveAgent acceptance still lacks those checks. Full validation and supplier-health estimates remain work. |
+| Script/fast/strong choice | RoutedAgent in agents/routed.py | The rule matches complete data, leaves time to send, and every resulting action passes routed validation. |
+| Routed model execution | CompletionClient in agents/completion.py | Queue wait, output reading and cancellation share one deadline; incomplete output falls back locally. |
 | Document interpretation | docs.py | Quote defaults survive extraction; add a fixture demonstrating the change. |
 | Timing and parallel work | play.py | Other RFQ threads stay responsive; a stale offer is not accepted after recovery. |
 | Cost calculations | cost.py | This is the published scoring model. Preserve it unless fixing a demonstrated mismatch with the contract. |
@@ -296,4 +300,4 @@ Refresh the browser after rebuilding. An HTML/CSS change is served directly, whi
 
 You have now traced a complete case, changed one decision, observed its cost effect and learned where that change belongs. Continue with [the implementation plan](IMPLEMENTATION.md) for the proposed evidence preparation, shared action guard, supplier-health estimates and timing improvements.
 
-Next, use [the Sunday final guide](FINAL_READINESS.md) to rehearse five eight-minute waves and modify the failure simulations. [Model selection](MODEL_SELECTION.md) explains which parts need a hosted model and which should stay deterministic.
+Next, use [the routing guide](ROUTING.md) to inspect and change script/fast/strong decisions, and [the Sunday final guide](FINAL_READINESS.md) to rehearse five eight-minute waves. [Model selection](MODEL_SELECTION.md) explains the provider qualification still needed before deployment.

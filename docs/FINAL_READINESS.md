@@ -2,7 +2,7 @@
 
 Build the deadline controller and deterministic deal checks first. Use a hosted model for choosing useful arguments and writing concise messages. A stronger model does not compensate for missing a thread deadline or leaving a case open at the wave cap.
 
-The recommended initial model is **GPT-6.1 Sol with low reasoning effort**, subject to a representative latency and validity evaluation. Use code as the immediate fallback. [Model selection](MODEL_SELECTION.md) compares all the requested candidates, explains the current adapter gaps, and gives the qualification procedure. This recommendation prioritizes hosted API reliability and latency, as requested.
+The recommended initial model is **GPT-6.1 Sol with low reasoning effort**, subject to a representative latency and validity evaluation. The implemented [routed buyer](ROUTING.md) combines tested scripts, Sol and optional Astra with deadline-aware execution and deterministic fallback. [Model selection](MODEL_SELECTION.md) compares the requested candidates and gives the qualification procedure. This recommendation prioritizes hosted API reliability and latency, as requested.
 
 ## What the final changes
 
@@ -27,13 +27,13 @@ Sources: [participant brief](../starter_kit/brief/brief.md), [final and timing A
 
 | Priority | Deliverable | Why it matters at 13:30 | Current state and next change |
 | --- | --- | --- | --- |
-| P0 · 1 | Absolute decision deadline and deterministic fallback | A slow provider must not consume the entire buyer clock. | LLMAgent falls back after an exception, but cannot interrupt a blocked completion. Add deadline-aware cancellation, bounded output and a total retry budget. |
-| P0 · 2 | Thread scheduling within an RFQ | A single slow supplier can cost the other bids. | play runs one supplier request at a time. Track per-thread deadlines and in-flight replies; service the earliest deadline, and serialize acceptance at case level. |
-| P0 · 3 | Valid closure on every path | Cheap-looking offers can violate must-haves or lose to the alternative. | Model acceptance and deadline closure already check these. This change also routes fallback closing through closing_move. Complete the shared guard, including finite numeric types and supplier-health estimates. |
+| P0 · 1 | Absolute decision deadline and deterministic fallback | A slow provider must not consume the entire buyer clock. | Implemented for --agent routed: queue and HTTP share a deadline, output is bounded, expired cooperative I/O is cancelled and fallback is local. Qualify real provider latency; legacy --agent llm remains unchanged. |
+| P0 · 2 | Thread scheduling within an RFQ | A single slow supplier can cost the other bids. | Routed decisions receive a budget based on the earliest live thread. Supplier requests remain sequential; concurrent servicing of other RFQ threads is still needed. |
+| P0 · 3 | Valid closure on every path | Cheap-looking offers can violate must-haves or lose to the alternative. | Routed scripts, models, fallback and deadline closure share structured checks, including finite values, known defaults and failed latest-quote evidence. Supplier-health estimation and richer evidence validation remain work. |
 | P0 · 4 | Wave orchestration, capacity and recovery | All teams start together; request spikes and connection loss are plausible. | Preserve play_waves, per-wave caps, shared client, same-move retry IDs and resume. A task exception is isolated but is not automatically resumed by the same runner. Add bounded recovery and distinguish pre-start 403 from revoked-key 403. |
 | P1 · 5 | Prepared evidence and full-cost candidates | Correct arithmetic saves model time and prevents unsupported claims. | Preload data before the final; prepare a case dossier before opening its session. Add release-aware retrieval, unit/date checks and estimated relationship cost. |
-| P1 · 6 | Short, grounded negotiation policy | Useful trades and evidence improve results within a small round budget. | Let the model select validated packages and arguments. Reuse the same dossier; track cited facts and concessions. |
-| P1 · 7 | Local decision journal | Without it, timing and bad decisions are hard to diagnose. | Record monotonic durations, remaining budgets, offer IDs, costs, guard failures and terminal outcomes, with no credentials. |
+| P1 · 6 | Short, grounded negotiation policy | Useful trades and evidence improve results within a small round budget. | Routing now avoids model calls for narrow known actions and selects fast/optional strong work per decision. Broader candidate evaluation and claim tracking remain work. |
+| P1 · 7 | Local decision journal | Without it, timing and bad decisions are hard to diagnose. | RoutedAgent records case ID, route, reason, elapsed time, budget and fallback, preserving model failures through deadline closure. Add offer IDs, evidence calculations, costs and terminal outcomes, with no credentials. |
 | P2 | Learned concession model or elaborate search | Requires trustworthy observations of real suppliers. | Defer until the deterministic buyer and deadline tests pass. The local fixed-concession bot is insufficient training data. |
 
 Do not build separate autonomous buyer agents for sales, finance and management. Those are supplier-side roles in the presentation. A buyer with a small dossier, candidate evaluator, scheduler and one model call per decision is a better starting point.
@@ -51,7 +51,7 @@ Use these as initial engineering targets, not measured provider guarantees:
 
 A rough planning example: 20 seconds to decide + 60 seconds for the supplier + 5 seconds of overhead gives an 85-second round. Reserving 90 of 480 seconds leaves room for about four such rounds, before setup costs. This is a budgeting example, not a promise of four rounds for every RFQ. Multiple simultaneously waiting suppliers require scheduling, not simply a faster model.
 
-Cancellation must discard late model output and prevent it from sending a move after fallback. A Future timeout alone does not stop a blocked thread; a ThreadPoolExecutor context can wait for that thread on exit. Use provider cancellation/async I/O with an end-to-end deadline, and test cleanup. Keep the arena's longer HTTP response timeout separate from the model decision timeout.
+The routed CompletionClient cancels expired async HTTP work and rejects late output; it does not use a background model-call thread. Only the runner sends a move. Its cancellation is cooperative, so an uncooperative resolver or custom transport is not an operating-system hard deadline. Keep the arena's longer HTTP response timeout separate from the model decision timeout. Legacy arbitrary decide/complete functions cannot be forcibly interrupted by this runner.
 
 ## What the local simulations prove
 
@@ -67,11 +67,11 @@ Cancellation must discard late model output and prevent it from sending a move a
 | Lost reply after commit; short 429 Retry-After | Retry keeps the same move ID; the simulator applies only one round. | One injected transient fault, not an arbitrary network outage. |
 | Concurrent burst through one shared client | Eighteen calls are paced below the configured per-key rate. | Separate from the accelerated 150-session test, where rate limits are lifted to isolate orchestration. |
 | Malformed model JSON, timeout, rejected acceptance | Fallback avoids the must-have violation, selects a valid rival when available, otherwise walks away. | Closing checks still lack a supplier-health estimate. |
-| Decision enters the final 90-second reserve | Runner closes without sending the now-too-late counter-offer. | Rechecks after return; cannot cancel a stuck call. |
-| Synthetic 20/45/61/181/481-second first decision | 20 and 45 close successfully; 61 incurs a timeout then recovers; 181 loses the thread; 481 hits wave_cap. | A diagnostic of the current uncancelled-call risk, not a model speed comparison. |
+| Decision enters the final 90-second reserve | Runner closes without sending the now-too-late counter-offer. | Rechecks after return. Routed provider calls additionally use the new bounded adapter. |
+| Synthetic 20/45/61/181/481-second first decision | 20 and 45 close successfully; 61 incurs a timeout then recovers; 181 loses the thread; 481 hits wave_cap. | A diagnostic of unbounded legacy/injected decision functions, not the new CompletionClient or a model speed comparison. |
 | Three suppliers; three 60-second replies to one bidder | Selected bidder closes successfully while the other two time out. | A diagnostic that exposes the remaining RFQ scheduling gap. A green suite does not mean this is acceptable final behavior. |
 
-The last two tests deliberately document current failure modes. Replace their adverse-outcome assertions with deadline-compliant outcomes when implementing cancellation and scheduling. Preserve their slow-call fixtures so the risk cannot disappear from the test coverage.
+The last two tests deliberately preserve adverse cases for unbounded legacy functions and serial supplier requests. The new [routing tests](ROUTING.md) separately verify deadline-aware provider calls, fallback, resumed timers and runner budgets. Their integrated five-wave scenario plays 15 cases with both fast and strong mocked routes; a delayed-provider scenario verifies cancellation and exactly one closing action. Keep both types of coverage: the routed adapter does not make an arbitrary injected blocking function cancellable, and per-thread budgeting does not finish concurrent RFQ scheduling.
 
 The suite does not reproduce hidden supplier reasoning, all competing teams, actual arena capacity, provider outages or realistic negotiation scores. The final's number of teams and cases per wave is not supplied; three teams and ten cases are explicit stress assumptions.
 

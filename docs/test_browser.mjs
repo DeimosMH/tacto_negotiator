@@ -144,7 +144,11 @@ try {
   assert.ok(await evaluate("document.querySelector('#guide').textContent.includes('150 unique final sessions')"));
   await evaluate("document.querySelector('#guide a[href=\"#guide=MODEL_SELECTION.md\"]').click()");
   await until("document.querySelector('#guide h1')?.textContent === 'Choose a model for the final'");
-  assert.ok(await evaluate("document.querySelector('#guide').textContent.includes('LLM_EFFORT currently has no effect')"));
+  assert.ok(await evaluate("document.querySelector('#guide').textContent.includes('LLM_EFFORT has no effect on its OpenAI-compatible branch')"));
+  await evaluate("document.querySelector('[data-tab=\"ROUTING.md\"]').click()");
+  await until("document.querySelector('#guide h1')?.textContent === 'Choose scripts, Sol or Astra for each decision'");
+  assert.ok(await evaluate("document.querySelector('#guide').textContent.includes('RoutedAgent.last_decision')"));
+  assert.ok(await evaluate("document.querySelector('#guide').textContent.includes('LLM_STRONG_MODEL')"));
   await evaluate("document.querySelector('[data-tab=\"IMPLEMENTATION.md\"]').click()");
   await until("!document.querySelector('#guide').hidden");
   await until("document.querySelector('#guide').textContent.includes('One guard for every action')");
