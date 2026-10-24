@@ -43,6 +43,17 @@ These are operational steps for the event, not actions performed by the local te
 
 The official repository flags the Sunday clock change. Schedule with Europe/Berlin local time rather than assuming Saturday's UTC offset. Submission and process launch remain your event preparation. [Source: official schedule and rules](https://github.com/tacto-playground/negotiation-arena-kit#the-weekend-at-a-glance).
 
+## Rechecked on 24 October, evening
+
+A saved copy of the FAQ adds four points:
+
+- **Supplier replies can take about a minute, and longer under the final's load. A reply after the cap is lost.** In hosted practice, sending to one RFQ supplier blocked for 38–47 s, and P05 lost two other threads to timeouts. This makes concurrent RFQ servicing more urgent (below). The 90 s `CLOSE_BEFORE_CAP_S` reserve plus the slowest observed round stays as the cap margin.
+- **The sandbox cases `case:D01` and `case:D02` are free**: three demo suppliers outside the daily quota. Use them for hosted plumbing checks before spending practice sessions.
+- **C_best is fixed per case.** Good arguments raise the score but never move the target, which matches the [offline audit](EVALUATION.md).
+- **Tone has a price.** In the FAQ's P01 replay, a cooperative message with a verified index and should-cost claim got €134.50 from January (score 0.76). The same index sent as an ultimatum got €136.50 from November, about €13,700 a year worse. Our best P01 practice score is 0.864 (Astra low).
+
+The archived kit in `materials/starter_kit` matches upstream's latest commit (`75eecd1`, 23 October). Check again after the Sunday 08:00 data release.
+
 ## What to build next
 
 The strongest remaining implementation opportunity is **concurrent servicing of RFQ suppliers**. The holdout still loses other supplier threads while waiting synchronously on one reply. A faster buyer model cannot eliminate that wait. Keep this above more elaborate model routing; see [Sunday readiness](FINAL_READINESS.md).
