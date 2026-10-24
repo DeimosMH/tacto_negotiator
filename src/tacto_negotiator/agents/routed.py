@@ -132,6 +132,14 @@ class RoutedAgent:
                 if t not in conformed:
                     conformed.append(t)
             clean = conformed
+            sent = [e for e in events if e.get("from") == "buyer" and e.get("term_sheets")]
+            if clean and sent and math.isfinite(limit) and latest(events).get("status") == "open":
+                # A tiny move draws "My call: hold" and a final offer in the same round (7 hosted P08/P18
+                # sessions); move at least half the scheduled step toward the ask limit.
+                ours = min(total_cost(case, s.get("terms", s), std) for s in sent[-1]["term_sheets"])
+                if limit > ours and min(total_cost(case, t, std) for t in clean) < ours + 0.5 * (limit - ours):
+                    clean = [{**t, "unit_price": self._price_within(
+                        case, {**t, "unit_price": t["unit_price"] * 1.5}, std, sid, limit)} for t in clean]
             if clean:  # the supplier picks the sheet dearest for us (hosted P03): keep equal-cost sheets only
                 cheapest = min(decision_cost(case, t, std, sid) for t in clean)
                 clean = [t for t in clean if decision_cost(case, t, std, sid) <= cheapest * 1.003 + 0.01]
