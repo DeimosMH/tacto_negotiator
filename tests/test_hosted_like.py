@@ -66,6 +66,36 @@ def test_replicas_use_recorded_hosted_references_and_seeded_private_profiles():
     assert all(s.reference["c_open"] > s.reference["c_best"] for s in first)
 
 
+def test_index_clause_is_worth_the_rise_it_passes_on_and_ranks_like_hosted_p02(monkeypatch):
+    from tacto_negotiator.agents import routed
+    from tacto_negotiator.agents.routed import RoutedAgent
+    from tacto_negotiator.compete import unavailable
+    from tacto_negotiator.competition import _match
+    from tacto_negotiator.data import DataPackage
+    from tacto_negotiator.hosted_like import DATA, clause_reserve, clause_value, index_rises
+
+    package = DataPackage(DATA)
+    replicas = {s.name: s for s in build_replica_scenarios(0)}
+    copper, steel = replicas["P02"].case, replicas["P08"].case
+    rises = {**index_rises(copper, package), **index_rises(steel, package)}
+    assert round(rises["CU-NOTATION"], 3) == 0.477 and round(rises["AS-14404"], 3) == 0.059
+    wide = copper["term_options"]["index_clause"][-1]  # 5 % deadband: hosted 371.95 -> 349.05, 6.2 % of 370.96
+    assert abs(clause_value(wide, rises) - 0.062) < 0.005
+    assert all(clause_value(c, rises) < 0.02 for c in steel["term_options"]["index_clause"])
+    opening = {"index_clause": None}
+    assert clause_reserve(copper, opening, rises, 0.05) == 0.05  # no clause: the floor stays at the opening
+    assert clause_reserve(steel, opening, rises, 0.18) < 0.005
+
+    def run(name, ratio):
+        monkeypatch.setattr(routed, "CLAUSE_RISE_RATIO", ratio)
+        return _match("scripts", lambda: RoutedAgent(unavailable, package=package), replicas[name], 1, 5, 25)["score"]
+
+    # hosted P02: 0.68-0.74 leading with the clause sheet, 0.39-0.50 without; P08 clause sheets moved nothing
+    with_clause, without = run("P02", routed.CLAUSE_RISE_RATIO), run("P02", 1e9)
+    assert with_clause > 0.65 and with_clause > without + 0.1
+    assert run("P08", routed.CLAUSE_RISE_RATIO) == run("P08", 1e9)
+
+
 def test_rfq_rounds_stay_scripted_and_idle_bidders_are_served_while_another_replies():
     from tacto_negotiator.agents.routed import RoutedAgent
     from tacto_negotiator.compete import unavailable

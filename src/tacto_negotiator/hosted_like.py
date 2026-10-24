@@ -8,7 +8,8 @@ policies opposite to the hosted arena. This supplier follows what 383 recorded h
 - it concedes nothing without movement from us and never goes below its floor for the package;
 - it agrees once our sheet reaches the counter it would make, not its floor;
 - its final offer comes at a fixed round, earlier after a large cumulative gap;
-- verified claims lower the first counter a little; trades carry premiums.
+- verified claims lower the first counter a little; trades carry premiums;
+- an index clause is worth the part of its series' twelve-month rise it lets the supplier pass on.
 
 Fitted per supplier it predicts the next counter within 1.0 % of the opening price (0.86 status
 accuracy); profiles here are drawn from per-goal ranges, which held out at 2.1 % (0.77). Case
@@ -37,6 +38,12 @@ PROFILE_RANGES = {
     "secure_supply": ((0.0, 0.0), (0.01, 0.01), (0.6, 0.6), (0.02, 0.02), (2, 2), (15, 15)),
     "quality_first": ((0.0, 0.0), (0.01, 0.01), (0.3, 0.3), (0.03, 0.03), (5, 5), (99, 99)),
 }
+# Share of a clause's pass-through (material share x the series' twelve-month rise beyond the deadband)
+# the supplier takes off the price for it. Hosted P02 (copper +47.7 %, share 0.2, 5 % deadband) countered
+# a 90-day clause sheet at 349.05 and accepted 361.42 while its 90-day price without one held at
+# 371.95-372.55: 22.9 EUR, 6.2 % of the opening price, against 0.7 x 0.2 x 42.7 % = 6.0 %. Steel
+# (+5.9 %, share 0.45) in P08/P18 gives 0.3-1.9 %, and clause sheets there moved nothing measurable.
+CLAUSE_PASS_THROUGH = 0.7
 CLAIM_TYPES = {"fc": "volume_change", "cost": "should_cost", "quote": "rival_quote", "offer": "rival_quote",
                "news": "supplier_news"}
 
@@ -51,17 +58,54 @@ def draw_profile(goal, rng, *, opening_below_current=False):
             "reply_delay_s": rng.uniform(15, 40)}
 
 
-def premium(case, terms, opening, standard, p0):
-    """EUR per unit the supplier wants for a package relative to its opening terms."""
+def premium(case, terms, opening, standard, p0, rises=None):
+    """EUR per unit the supplier wants for a package relative to its opening terms. `rises` maps index
+    series to their twelve-month rise (fraction); a clause on a series not in it is worth nothing."""
     t, base = closing_terms(case, terms, standard), closing_terms(case, opening, standard)
     value = 0.01 * p0 * (t["payment_days"] - base["payment_days"]) / 30
     value += 0.005 * p0 * (base["lead_time_days"] - t["lead_time_days"])
     value += 0.015 * p0 * ((t.get("chargeback_eur_per_complaint") or 0)
                            - (base.get("chargeback_eur_per_complaint") or 0)) / 100
     value -= 0.01 * p0 * max(0, t["contract_months"] - base["contract_months"]) / 12  # security has value
-    if t.get("index_clause") and not base.get("index_clause"):
-        value -= 0.02 * p0  # an index clause shifts price risk to us, so the base price can fall
+    # an index clause lets the supplier pass the series' rise on, so the base price can fall
+    value -= (clause_value(t.get("index_clause"), rises) - clause_value(base.get("index_clause"), rises)) * p0
     return value
+
+
+def clause_value(clause, rises):
+    """Share of the price a supplier gives up for an index clause (`CLAUSE_PASS_THROUGH`)."""
+    rise = (rises or {}).get((clause or {}).get("series"))
+    if rise is None:
+        return 0.0
+    return CLAUSE_PASS_THROUGH * clause.get("material_share", 0) * max(0.0, rise - clause.get("deadband_pct", 0) / 100)
+
+
+def clause_reserve(case, opening, rises, depth):
+    """Share of the price a supplier quoting without a clause keeps above its floor on any package
+    without one: what the least generous clause on offer would let it pass on anyway, up to its floor
+    depth (never above its own opening). Hosted P02 never went below 369.5-372.6 without a clause,
+    whatever the payment term (opening 370.96 at 30 days, every clause worth 6-6.7 %), so its floor
+    sat at the opening, not 3-7 % below it as for other stabilise cases; in P08/P18 the widest steel
+    clause is worth 0.3 %."""
+    clauses = [c for c in case.get("term_options", {}).get("index_clause") or [] if c]
+    if opening.get("index_clause") or not clauses:
+        return 0.0
+    return min(depth, min(clause_value(c, rises) for c in clauses))
+
+
+def index_rises(case, package):
+    """Twelve-month rise (fraction) of each index series the case's clause options use."""
+    out = {}
+    for clause in case.get("term_options", {}).get("index_clause") or []:
+        if not clause or package is None or clause["series"] in out:
+            continue
+        refs = package.ids(f"idx:{clause['series']}@")
+        newest = package.lookup(refs[-1]) if refs else None
+        month = (newest or {}).get("month")
+        previous = package.lookup(f"idx:{clause['series']}@{int(month[:4]) - 1}{month[4:]}") if month else None
+        if previous and (previous.get("value") or 0) > 0:
+            out[clause["series"]] = newest["value"] / previous["value"] - 1
+    return out
 
 
 def counter(profile, p0, round_, previous, ask, cumulative_gap, last_ask):
@@ -163,10 +207,20 @@ class HostedLikeSim(CompetitionSim):
         if any(r["result"] == "verified" for r in results) and not thread["claimed"]:
             thread["claimed"], verified_bonus = True, 0.005 * p0
         stated = thread["stated"]
+        if "index_rises" not in state:
+            state["index_rises"] = index_rises(case, self.package)
+        rises = state["index_rises"]
+        reserve = clause_reserve(case, profile["opening"], rises, profile["depth"]) * p0
+
+        def package_premium(t):  # without a clause the reserve stays on the floor and absorbs premiums we ask
+            value = premium(case, t, profile["opening"], profile["standard"], p0, rises)
+            return value if t.get("index_clause") else value + max(0.0, reserve - max(0.0, value))
+
         best = None
         for terms in sheets:
-            extra = premium(case, terms, profile["opening"], profile["standard"], p0)
-            previous = stated["unit_price"] + extra - premium(case, stated, profile["opening"], profile["standard"], p0)
+            extra = package_premium(terms)
+            previous = (stated["unit_price"] + premium(case, terms, profile["opening"], profile["standard"], p0, rises)
+                        - premium(case, stated, profile["opening"], profile["standard"], p0, rises))
             key = json.dumps({k: v for k, v in terms.items() if k != "unit_price"}, sort_keys=True)
             gap = max(0.0, (previous - terms["unit_price"]) / p0 * 100)
             price, status = counter({**profile, "package_premium": extra}, p0, round_, previous,
@@ -185,7 +239,7 @@ class HostedLikeSim(CompetitionSim):
             thread["cumulative_gap"] += gap
             thread["last_asks"][key] = terms["unit_price"]
             if not agreed:
-                floor = p0 * (1 - profile["depth"]) + premium(case, terms, profile["opening"], profile["standard"], p0)
+                floor = p0 * (1 - profile["depth"]) + package_premium(terms)
                 price = max(floor, price - verified_bonus)
             reply = self._mail(state, thread, status, {**terms, "unit_price": round(price, 2)},
                                "This is our position on your package.", ["quote.pdf"])
