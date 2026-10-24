@@ -113,6 +113,7 @@ def test_a_late_custom_completion_cannot_submit_its_counteroffer(monkeypatch):
 
 
 def test_resumed_routed_case_uses_server_time_remaining(arena):
+    arena.state.cases["case:S03"]["buyer"]["category_goal"] = "secure_supply"
     arena.state.rehearse(wait=0, cap=480, waves=1)
     client = arena.client()
     case = next(c for c in client.cases("final") if c["case_id"] == "case:R1-S03")
@@ -180,6 +181,7 @@ def test_transient_timer_read_failure_closes_without_model_or_read_retry(arena):
 @pytest.mark.parametrize("failed_document", ["opening", "reply"])
 def test_unavailable_quote_documents_cannot_cause_unguarded_acceptance(arena, failed_document):
     case = arena.state.cases["case:S03"]
+    case["buyer"]["category_goal"] = "secure_supply"
     sid = case["suppliers"][0]
     failed_reads, model_calls = [], []
 
@@ -207,6 +209,7 @@ def test_unavailable_quote_documents_cannot_cause_unguarded_acceptance(arena, fa
 
 
 def test_thread_deadline_closure_preserves_attempted_model_and_timeout(arena):
+    arena.state.cases["case:S03"]["buyer"]["category_goal"] = "secure_supply"
     arena.state.rehearse(wait=0, cap=480, waves=1)
     client = arena.client()
     case = next(c for c in client.cases("final") if c["case_id"] == "case:R1-S03")
@@ -230,6 +233,7 @@ def test_thread_deadline_closure_preserves_attempted_model_and_timeout(arena):
 def test_provider_timeout_cancels_io_and_closes_once(arena, monkeypatch):
     monkeypatch.setattr(sys.modules["arena_kit.play"], "time", time)
     arena.state.clock = time.time
+    arena.state.cases["case:S02"]["buyer"]["category_goal"] = "secure_supply"
     arena.state.rehearse(wait=0, cap=480, waves=1)
     cancelled = threading.Event()
     requests = []
@@ -256,6 +260,9 @@ def test_provider_timeout_cancels_io_and_closes_once(arena, monkeypatch):
 
 
 def test_routed_buyer_plays_five_full_waves_with_both_model_routes(arena):
+    # Keep model-route coverage explicit as supported quantitative cases gain scripts.
+    arena.state.cases["case:S02"]["term_options"]["payment_days"] = list(range(121))
+    arena.state.cases["case:S03"]["buyer"]["category_goal"] = "secure_supply"
     schedule = arena.state.rehearse(wait=0, cap=480, brk=30, waves=5)
     agents, called = [], []
 

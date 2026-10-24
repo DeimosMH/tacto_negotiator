@@ -55,11 +55,14 @@ def test_full_term_opening_offers_cheaper_packages_and_a_familiar_tradeoff(negot
     move = agent.decide(case, threads)
     packages = [sheet["terms"] for sheet in move["message"]["term_sheets"]]
     assert calls == [] and agent.last_decision["reason"] == "enumerated_opening"
-    assert packages[0] == {"unit_price": 99, "payment_days": 60, "incoterm": "DAP"}
-    assert {"unit_price": 99, "payment_days": 14, "incoterm": "EXW"} in packages
+    assert packages[0] == {"unit_price": 109.26, "payment_days": 60, "incoterm": "DAP"}
+    baseline = next(t for t in packages if t["payment_days"] == 14 and t["incoterm"] == "EXW")
+    assert baseline["unit_price"] < packages[0]["unit_price"]
     assert len(packages) <= 3 and all(set(t) == set(case["negotiable"]) for t in packages)
     assert total_cost(case, packages[0]) < total_cost(case, threads["sup:A"][0]["term_sheets"][0]["terms"])
     assert not move["message"].get("action")
+    ceiling = total_cost(case, threads["sup:A"][0]["term_sheets"][0]["terms"]) * 0.9
+    assert all(ceiling - 11 <= total_cost(case, t) <= ceiling for t in packages)
 
 
 def test_explicit_outgoing_package_repairs_a_negotiable_must_have(negotiation):
@@ -94,7 +97,7 @@ def test_rfq_uses_full_cost_and_services_untried_suppliers(negotiation):
     assert calls == [] and second["supplier_id"] == "sup:A"
 
 
-def test_followup_concedes_within_the_supplier_quote_and_closes_agreement(negotiation):
+def test_followup_concedes_in_full_cost_and_closes_agreement(negotiation):
     case, threads = negotiation
     agent, calls = agent_with_calls()
     opening = agent.decide(case, threads)
@@ -103,7 +106,10 @@ def test_followup_concedes_within_the_supplier_quote_and_closes_agreement(negoti
     followup = agent.decide(case, threads)
     assert calls == [] and agent.last_decision["reason"] == "bounded_concession"
     proposed = followup["message"]["term_sheets"][0]["terms"]
-    assert 99 <= proposed["unit_price"] == 103.5 <= reply["unit_price"]
+    previous_cost = min(total_cost(case, sheet["terms"]) for sheet in opening["message"]["term_sheets"])
+    current_cost = total_cost(case, reply)
+    assert previous_cost <= total_cost(case, proposed) <= (previous_cost + current_cost) / 2 < current_cost
+    assert proposed["unit_price"] > reply["unit_price"]  # a premium pays for DAP/longer payment, not worse total C
     record_round(threads, followup, proposed, number=2, status="agreed")
     assert agent.decide(case, threads)["message"]["action"]["type"] == "accept"
     assert calls == []

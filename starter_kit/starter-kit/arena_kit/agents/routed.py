@@ -220,28 +220,31 @@ class RoutedAgent:
                 quotes.append(None if missing else {**std, **case.get("fixed_terms", {}), **terms})
         return len(quotes) >= 3 and quotes[-1] is not None and quotes[-1] == quotes[-2] == quotes[-3]
 
-    def _packages(self, case, threads, sid, options, price, alternative):
-        """Evaluate bounded explicit packages; an outside option caps each package's price."""
+    def _packages(self, case, threads, sid, options, target_cost, alternative, reference_price):
+        """Price each trade under the same full-cost ceiling, including the outside option."""
         fields = [field for field in case["negotiable"] if field != "unit_price"]
         rows = []
+        ceiling = min(target_cost, alternative - 0.01)
         for values in itertools.product(*options):
-            proposal = dict(zip(fields, values, strict=True)) | {"unit_price": price}
+            proposal = dict(zip(fields, values, strict=True))
+            # Routine/leverage C is affine in price for fixed terms; the reference price limits rounding error.
+            base = total_cost(case, {**proposal, "unit_price": 0})
+            reference_cost = total_cost(case, {**proposal, "unit_price": reference_price})
+            slope = (reference_cost - base) / reference_price
+            if not math.isfinite(slope) or slope <= 0:
+                continue
+            proposal["unit_price"] = math.floor((ceiling - base) / slope * 100) / 100
+            if proposal["unit_price"] <= 0:
+                continue
             cost = total_cost(case, proposal)
-            if cost >= alternative:
-                # Routine/leverage cost is affine in price for a fixed package; verify the rounded result below.
-                base = total_cost(case, {**proposal, "unit_price": 0})
-                slope = total_cost(case, {**proposal, "unit_price": 1}) - base
-                if slope <= 0:
-                    continue
-                proposal["unit_price"] = min(price, math.floor((alternative - base) / slope * 100 - 1) / 100)
-                if proposal["unit_price"] <= 0:
-                    continue
+            if cost > ceiling:
+                proposal["unit_price"] = round(proposal["unit_price"] - 0.01, 2)
                 cost = total_cost(case, proposal)
-            if not math.isfinite(cost) or cost >= alternative:
+            if not math.isfinite(cost) or cost > ceiling or cost >= alternative:
                 continue
             if self.validate(case, threads, {"supplier_id": sid, "action": "send", "term_sheets": [proposal]}):
                 rows.append((cost, proposal))
-        return sorted(rows, key=lambda row: row[0])
+        return sorted(rows, key=lambda row: total_cost(case, {**row[1], "unit_price": reference_price}))
 
     def _structured_bargain(self, case, threads):
         """Use public quotes/options only; do not estimate a hidden floor or train on simulator rules."""
@@ -304,20 +307,21 @@ class RoutedAgent:
             sid, current, sent = record["sid"], record["current"], record["sent"]
             if record["terminal"] or record["plateau"]:
                 continue
-            price = round(current["unit_price"] * 0.9, 2)
+            current_cost = total_cost(case, current, record["std"])
+            target_cost = current_cost * 0.9
             if sent:
                 prior = [sheet["terms"] for sheet in sent[-1]["term_sheets"]]
                 if any(set(sheet) != set(case["negotiable"]) or any(not valid_value(f, v) for f, v in sheet.items())
                        for sheet in prior):
                     return None
-                previous = max(sheet["unit_price"] for sheet in prior)
-                price = min(current["unit_price"], round((previous + current["unit_price"]) / 2, 2))
-                current_cost = total_cost(case, current, record["std"])
-                small_gap = current_cost <= min(total_cost(case, sheet) for sheet in prior) * 1.01
+                previous_cost = min(total_cost(case, sheet) for sheet in prior)
+                target_cost = min(current_cost, (previous_cost + current_cost) / 2)
+                small_gap = current_cost <= previous_cost * 1.01
                 if tried and (small_gap or moves_left(case, threads[sid]) <= 1):
                     if self.validate(case, threads, {"supplier_id": sid, "action": "accept"}):
                         return "small_cost_gap" if small_gap else "round_reserve", self._closing(case, threads)
-            rows = self._packages(case, threads, sid, record["options"], price, alternative)
+            rows = self._packages(case, threads, sid, record["options"], target_cost, alternative,
+                                  current["unit_price"])
             if not rows:
                 continue
             chosen = [rows[0][1]]
