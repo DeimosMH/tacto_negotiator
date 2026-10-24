@@ -46,7 +46,9 @@ CONDITIONAL_WORDING = ("subject to", "provided that", "only if", "pending approv
 class RoutedAgent:
     """Use a tested script, one fast completion, or an optional budget-qualified strong completion."""
 
-    def __init__(self, fast, strong=None, package=None, *, max_decision_seconds=25,
+    # Opus at high effort timed out at 25 s on first messages; play() still caps every decision at
+    # the supplier's 60 s message limit minus a send margin.
+    def __init__(self, fast, strong=None, package=None, *, max_decision_seconds=40,
                  strong_min_seconds=20, clock=time.monotonic):
         if not (math.isfinite(max_decision_seconds) and max_decision_seconds > 0
                 and math.isfinite(strong_min_seconds) and strong_min_seconds > 0):
@@ -173,6 +175,45 @@ class RoutedAgent:
         else:
             self._record(case, "script", "deadline_close", start, start)
         return move
+
+    @staticmethod
+    def _premature(case, threads, sid):
+        """An open offer, with moves left, still above our last ask (both top teams accepted only final
+        offers and agreements; hosted P01/P02 accepted open offers 3 % above our ask in round 2)."""
+        events = threads[sid]
+        if latest(events).get("status") != "open" or moves_left(case, events) <= 1:
+            return False
+        accepted = acceptable_offer(case, events, sid)
+        sent = [e for e in events if e.get("from") == "buyer" and e.get("term_sheets")]
+        if not accepted or not sent:
+            return bool(accepted)
+        _, _, std, _ = known_offer(case, events)
+        ours = min(decision_cost(case, s.get("terms", s), std, sid) for s in sent[-1]["term_sheets"])
+        return accepted[1] > ours * 1.005
+
+    def _limit_counter(self, case, threads, sid):
+        """One sheet on the supplier's standing terms at our current ask limit (never below the
+        health floor): the fallback counter when no enumerated package applies."""
+        events = threads[sid]
+        _, terms, std, missing = known_offer(case, events)
+        limit = ask_limit(case, events, sid)
+        if missing or not math.isfinite(limit):
+            return None
+        resolved = {**std, **case.get("fixed_terms", {}), **terms}
+        sheet = {f: resolved[f] for f in case["negotiable"]}
+        low, high = sheet["unit_price"] * 0.5, sheet["unit_price"]
+        for _ in range(40):  # the highest price whose C stays within the limit
+            middle = (low + high) / 2
+            if decision_cost(case, {**sheet, "unit_price": middle}, std, sid) <= limit:
+                low = middle
+            else:
+                high = middle
+        price = max(math.floor(low * 100) / 100, cheapest_price(case, sheet, std, sid) or 0)
+        if price >= sheet["unit_price"]:
+            return None
+        return self.validate(case, threads, {"supplier_id": sid, "action": "send",
+                                             "body": "Thank you. Please consider this complete package.",
+                                             "term_sheets": [{**sheet, "unit_price": price}]})
 
     def _semantic_blocker(self, case, threads):
         if self.context.case_id == case["case_id"]:
@@ -446,6 +487,9 @@ class RoutedAgent:
             move = self.validate(case, threads, parse(reply))
             if move is None:
                 raise ValueError("model action rejected")
+            if move["message"].get("action", {}).get("type") == "accept" and self._premature(
+                    case, threads, move["supplier_id"]):
+                raise ValueError("model accepted an open offer above our last ask")
             self._record(case, route, reason, start, deadline)
             return move
         except Exception as error:
@@ -462,6 +506,8 @@ class RoutedAgent:
                 repair = self._structured_bargain(case, threads)
                 if repair and not repair[1]["message"].get("action"):
                     move = repair[1]
+                elif open_offer and (counter := self._limit_counter(case, threads, move["supplier_id"])):
+                    move = counter
             self._record(case, route, type(error).__name__, start, deadline, fallback=True)
             self.last_decision["error"] = str(error)[:300]
             return move

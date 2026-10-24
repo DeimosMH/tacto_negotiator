@@ -65,9 +65,9 @@ def test_semantic_followup_uses_fast_once_and_logs_its_budget(scenario, caplog):
     with caplog.at_level("INFO", logger="arena"):
         agent.decide_timed(case, threads, deadline=140)
     assert len(calls) == 1 and strong_calls == []
-    assert calls[0]["deadline"] == 125
+    assert calls[0]["deadline"] == 140  # the 40 s model budget, capped by the given deadline
     assert agent.last_decision == {"case_id": case["case_id"], "route": "fast", "reason": "semantic_decision",
-                                   "elapsed_s": 0, "budget_s": 25, "fallback": False}
+                                   "elapsed_s": 0, "budget_s": 40, "fallback": False}
     assert f"case={case['case_id']} route=fast" in caplog.text and "Our proposal" not in caplog.text
 
 
@@ -159,8 +159,10 @@ def test_nonfinite_or_invalid_price_is_rejected_before_completion_or_arithmetic(
     after_opening(threads, sid)
     reply = json.dumps({"supplier_id": sid, "action": "send", "term_sheets": [{"unit_price": invalid}]})
     agent = RoutedAgent(completion(sid, [], reply))
-    assert agent.decide(case, threads)["message"]["action"]["type"] == "accept"
-    assert agent.last_decision["fallback"]  # accepted known standing terms, not the bad proposed price
+    move = agent.decide(case, threads)
+    assert agent.last_decision["fallback"] and "action" not in move["message"]
+    price = move["message"]["term_sheets"][0]["terms"]["unit_price"]  # a scripted counter, not the bad price
+    assert type(price) is float and 0 < price < 20
 
 
 @pytest.mark.parametrize("decision", [
@@ -209,7 +211,7 @@ def test_failure_falls_back_without_trying_a_second_provider(scenario, failure):
     case["buyer"]["category_goal"] = "secure_supply"
     fast, strong, clock = [], [], Clock()
     bad = completion(sid, strong, "not JSON" if failure == "malformed" else None,
-                     clock=clock, delay=26 if failure == "late" else 0,
+                     clock=clock, delay=41 if failure == "late" else 0,
                      error=TimeoutError("synthetic timeout") if failure == "timeout" else None)
     agent = RoutedAgent(completion(sid, fast), bad, clock=clock)
     move = agent.decide(case, threads)
@@ -316,3 +318,18 @@ def test_parse_takes_the_first_complete_object_despite_trailing_braces():
     assert parse('```json\n{"action": "send", "body": "terms {a}"}\n``` note {x}') == {
         "action": "send", "body": "terms {a}"}
     assert parse('{"a": 1} and {"b": 2}') == {"a": 1}
+
+
+def test_model_accepting_an_open_offer_above_our_ask_counters_instead(scenario):
+    case, threads, sid = scenario
+    threads[sid] += [{"from": "buyer", "body": "Our package.", "term_sheets": [
+                         {"terms": {"unit_price": 16, "payment_days": 30}}]},
+                     {"from": "supplier", "status": "open", "body": "Counter, subject to approval.", "term_sheets": [
+                         {"term_sheet_id": "offer:2", "terms": {"unit_price": 19, "payment_days": 30}}]}]
+    agent = RoutedAgent(completion(sid, [], json.dumps({"supplier_id": sid, "action": "accept"})))
+    move = agent.decide(case, threads)  # hosted P02 accepted 373.88 in round 2 against our 361.51 ask
+    assert agent.last_decision["fallback"] and "action" not in move["message"]
+    assert move["message"]["term_sheets"][0]["terms"]["unit_price"] < 19
+    threads[sid][-1]["status"] = "final_offer"  # a final offer may be accepted
+    assert RoutedAgent(completion(sid, [], json.dumps({"supplier_id": sid, "action": "accept"}))).decide(
+        case, threads)["message"]["action"]["type"] == "accept"
