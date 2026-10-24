@@ -55,6 +55,7 @@ class RoutedAgent:
         self.max_decision_seconds, self.strong_min_seconds = max_decision_seconds, strong_min_seconds
         self.context = LLMAgent(None, package)
         self.last_decision = {}
+        self.unavailable = set()  # suppliers whose reply clock runs out before a message could arrive
 
     def validate(self, case, threads, decision):
         """One gate for scripts, model proposals and fallback. Return a wire move or None."""
@@ -74,7 +75,7 @@ class RoutedAgent:
                 return {"supplier_id": sid, "message": {"action": {
                     "type": "accept", "term_sheet_id": accepted[0]}}} if accepted else None
             _, terms, std, _ = known_offer(case, events)
-            if action != "send" or moves_left(case, events) <= 0:
+            if action != "send" or moves_left(case, events) <= 0 or sid in self.unavailable:
                 return None
             body, subject = decision.get("body", ""), decision.get("subject", f"Re: {case['title']}")
             if not isinstance(body, str) or len(body) > 8000 or not isinstance(subject, str) or len(subject) > 300:

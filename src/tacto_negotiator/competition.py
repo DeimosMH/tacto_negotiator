@@ -18,7 +18,16 @@ from dataclasses import dataclass
 
 from .cost import closing_terms, cost_breakdown, must_haves_ok, score, total_cost
 from .docs import read_document
-from .play import CLOSE_BEFORE_CAP_S, MOVE_LIMIT_S, SEND_MARGIN_S, closing_move, latest, live_threads, standing
+from .play import (
+    CLOSE_BEFORE_CAP_S,
+    MIN_DECISION_S,
+    MOVE_LIMIT_S,
+    SEND_MARGIN_S,
+    closing_move,
+    latest,
+    live_threads,
+    standing,
+)
 from .sim import Fail, Sim
 
 
@@ -376,7 +385,11 @@ def _match(variant, factory, scenario, wave, waves, decision_seconds):
                 sim._settle(session, "no_deal")
                 break
             wave_left = wave_start + 480 - sim.now
-            thread_left = min(session["threads"][sid]["last_at"] + MOVE_LIMIT_S - sim.now for sid in live)
+            lefts = {sid: session["threads"][sid]["last_at"] + MOVE_LIMIT_S - sim.now for sid in live}
+            usable = {sid: left for sid, left in lefts.items() if left > SEND_MARGIN_S + MIN_DECISION_S}
+            thread_left = min(usable.values()) if usable else min(lefts.values())  # as play(): idle threads may lapse
+            if hasattr(agent, "unavailable"):
+                agent.unavailable = set(lefts) - set(usable) if usable else set()
             budget = max(0, min(decision_seconds, thread_left - SEND_MARGIN_S,
                                 wave_left - CLOSE_BEFORE_CAP_S))
             before = counts["attempts"]

@@ -308,3 +308,11 @@ def test_wasted_claim_ids_are_stripped_before_sending(scenario):
     body = RoutedAgent._strip_wasted_claims(
         case, threads, "Again fc:A@2026-09, also fc:B@2026-09 (fc:B@2026-09); rival quote:other; ours quote:case.")
     assert "fc:" not in body and "quote:other" not in body and "quote:case" in body
+
+
+def test_parse_takes_the_first_complete_object_despite_trailing_braces():
+    from tacto_negotiator.agents.llm import parse
+
+    assert parse('```json\n{"action": "send", "body": "terms {a}"}\n``` note {x}') == {
+        "action": "send", "body": "terms {a}"}
+    assert parse('{"a": 1} and {"b": 2}') == {"a": 1}

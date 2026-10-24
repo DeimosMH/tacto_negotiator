@@ -28,6 +28,7 @@ ENDED = {"walked_away", "no_bid"}
 # A message later than this after the supplier's last one counts as a timeout.
 MOVE_LIMIT_S = 60
 REFRESH_S = 10  # the authoritative timer refresh (with any changed threads and their documents)
+MIN_DECISION_S = 3  # a thread with less time than this is left to time out rather than messaged
 SEND_MARGIN_S = 5  # leave time for validation, shared pacing and submitting the move
 # In the Live Final, close this long before the wave's cap - or the slowest round of the case so far
 # (your decision plus a supplier reply of up to about a minute) plus a margin, if that is longer.
@@ -382,8 +383,15 @@ def play(table, case_id, agent, deadline=None):
                     break
             else:
                 thread_deadlines = {sid: received[sid] + MOVE_LIMIT_S for sid in live_threads(threads)}
-            decision_deadline = min(thread_deadlines.get(sid, time.monotonic())
-                                    for sid in live_threads(threads)) - SEND_MARGIN_S
+            # An idle RFQ thread about to time out only costs supplier patience (its offer is repeated;
+            # three in a row end it). Closing the whole case for it lost hosted P05 bidders: decide on
+            # the threads that still have time and do not message the expiring ones.
+            now = time.monotonic()
+            expires = {sid: thread_deadlines.get(sid, now) - SEND_MARGIN_S for sid in live_threads(threads)}
+            usable = {sid: t for sid, t in expires.items() if t > now + MIN_DECISION_S}
+            decision_deadline = min(usable.values()) if usable else min(expires.values())
+            if hasattr(agent, "unavailable"):
+                agent.unavailable = set(expires) - set(usable) if usable else set()
         t0 = time.monotonic()
         cap = deadline() if callable(deadline) else deadline
         reserve = max(CLOSE_BEFORE_CAP_S, slowest + ROUND_MARGIN_S)

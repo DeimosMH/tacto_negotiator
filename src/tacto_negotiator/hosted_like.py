@@ -96,8 +96,9 @@ def build_replica_scenarios(seed=0, fixture=FIXTURE):
             thread = session["threads"][sid]
             opening = {**thread["standard"], **case.get("fixed_terms", {}), **thread["opening"][0]["terms"]}
             p0 = opening["unit_price"]
+            # hosted P05: the bidder at 0.87x today's price had ~2 % room, the one at 0.99x had ~22 %
             profiles[sid] = {**draw_profile(goal, rng, opening_below_current=len(case["suppliers"]) > 1
-                                            and current and p0 < current),
+                                            and current and p0 < 0.9 * current),
                              "opening": opening, "standard": dict(thread["standard"]), "p0": p0}
         reference = {"c_open": session["result"]["c_open"], "c_best": session["result"]["c_best"]}
         out.append(Scenario(case_id[5:], copy.deepcopy(case), profiles, seed, False, HostedLikeSim, reference))

@@ -265,8 +265,14 @@ class LLMAgent:
 
 
 def parse(text):
-    """The first JSON object in the model's reply (tolerates code fences and chatter)."""
-    match = re.search(r"\{.*\}", text, re.S)
-    if not match:
-        raise ValueError(f"no JSON in reply: {text[:200]}")
-    return json.loads(match.group(0))
+    """The first complete JSON object in the model's reply (tolerates code fences and chatter).
+    A greedy first-to-last-brace match broke on any brace after the decision object."""
+    decoder = json.JSONDecoder()
+    for start in (i for i, char in enumerate(text) if char == "{"):
+        try:
+            value, _ = decoder.raw_decode(text, start)
+        except ValueError:
+            continue
+        if isinstance(value, dict):
+            return value
+    raise ValueError(f"no JSON in reply: {text[:200]}")
