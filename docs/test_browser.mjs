@@ -80,7 +80,7 @@ try {
   assert.equal(await evaluate("document.querySelectorAll('.map-node').length"), await evaluate("window.ATLAS.map_ids.length"));
   assert.ok(await evaluate("[...document.querySelectorAll('.map-node')].every(node => window.ATLAS.map_ids.includes(node.dataset.node))"));
   assert.ok(await evaluate("window.ATLAS.nodes.every(node => !['docs/', 'materials/', 'starter_kit/'].some(prefix => node.id.startsWith(prefix)))"));
-  assert.ok(await evaluate("window.ATLAS.nodes.filter(node => window.ATLAS.map_ids.includes(node.id) && node.kind === 'file').every(node => node.id.startsWith('src/tacto_negotiator/') && node.id.endsWith('.py'))"));
+  assert.ok(await evaluate("window.ATLAS.nodes.filter(node => window.ATLAS.map_ids.includes(node.id) && node.kind === 'file').every(node => node.id.startsWith('src/tacto_negotiator/') && (node.id.endsWith('.py') || node.id.startsWith('src/tacto_negotiator/web_ui/')))"));
   await evaluate("document.querySelector('#collapse-all').click()");
   assert.equal(await evaluate("document.querySelectorAll('#tree details[open]').length"), 0);
   await evaluate("document.querySelector('#expand-all').click()");
@@ -154,6 +154,9 @@ try {
   assert.ok(await evaluate("document.querySelector('#guide').textContent.includes('scenario')"));
   assert.ok(await evaluate("document.querySelector('#guide a[href=\"results/offline.json\"]') !== null"));
   assert.ok(await evaluate("window.ATLAS.reports['docs/results/offline.json'].match_count > 0"));
+  await evaluate("document.querySelector('[data-tab=\"WEB_UI.md\"]').click()");
+  await until("document.querySelector('#guide h1')?.textContent === 'Explore negotiation results locally'");
+  assert.ok(await evaluate("document.querySelector('#guide').textContent.includes('.venv/bin/tacto-ui')"));
   await evaluate("document.querySelector('[data-tab=\"IMPLEMENTATION.md\"]').click()");
   await until("!document.querySelector('#guide').hidden");
   await until("location.hash === '#guide=IMPLEMENTATION.md' && document.querySelector('#guide').textContent.includes('src/tacto_negotiator')");

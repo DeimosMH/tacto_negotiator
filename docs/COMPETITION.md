@@ -1,5 +1,7 @@
 # Local competition: scripts and real models
 
+Explore these saved reports in the [local dashboard](WEB_UI.md): strategy charts, match filters, public quote snapshots and a decision-by-decision explanation. Start it with `.venv/bin/tacto-ui` and open http://localhost:1234. New snapshots are recorded for future runs; historical reports retain their original bytes.
+
 The Tacto Negotiator competition harness runs independent buyer strategies against the same synthetic supplier scenarios. Suppliers and arena state stay in memory. The optional model strategies make real, measured OpenAI requests. Its current entry points are tacto-compete and python -m tacto_negotiator.compete. Start with [the tutorial](TUTORIAL.md) for the negotiation loop and [the routing guide](ROUTING.md) for the decision tree.
 
 **Review update:** the tables below preserve the historical pre-review experiments. Scoring version 2 fixes eligible-opening and nonexistent-alternative errors, and adds a valid second bidder to leadtime_repair. Historical economic scores have not been recomputed and must not be presented as current model rankings. The new [900-match offline validation](reviews/FIXES.md) checks the repaired implementation without paid calls; all original result files remain unchanged.

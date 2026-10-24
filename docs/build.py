@@ -325,7 +325,8 @@ def generate(root=ROOT):
     ids = {n["id"] for n in nodes}
     assert len(ids) == len(nodes), "Duplicate node ID"
     assert all(e["source"] in ids and e["target"] in ids for e in edges), "Dangling dependency"
-    source_ids = {path for path in names if path.startswith(CODE) and path.endswith(".py")}
+    source_ids = {path for path in names if path.startswith(CODE)
+                  and (path.endswith(".py") or path.startswith(CODE + "web_ui/"))}
     external_ids = {node["id"] for node in nodes if node["kind"] in {"system", "library"}}
     map_ids = set(source_ids)
     while True:

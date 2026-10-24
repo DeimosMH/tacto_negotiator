@@ -18,6 +18,7 @@ src/tacto_negotiator/
   competition.py      Paired scenarios and private synthetic suppliers
   benchmark.py        Model access checks and shared spending reservations
   compete.py          Offline or explicitly enabled paid comparisons
+  web.py, web_ui/     Local results dashboard at localhost:1234
   mcp_server.py       Optional read-only data tools
 tests/                Local policy, protocol, deadline and accounting checks
 data/                 Active public procurement dataset
@@ -47,6 +48,18 @@ The competition command runs local suppliers and reads no credentials by default
 `tacto-sim serve --host 127.0.0.1 --port 8000` starts the separate local supplier API.
 Follow [your first negotiation](docs/TUTORIAL.md) for registration and a complete
 local session. `python -m tacto_negotiator` is equivalent to the `tacto` command.
+
+## Explore results in the browser
+
+```sh
+.venv/bin/tacto-ui
+```
+
+Open [localhost:1234](http://localhost:1234) for strategy/outcome charts, match filters,
+price movement and an interactive decision timeline explaining what, why and how.
+The included dashboard-demo.json contains 150 fresh local matches. The dashboard
+reads saved reports and uses no credentials or external services.
+See [the dashboard walkthrough](docs/WEB_UI.md) for imports, report generation and changes.
 
 ## How the program works
 
@@ -96,6 +109,7 @@ python3 -B docs/build.py
 python3 -B docs/build.py --check
 python3 -B -m unittest discover -s docs -p test_docs.py
 node docs/test_browser.mjs
+node tests/test_web_browser.mjs
 ```
 
 Tests use local suppliers and injected model transports. The root pytest configuration

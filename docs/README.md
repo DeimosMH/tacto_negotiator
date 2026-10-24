@@ -2,6 +2,8 @@
 
 Open [index.html](index.html) directly in your browser. It works offline with local assets, no npm install and no API keys.
 
+For charts, match filters and step-by-step decision explanations, start the [local results dashboard](WEB_UI.md) at localhost:1234. The atlas explains the source; the dashboard explores saved runs.
+
 The atlas explains the active application in src/tacto_negotiator, its root tests and configuration, and the data snapshot. The supplied starter kit remains archived under materials/starter_kit. Guides and historical result reports are available here without appearing as program modules in the source map.
 
 For the implemented scripts, parallel local scenarios and measured OpenAI comparison, open [Local competition](COMPETITION.md). It includes reproducible commands, results, limitations and a step-by-step guide to changing a scenario or policy.
@@ -27,7 +29,7 @@ Then open http://127.0.0.1:8000. The entire explanation is embedded in data.js; 
 - Expand directories in the file tree. Select a file for its purpose, rationale, classes/functions, internal state or data schema, source content and relationships.
 - Search names, paths, explanations, identifiers and symbol names. Matching branches open automatically.
 - Enable Full explanations to show each visible file's complete explanation in the tree; Expand all reveals the entire file guide at once.
-- The landing page's Source modules view shows the implemented Python modules and connected runtime systems/libraries. Switch to Groups & subgroups to inspect the logical organization.
+- The landing page's Source files view shows the implemented Python modules, dashboard assets and connected runtime systems/libraries. Switch to Groups & subgroups to inspect the logical organization.
 - Selecting a source, test, configuration or data file shows its direct incoming and outgoing neighbors. Edges describe imports, joins, configuration or reviewed interactions. The relationship list includes direction, meaning and evidence, and is a keyboard-accessible alternative to the graph.
 - Use the graph controls to zoom, drag its background to pan, or Fit to reset. Group boundaries and node colors follow the legend. Nodes can be activated with Enter or Space. Browser Back/Forward restores selections.
 - Start here contains the beginner walkthrough. Sunday final contains priorities and simulation results; Routing guide explains the implemented routed buyer. Implementation describes the current architecture and separates remaining work. Proposals remain in the written guides rather than appearing as implemented graph nodes.

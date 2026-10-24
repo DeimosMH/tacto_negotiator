@@ -60,7 +60,8 @@ class AtlasTests(unittest.TestCase):
     def test_overview_is_active_source_and_runtime_dependencies(self):
         self.assertFalse(any(path.startswith(("docs/", "materials/", "starter_kit/", "proposal:")) for path in self.nodes))
         mapped = [self.nodes[path] for path in self.data["map_ids"]]
-        source = {path for path in self.nodes if path.startswith(CODE) and path.endswith(".py")}
+        source = {path for path in self.nodes if path.startswith(CODE)
+                  and (path.endswith(".py") or path.startswith(CODE + "web_ui/"))}
         self.assertEqual({node["id"] for node in mapped if node["kind"] == "file"}, source)
         self.assertTrue(all(node["kind"] == "file" or node["kind"] in {"system", "library"} for node in mapped))
         self.assertTrue({"system:model", "system:arena", "system:suppliers", "system:data", "lib:httpx"}.issubset(self.data["map_ids"]))

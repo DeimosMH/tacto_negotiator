@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; object-src 'none'">
-  <meta name="description" content="An offline, interactive guide to the Tacto negotiation starter kit, its data and a proposed buyer agent.">
+  <meta name="description" content="An offline, interactive guide to Tacto Negotiator, its source code, local dashboard and procurement data.">
   <title>Tacto · Project atlas</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="styles.css">
@@ -35,6 +35,7 @@
         <a href="#guide=FINAL_READINESS.md" data-tab="FINAL_READINESS.md">Sunday final</a>
         <a href="#guide=ROUTING.md" data-tab="ROUTING.md">Routing guide</a>
         <a href="#guide=COMPETITION.md" data-tab="COMPETITION.md">Competition</a>
+        <a href="#guide=WEB_UI.md" data-tab="WEB_UI.md">Dashboard</a>
         <a href="#guide=IMPLEMENTATION.md" data-tab="IMPLEMENTATION.md">Implementation</a>
         <a href="#guide=DATA_GUIDE.md" data-tab="DATA_GUIDE.md">Data guide</a>
         <a href="#guide=LOCAL_TESTING.md" data-tab="LOCAL_TESTING.md">Local checks</a>
@@ -45,7 +46,7 @@
         <section class="graph-card" aria-labelledby="graph-title">
           <div class="graph-header"><div><span class="eyebrow">DEPENDENCY MAP</span><h2 id="graph-title">Project source map</h2></div><span id="graph-count" class="muted"></span></div>
           <div class="graph-toolbar">
-            <label>View <select id="map-mode"><option value="source">Source modules</option><option value="groups">Groups & subgroups</option></select></label>
+            <label>View <select id="map-mode"><option value="source">Source files</option><option value="groups">Groups & subgroups</option></select></label>
             <div class="zoom-tools"><button id="zoom-out" type="button" aria-label="Zoom out">−</button><button id="fit" type="button">Fit</button><button id="zoom-in" type="button" aria-label="Zoom in">+</button></div>
           </div>
           <div id="graph-surface"><svg id="graph" role="group" aria-labelledby="map-title map-description" viewBox="0 0 1000 620"><title id="map-title">Grouped project dependencies</title><desc id="map-description">Select a node to inspect it. Drag the background to pan. Use the zoom controls. The relationship list below provides the same connections in text.</desc></svg></div>

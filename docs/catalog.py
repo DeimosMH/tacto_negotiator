@@ -3,7 +3,7 @@
 CODE = "src/tacto_negotiator/"
 DATA = "data/"
 GUIDES = ("README.md", "TUTORIAL.md", "IMPLEMENTATION.md", "DATA_GUIDE.md", "LOCAL_TESTING.md",
-          "FINAL_READINESS.md", "MODEL_SELECTION.md", "ROUTING.md", "COMPETITION.md")
+          "FINAL_READINESS.md", "MODEL_SELECTION.md", "ROUTING.md", "COMPETITION.md", "WEB_UI.md")
 
 GROUPS = {
     "project": {"label": "Project setup", "color": "#e4b86b"},
@@ -45,6 +45,12 @@ FILES = {
     CODE + "competition.py": ("local", "Strategy competition", "Paired seeded scenarios, private synthetic supplier profiles and parallel matches across repeated virtual waves.", "Compares valid economic outcomes, route usage and real decision latency. Public cases have neutral IDs; hidden floors and feasible references stay in the evaluator. Worker queue time is outside each match's virtual clock."),
     CODE + "benchmark.py": ("local", "Model evaluation", "Explicit model-access preflight, literal-key reader and shared conservative API-spend ledger.", "Reserves request cost before concurrent calls, reconciles known usage and retains unknown-cost reservations. It supports expressly enabled paid evaluations against local suppliers; no arena client is involved."),
     CODE + "compete.py": ("local", "Strategy competition", "Command-line strategy factories, optional paid-model setup and atomic sanitized competition reports.", "Provides reproducible scripts-only runs by default. Model strategies require explicit --live and --key-file, use one shared budget and save progress without prompts or raw model responses."),
+    CODE + "web.py": ("local", "Results dashboard", "Loopback HTTP server for saved competition reports and the packaged browser interface.", "Projects selected public report fields and serves explicit routes without reading credentials, starting negotiations or calling providers."),
+    CODE + "web_ui/index.html": ("local", "Results dashboard", "Accessible dashboard structure: run selector, filters, summary cards, charts, matches and a decision inspector.", "Native controls provide a keyboard-friendly way to move from an outcome to the actions that produced it."),
+    CODE + "web_ui/dashboard.js": ("local", "Results dashboard", "Browser report loading, filtering, score/outcome/route charts, price snapshots and step explanations.", "Translates recorded controller reasons, keeps missing values unknown, marks historical scoring, and handles browser-only JSON import without external libraries."),
+    CODE + "web_ui/styles.css": ("local", "Results dashboard", "Responsive dashboard layout, chart colors, selected states and keyboard focus styles.", "Keeps dense negotiation data readable on desktop and mobile with local fonts and no remote assets."),
+    "tests/test_web.py": ("local", "Results dashboard", "Loopback API, public-field projection, file boundaries, malformed reports and packaging asset checks.", "Uses temporary reports and fake markers to verify that the read-only dashboard cannot expose arbitrary repository files or accept writes."),
+    "tests/test_web_browser.mjs": ("local", "Results dashboard", "Chrome end-to-end checks for filtering, charts, timelines, score units, imports, keyboard and mobile behavior.", "Runs a temporary local dashboard with synthetic reports and verifies rendered behavior without npm dependencies or provider access."),
     "tests/conftest.py": ("local", "Tests", "Controllable Clock and a uvicorn simulator fixture on a free localhost port.", "Tests deadlines without waiting a minute and isolates every simulator instance."),
     "tests/test_kit.py": ("local", "Tests", "Checks cost arithmetic, data access, document parsing, model guard and client retry logic.", "Provides deterministic regression tests using temporary files and mock HTTP transports."),
     "tests/test_cli.py": ("local", "Tests", "Default routed buyer selection, explicit policy overrides and help-before-configuration checks.", "Protects the active command-line entry point without loading credentials or contacting a server."),
@@ -179,6 +185,7 @@ INTERNALS = {
         ("CompetitionSim.now / clock", "A private virtual clock advances by measured decision time and configured supplier delay; the completion deadline still uses real monotonic time."),
         ("eligible_opening_cost / scoring_version", "Scoring v2 uses a must-have-compliant opening and a declared outside option. Invalid scenario baselines are rejected; no-alternative walk-away cost and regret are null."),
         ("matches / aggregate", "Sanitized actions, economic outcomes, routes and latency per match, plus policy-level summaries over repeated waves."),
+        ("standing_prices / supplier_reply", "Public quote snapshots before each decision and supplier reply afterward; remaining thread/wave seconds explain timing. No prose or private supplier floors are recorded."),
     ],
     CODE + "benchmark.py": [
         ("PRICES_PER_MILLION / INPUT_OVERHEAD", "Explicit evaluation prices and conservative input allowance used before dispatch; revise when provider pricing changes."),
@@ -190,6 +197,17 @@ INTERNALS = {
         ("MODELS / STRATEGIES", "Named provider models and comparison policies available through the explicit competition command."),
         ("factories / completions", "Each match receives fresh policy state while concurrency control and the budget ledger are shared."),
         ("checkpoint / write_report", "Periodic sanitized accounting and final metrics replace the report atomically."),
+    ],
+    CODE + "web.py": [
+        ("MATCH_FIELDS / DECISION_FIELDS / TERM_FIELDS", "Explicit field allowlists for dashboard JSON; arbitrary provider metadata and prompt bodies are omitted."),
+        ("ASSETS / MAX_REPORT_BYTES", "Packaged HTML/JS/CSS location and 32 MB report limit; JSON must contain a matches array with at most 50,000 entries."),
+        ("Handler / root", "Read-only request handler closes over one report directory; binds 127.0.0.1 and rejects symlinks, hidden paths and traversal."),
+    ],
+    CODE + "web_ui/dashboard.js": [
+        ("report / rows / filtered", "Original browser report, display rows with scores converted from 0–1 to points out of 100, and the currently filtered/sorted subset."),
+        ("selected / stepIndex / page", "Selected match ID, selected decision and paginated table position; all state stays in the browser."),
+        ("loadId / importedName", "Discards outdated asynchronous loads and distinguishes a single browser-only import from server reports."),
+        ("reasons", "Plain-language descriptions of controller reason codes; missing reasons remain explicitly unknown."),
     ],
 
 }
@@ -283,6 +301,7 @@ ENTITIES = [
     ("system:model", "Completion provider", "systems", "Remote services", "Injected complete(system, user) function, or configured model endpoint. Local tests inject a deterministic function and make no provider calls."),
     ("system:mcp", "MCP client", "systems", "Interfaces", "Optional external tool caller communicating with mcp_server.py over stdio."),
     ("system:data", "Public evidence package", "systems", "Data inputs", "The active data/ directory contains read-only facts, SQLite/CSV tables and supplier documents. Select data.py to inspect the individual file dependencies."),
+    ("system:reports", "Competition reports", "systems", "Local results", "Sanitized saved JSON with outcomes, scores, timing and public decision traces. The dashboard reads reports without starting a competition; older reports may lack snapshots or current scoring metadata."),
     ("system:release", "Sunday release", "systems", "Data releases", "Optional release-sunday facts and CSV/document overlay; not present in this checkout and not downloaded for this task."),
     ("system:markets", "Public market sources", "systems", "Data releases", "Eurostat, ECB, World Bank and SMARD supplied the frozen index snapshot. They are provenance, not runtime fetch dependencies."),
     ("system:python", "Python standard library", "systems", "Libraries", "JSON, CSV, SQLite, AST, paths, threading, date arithmetic and other standard-library modules used by Python files."),
@@ -335,6 +354,16 @@ LINKS = [
     ("pyproject.toml", CODE + "cli.py", "tacto entry point", "configuration"),
     ("pyproject.toml", CODE + "sim.py", "tacto-sim entry point", "configuration"),
     ("pyproject.toml", CODE + "compete.py", "tacto-compete entry point", "configuration"),
+    ("pyproject.toml", CODE + "web.py", "tacto-ui entry point", "configuration"),
+    (CODE + "compete.py", "system:reports", "writes atomic competition results", "reviewed"),
+    (CODE + "web.py", "system:reports", "reads allowlisted fields from saved JSON", "reviewed"),
+    (CODE + "web.py", CODE + "web_ui/index.html", "serves dashboard page", "reviewed"),
+    (CODE + "web.py", CODE + "web_ui/dashboard.js", "serves browser behavior", "reviewed"),
+    (CODE + "web.py", CODE + "web_ui/styles.css", "serves responsive styles", "reviewed"),
+    (CODE + "web_ui/index.html", CODE + "web_ui/dashboard.js", "loads deferred interaction script", "reviewed"),
+    (CODE + "web_ui/index.html", CODE + "web_ui/styles.css", "loads local stylesheet", "reviewed"),
+    (CODE + "web_ui/dashboard.js", CODE + "web.py", "fetches read-only report API", "reviewed"),
+    ("tests/test_web_browser.mjs", CODE + "web.py", "launches temporary loopback dashboard", "reviewed"),
     ("tests/test_kit.py", "tests/fixtures/quote.pdf", "parses fixture", "reviewed"),
     ("tests/test_kit.py", "tests/fixtures/cost-breakdown.xlsx", "parses fixture", "reviewed"),
     ("tests/test_sim.py", "tests/conftest.py", "uses sim/clock fixture", "reviewed"),

@@ -32,6 +32,25 @@ The active suite has no hosted-service parametrization. HTTP integration tests s
 
 Verified after the review fixes: **244 passed, 0 skipped**. The suite covers contract behavior, routing, provider cancellation, script coverage, budget accounting, competition and CLI behavior. New regressions cover stale-offer recovery, timeout rounds, terminal openings, shared acceptance, supplier-standard preservation, indexed quotes and scorer boundaries. See [resolved findings and validation](reviews/FIXES.md). Real model measurements remain a separate opt-in experiment recorded in [the competition guide](COMPETITION.md).
 
+After adding the local dashboard: **252 passed, 0 skipped**. The eight additional tests cover public trace snapshots and the dashboard's report API, field projection, static assets, legacy data, malformed input, file boundaries, report limits and CLI help.
+
+## Dashboard checks
+
+From the repository root, with Node 22+ and Chrome/Chromium installed:
+
+```sh
+node --check src/tacto_negotiator/web_ui/dashboard.js
+node tests/test_web_browser.mjs
+```
+
+The browser check launches its own temporary loopback server, clears the child processes' environment, and supplies synthetic current, historical, empty and malformed reports. It checks score conversion from 0–1 to points out of 100, charts, filters, pagination, keyboard operation, deadline overrides, missing values, browser-only file import, HTML escaping, mobile layout and the absence of remote requests. Set CHROME to the browser executable if needed. Optional DASHBOARD_SCREENSHOT=/tmp/tacto-dashboard.png saves a screenshot.
+
+Validated with this change: 252 application tests, 11 atlas tests, both Chrome interaction suites, Ruff and JavaScript syntax checks. A new 150-match local report, docs/results/dashboard-demo.json, exercises three strategies across ten families and five waves. Existing reports and original materials retain their bytes. The wheel and source distribution build offline; the installed wheel's command, packaged HTML/CSS/JS and report API work from /tmp. That wheel smoke test reused already installed base dependencies because a clean offline dependency resolution lacked cached httpx metadata; it was not a fresh dependency-download test.
+
+The [dashboard guide](WEB_UI.md) explains how to start the UI, inspect a match and add reports. It is a saved-run viewer; no real provider or hosted arena call is part of these checks.
+
+## Final-wave tests
+
 The added test_final.py uses the actual simulator HTTP routes through FastAPI TestClient and httpx.MockTransport: no network connection is made. It drives five 480-second waves with virtual time and 150 sessions across three teams. Other tests inject model failures, slow decisions, slow suppliers, retry faults, restart/resume and an active host extension. A separate concurrent burst checks the shared client's pacing. Two diagnostic scenarios preserve failure outcomes for unbounded legacy/injected decision calls and neglected RFQ threads; passing them does not mean the agent is final-ready. See [the full scenario table and executable rehearsal](FINAL_READINESS.md).
 
 ## Routed buyer checks

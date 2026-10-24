@@ -406,6 +406,6 @@ document.addEventListener("keydown", event => {
 });
 window.addEventListener("hashchange", readRoute);
 $("#file-count").textContent = `${files.length} files`;
-$("#stats").innerHTML = [[atlas.stats.modules, "Source modules"], [atlas.stats.map_edges, "Source map links"], [atlas.stats.tables, "Evidence tables"], [atlas.stats.files, "Explained files"]].map(([value, label]) => `<div class="stat"><strong>${value}</strong><span>${label}</span></div>`).join("");
+$("#stats").innerHTML = [[atlas.stats.modules, "Source files"], [atlas.stats.map_edges, "Source map links"], [atlas.stats.tables, "Evidence tables"], [atlas.stats.files, "Explained files"]].map(([value, label]) => `<div class="stat"><strong>${value}</strong><span>${label}</span></div>`).join("");
 renderTree();
 readRoute();
