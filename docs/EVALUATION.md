@@ -50,3 +50,24 @@ Local competitions therefore use scripted suppliers for robustness, timing and v
 | Local replay, Astra max, 240 s | — | [2 decisions completed](results/astra-max-replay.json): 53 s and 96 s. P01's proposal cost the same as Sol low's. |
 
 The replay stopped when the OpenAI account ran out of credits (HTTP 429 `credit_balance_exhausted`); the other calls in that report are those errors. Even so, the result is clear. Astra at max effort takes 2–4× the 25 s decision budget, and longer than the arena's 60 s per-message limit, without a better proposal. **Do not use max effort in competition.** Low effort remains the setting to qualify, as described in [MODEL_SELECTION.md](MODEL_SELECTION.md).
+
+## Claude Opus 5.5
+
+`LLM_PROVIDER=anthropic` routes model decisions to `claude-opus-5-5` with the key in `LLM_API_KEY_ANTHROPIC`. Hosted practice on 24 October, 10 cases each:
+
+| Run | Mean | Deals | Model calls | Note |
+|---|---:|---:|---|---|
+| [Opus low](results/live-practice-2026-10-24-opus-low.json) | 0.418 | 9 | 18 completed, 8.1 s mean | P05 lost an agreed deal (unread quote), P01 accepted the opening after a rejected reply |
+| [Opus high](results/live-practice-2026-10-24-opus-high.json) | 0.429 | 9 | 15 completed, 2 timeouts, 14.9 s mean | P10 walked away from an acceptable final offer (unread quote) |
+| [Opus max](results/live-practice-2026-10-24-opus-max.json) | 0.114 | 9 | all 9 timed out at 25 s | Same failure as Astra max |
+| [Opus high, with fixes](results/live-practice-2026-10-24-opus-high-fixed.json) | **0.502** | **10** | 12 completed, 17.1 s mean | No zero scores; P10 0.671 is a new team best |
+
+The [local replay](results/opus-replay.json) agrees: max effort took 230 s on average and timed out on 8 of 10 decisions even with 240 s, while high stayed under 25 s.
+
+The fixes between the high runs:
+
+- Quotes skipped because the read deadline had passed are now read once before deciding.
+- A model failure no longer accepts an untouched opening; the buyer sends a scripted counter while the thread's own deadline allows.
+
+**Use Opus at high effort.** Runs use different policy commits and suppliers vary between attempts, so differences of a few hundredths are noise.
+
