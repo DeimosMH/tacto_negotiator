@@ -57,6 +57,8 @@ def _value(field, text):
             "deadband_pct": float(deadband),
             "base_month": base,
         }
+    if field == "effective_date" and text.casefold() == "none":
+        return None  # sandbox quotes state "none"; the text failed validation and voided every offer
     if field in ("effective_date", "incoterm"):
         return text
     return float(text) if "eur" in field or field == "unit_price" else int(float(text))

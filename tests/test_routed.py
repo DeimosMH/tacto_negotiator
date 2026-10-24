@@ -333,3 +333,13 @@ def test_model_accepting_an_open_offer_above_our_ask_counters_instead(scenario):
     threads[sid][-1]["status"] = "final_offer"  # a final offer may be accepted
     assert RoutedAgent(completion(sid, [], json.dumps({"supplier_id": sid, "action": "accept"}))).decide(
         case, threads)["message"]["action"]["type"] == "accept"
+
+
+def test_an_unreadable_agreement_keeps_the_earlier_quote_defaults(scenario):
+    case, threads, sid = scenario
+    threads[sid][-1]["attachments"] = [{"name": "quote.pdf", "text":
+        "Our standard terms\nPayment terms (days net) 30"}]
+    agreed = copy.deepcopy(threads[sid][-1])
+    agreed.update(status="agreed", attachments=[{"name": "quote.pdf", "read_failed": True}])
+    threads[sid].append(agreed)  # sandbox D01 walked away from exactly this
+    assert RoutedAgent(None).closing_move(case, threads)["message"]["action"]["type"] == "accept"

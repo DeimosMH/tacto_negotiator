@@ -274,7 +274,7 @@ def test_unavailable_quote_documents_cannot_cause_unguarded_acceptance(arena, fa
     result = play(RemoteTable(arena.client(transport=handle, retries=3)), case["case_id"],
                   RoutedAgent(complete, clock=arena.clock))
     assert result["ended"] and len(failed_reads) <= 1 and model_calls  # a failed read is not retried
-    assert all(0 < r.extensions["timeout"]["read"] <= 5 for r in failed_reads)
+    assert all(0 < r.extensions["timeout"]["read"] <= 10 for r in failed_reads)
     if result["deal"]:  # only an offer whose own quote was read may be accepted
         read = [r.url.path for r, status in arena.requests if "/attachments/" in r.url.path and status == 200]
         accepts = [json.loads(r.content)["message"]["action"]["term_sheet_id"] for r, _ in arena.requests

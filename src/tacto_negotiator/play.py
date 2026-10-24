@@ -237,7 +237,11 @@ def known_offer(case, events):
                   if att.get("name", "").lower().startswith("quote")
                   and att.get("name", "").lower().endswith(".pdf")]
         if quotes:
-            if any(att.get("read_failed") for att in quotes):
+            # A terminal offer keeps an earlier readable quote's defaults: walking away from an agreement
+            # to our own fully specified sheet scores 0 (sandbox D01 walked from an agreed 50.72 when the
+            # agreement's PDF timed out under parallel load). Open offers still need their own quote.
+            fallback = message.get("status") in {"agreed", "final_offer"} and std
+            if any(att.get("read_failed") for att in quotes) and not fallback:
                 missing.append("supplier quote defaults")
             break  # a newer readable quote supersedes older document failures
     return sheet, terms, std, missing
@@ -366,7 +370,8 @@ def play(table, case_id, agent, deadline=None):
         return min(expires, time.monotonic() + limit)
 
     def read(message):
-        return fetch_documents(table, message, deadline=read_deadline() if timed_decide else None)
+        # 10 s, still bounded by the thread clocks: 5 s reads timed out under parallel load
+        return fetch_documents(table, message, deadline=read_deadline(REFRESH_S) if timed_decide else None)
 
     for events in threads.values():
         for m in events:

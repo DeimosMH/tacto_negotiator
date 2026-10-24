@@ -60,4 +60,5 @@ def test_counter_price_moves_above_the_health_floor_when_the_limit_allows():
     floor = cheapest_price(case, sheet, std, sid)
     limit = decision_cost(case, {**sheet, "unit_price": floor + 4}, std, sid)  # hosted P02 repeated the floor
     price = RoutedAgent._price_within(case, sheet, std, sid, limit)
-    assert floor + 3.9 <= price <= floor + 4.01 and decision_cost(case, {**sheet, "unit_price": price}, std, sid) <= limit
+    assert floor + 3.9 <= price <= floor + 4.01
+    assert decision_cost(case, {**sheet, "unit_price": price}, std, sid) <= limit

@@ -344,3 +344,7 @@ def test_practice_plays_the_hosted_cases():
     out = play_all(Used, ["case:P01", "case:P02", "case:P03"], NaiveAgent, parallel=1)
     assert all(isinstance(e, ArenaError) and e.status == 429 for e in out.values())
     assert "not started" in out["case:P03"].detail
+
+
+def test_a_quote_stating_no_effective_date_parses_as_none():
+    assert quote_terms("Our standard terms\nPrice valid from none")["standard"]["effective_date"] is None
