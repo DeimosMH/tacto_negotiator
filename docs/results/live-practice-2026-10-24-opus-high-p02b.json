@@ -1,0 +1,290 @@
+{
+  "source": "hosted_practice",
+  "team_name": "winsortf",
+  "arena_url": "https://arena.tacto.ai",
+  "campaign_prior_committed_usd": 45.25052,
+  "phase": "2026-10-24-opus-high-p02b",
+  "status": "completed",
+  "started_utc": "2026-10-24T20:24:40.696976+00:00",
+  "policy_commit": "19e6fc43f0c2fe87f83d240ce1acf84f1d812060",
+  "models": {
+    "fast": "claude-opus-5-5",
+    "strong": null
+  },
+  "effort": "high",
+  "service_tier": "default",
+  "max_output_tokens": 16000,
+  "config": {
+    "set": "practice",
+    "workers": 4,
+    "decision_seconds": 25,
+    "scoring_authority": "hosted arena"
+  },
+  "practice_before": {
+    "used": 180,
+    "left": 220,
+    "limit": 400,
+    "resets_at": "2026-10-25T15:51:29.187290+00:00"
+  },
+  "matches": [
+    {
+      "variant_id": "routed_claude-opus-5-5_high",
+      "scenario": "Nordmark passes on copper for the 7.5 kW motor",
+      "case_id": "case:P02",
+      "session_id": "13b07c9193d92abd",
+      "deal": true,
+      "valid": true,
+      "score": 0.7353581915062543,
+      "supplier_id": "sup:70510",
+      "terms": {
+        "payment_days": 90,
+        "lead_time_days": 35,
+        "volume_per_year": 6110,
+        "contract_months": 12,
+        "effective_date": "2027-01-01",
+        "index_clause": {
+          "series": "CU-NOTATION",
+          "material_share": 0.2,
+          "deadband_pct": 5.0,
+          "base_month": "2026-08"
+        },
+        "incoterm": "DAP",
+        "tooling_eur": 0.0,
+        "ppm_commitment": 250,
+        "chargeback_eur_per_complaint": 0.0,
+        "unit_price": 361.42
+      },
+      "cost_eur": 2248045.75,
+      "reference_cost_eur": 2235514.05,
+      "regret_eur": 12531.7,
+      "opening_cost_eur": 2282867.49,
+      "alternative_cost_eur": 2604227.78,
+      "cost_breakdown": {
+        "price": 2208276.2,
+        "uncovered_need": 0.0,
+        "fallback_risk": 0.0,
+        "payment_terms": -14721.84,
+        "freight": 0.0,
+        "late_delivery": 0.0,
+        "quality": 1191.45,
+        "tooling": 0.0,
+        "index_clause": 0.0,
+        "index_risk": 17666.21,
+        "relationship": 35633.73
+      },
+      "rounds": 2,
+      "end_reason": "accepted",
+      "error": null,
+      "invalid_moves": 0,
+      "thread_timeouts": 0,
+      "model_attempts": 1,
+      "fallbacks": 0,
+      "elapsed_s": 56.2186344560032,
+      "decision_wall_s": 16.82419257699803,
+      "decisions": [
+        {
+          "case_id": "case:P02",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 16.82357160600077,
+          "budget_s": 40.0,
+          "fallback": false,
+          "decision_wall_s": 16.823759412000072,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70510",
+              "term_sheet_id": "offer:70510-0",
+              "unit_price": 370.96,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70510",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 361.42,
+                "payment_days": 90,
+                "index_clause": {
+                  "series": "CU-NOTATION",
+                  "material_share": 0.2,
+                  "deadband_pct": 5,
+                  "base_month": "2026-08"
+                }
+              },
+              {
+                "unit_price": 356.0,
+                "payment_days": 30,
+                "index_clause": null
+              },
+              {
+                "unit_price": 358.5,
+                "payment_days": 60,
+                "index_clause": null
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70510",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 361.42,
+                "payment_days": 90,
+                "index_clause": {
+                  "series": "CU-NOTATION",
+                  "material_share": 0.2,
+                  "deadband_pct": 5,
+                  "base_month": "2026-08"
+                }
+              },
+              {
+                "unit_price": 356.0,
+                "payment_days": 30,
+                "index_clause": null
+              },
+              {
+                "unit_price": 358.5,
+                "payment_days": 60,
+                "index_clause": null
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70510",
+            "status": "agreed",
+            "unit_price": 361.42,
+            "term_sheet_id": "offer:70510-1"
+          },
+          "submission_wall_s": 38.282504416994925
+        },
+        {
+          "case_id": "case:P02",
+          "route": "script",
+          "reason": "terminal_offers",
+          "elapsed_s": 0.0004238990004523657,
+          "budget_s": 40.0,
+          "fallback": false,
+          "decision_wall_s": 0.00043316499795764685,
+          "model_attempts": 0,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70510",
+              "term_sheet_id": "offer:70510-1",
+              "unit_price": 361.42,
+              "status": "agreed"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70510",
+            "action": "accept",
+            "term_sheet_id": "offer:70510-1"
+          },
+          "sent_action": {
+            "supplier_id": "sup:70510",
+            "action": "accept",
+            "term_sheet_id": "offer:70510-1"
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70510",
+            "status": "agreed",
+            "unit_price": 361.42,
+            "term_sheet_id": "offer:70510-1"
+          },
+          "submission_wall_s": 0.3075344899989432
+        }
+      ],
+      "replay_url": "https://arena.tacto.ai/replay/13b07c9193d92abd"
+    }
+  ],
+  "source_sha256": {
+    "src/tacto_negotiator/__init__.py": "30679a26548de3280d29785a2eecf0a5d7d875c24be3d6520964fad546681587",
+    "src/tacto_negotiator/__main__.py": "c3c697883784cbc443a2179843a3c758e19868ff04129329abbbb61d102ae680",
+    "src/tacto_negotiator/agents/__init__.py": "74e0576a9dc983527a99699b9f6a87b743cafb5bd2e74c46918e4511f014325c",
+    "src/tacto_negotiator/agents/completion.py": "9f6e22e3a386fdc42ec97fad54e8a23f978410b61fbff4dc551fc41de2c4d57e",
+    "src/tacto_negotiator/agents/llm.py": "4a2d2deea97525cc3adeed3d7baf88c6616ecf6e0794b7051494fc3c87d00605",
+    "src/tacto_negotiator/agents/naive.py": "bf1574b7db0dd330547c1840c192e26a4ba459990788243f15fc522e24853f77",
+    "src/tacto_negotiator/agents/routed.py": "06c5f0605b03ad4f4d79d550550fbd00c10e862db30470bd535ac64b42a7886c",
+    "src/tacto_negotiator/benchmark.py": "515335cfc524ed6702eb8409afc96723fbfac63d4aad93482bfac6f383dfcee3",
+    "src/tacto_negotiator/cli.py": "0a21174122dde5ee34139840502a9871d5fcea7672dde95574f7471261fbc93c",
+    "src/tacto_negotiator/client.py": "199dfb386434a676b0ffa09389531c8e623df412983558e78195eefdc9e84097",
+    "src/tacto_negotiator/compete.py": "d9901b8fc79f0b8b4f390da35c1db2668bff9bf5528f61da9d3da7fee8de10f9",
+    "src/tacto_negotiator/competition.py": "cf094c65626ad4404730357bd9b86547d580406b79f71918cd586b1d936ae228",
+    "src/tacto_negotiator/cost.py": "40ca4977d066c9d2a71066eed8aa9f527c794a844ce8ef367bbb23739e49409c",
+    "src/tacto_negotiator/data.py": "25c594e35d3f67d17cc60cd1a09a7913e56e8bb18be4739b59895082d620d2fb",
+    "src/tacto_negotiator/docs.py": "a19112ed1a7bc2c069c71818730453d0b1d5b31e4efc0a7e6573ad8146440c77",
+    "src/tacto_negotiator/evaluation.py": "0f4bfca37b61900f3a590209375ddffaa62ec9da503924cde234ea06c784d84a",
+    "src/tacto_negotiator/hosted_like.py": "7ef53f8c848e6971b1caba200a43334fa95b8eac89adb63c56ccf26b98831b70",
+    "src/tacto_negotiator/mcp_server.py": "40fa2f9e09c9f30305763e0ec35dc6c370939297f441546dcbdd2cf6dfa22de5",
+    "src/tacto_negotiator/play.py": "5f8558daf2b4e539228db548b2fc5bddb40a7c9f15f9a36353a768b0bc151be7",
+    "src/tacto_negotiator/sim.py": "8375e1c54dbf313d3bdfd2133afe705a07e14f46a5d838e18c6e84c94fe83fe8",
+    "src/tacto_negotiator/web.py": "fbf442296fba6392df35ae993f4cffb8302cf889db606dba981d0664eadb3c39"
+  },
+  "runner_sha256": "60c424b161c9e1683d13bd920246e4cfb31d64ee59e28b6c6e7b770759f875b1",
+  "limitations": [
+    "Practice is not final ranking; final suppliers are unseen.",
+    "Development iteration: practice best scores select repeated attempts; not an unbiased final estimate.",
+    "Supplier threads within RFQs use the committed sequential runner.",
+    "Costs and scores come from the hosted result; durations are measured wall time.",
+    "No wave cap is imposed on practice; seed and wave are not applicable.",
+    "Provider cost is an estimate; failed-call reservations are retained."
+  ],
+  "budget": {
+    "cap_usd": 100.0,
+    "estimated_known_usage_usd": 0.066935,
+    "reserved_in_flight_usd": 0.0,
+    "unreconciled_reservations_usd": 0.0,
+    "committed_usd": 0.066935,
+    "remaining_usd": 99.933065,
+    "budget_rejections": 0,
+    "halted": false,
+    "price_basis": "Conservative standard estimate: all input at 1.25x default 30-minute cache-write rate, output at standard rate; not a billing reconciliation",
+    "calls": [
+      {
+        "call_id": 0,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 18034,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 7375,
+          "output_tokens": 1503,
+          "cached_input_tokens": 1743
+        },
+        "latency_s": 16.752134,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.41017,
+        "estimated_cost_usd": 0.066935
+      }
+    ]
+  },
+  "aggregate": {
+    "routed_claude-opus-5-5_high": {
+      "matches": 1,
+      "mean_score": 0.7353581915062543,
+      "deals": 1,
+      "errors": 0
+    }
+  },
+  "practice_after": {
+    "used": 181,
+    "left": 219,
+    "limit": 400,
+    "resets_at": "2026-10-25T15:51:29.187290+00:00"
+  },
+  "team_best_after": {
+    "case:P04": 0.8604451426623068,
+    "case:P10": 0.6707108356081908,
+    "case:P18": 0.5748913846233606,
+    "case:P02": 0.7353581915062543,
+    "case:P03": 0.9276045204253003,
+    "case:P01": 0.9863454015486272,
+    "case:P07": 0.7275038183965274,
+    "case:P05": 0.8443562220967432,
+    "case:P08": 0.6245563295391022,
+    "case:P11": 0.7098962346486538
+  },
+  "finished_utc": "2026-10-24T20:25:37.139858+00:00"
+}
