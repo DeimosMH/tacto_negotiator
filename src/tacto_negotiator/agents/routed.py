@@ -390,7 +390,8 @@ class RoutedAgent:
             action = move["message"].get("action", {}).get("type")
             # Accepting an untouched opening after a failed model call scored 0 in hosted P01.
             untouched = action == "accept" and not any(m.get("from") == "buyer" for m in threads[move["supplier_id"]])
-            if (self.clock() < thread_deadline - 1 and any(moves_left(case, threads[sid]) > 1 for sid in live_threads(threads))
+            if (self.clock() < thread_deadline - 1
+                    and any(moves_left(case, threads[sid]) > 1 for sid in live_threads(threads))
                     and (untouched or action == "walk_away"
                          and case["buyer"].get("category_goal") not in RELATIONSHIP_GOALS)):
                 repair = self._structured_bargain(case, threads)
