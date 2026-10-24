@@ -17,7 +17,8 @@ from test_final import arena as arena
 from tacto_negotiator.agents.completion import CompletionClient
 from tacto_negotiator.agents.routed import RoutedAgent
 from tacto_negotiator.cost import complete_offer
-from tacto_negotiator.play import RemoteTable, play, play_waves
+from tacto_negotiator.client import ArenaError
+from tacto_negotiator.play import RemoteTable, moves_left, play, play_waves, standing, thread_events
 from tacto_negotiator.sim import load_cases
 
 
@@ -158,6 +159,75 @@ def test_status_change_with_same_offer_id_refreshes_the_thread(arena):
     assert threads[sid][-1]["term_sheets"][0]["term_sheet_id"] == offer_id
     reads = [r for r, _ in arena.requests if r.url.path.endswith(f"/threads/{sid}")]
     assert len(reads) == 1 and 0 < reads[0].extensions["timeout"]["read"] <= 5
+
+
+def test_409_recovery_keeps_current_offer_terms_and_rounds(arena):
+    table = RemoteTable(arena.client())
+    case, _ = table.open("case:S01")
+    sid = case["suppliers"][0]
+    arena.clock.advance(61)
+    arena.state.session("local-only-buyer", table.session_id)
+    session = arena.state.sessions[table.session_id]
+    thread = session["threads"][sid]
+    thread["round"] += 1
+    thread["messages"].append({"from": "buyer", "body": "A later offer"})
+    current = arena.state._mail(session, thread, "open", {"unit_price": 25, "payment_days": 14}, "New price")
+    recovered = table.missed(sid, ArenaError(409, "round limit reached"))["messages"]
+    assert standing(recovered) == (current["term_sheets"][0]["term_sheet_id"],
+                                   {"unit_price": 25, "payment_days": 14})
+    assert moves_left(case, recovered) == case["round_limit"] - 2
+    case["buyer"]["alternative"] = {"kind": "quote", "terms": {"unit_price": 20, "payment_days": 14}}
+    agent = RoutedAgent(None)
+    assert agent.closing_move(case, {sid: recovered})["message"]["action"]["type"] == "walk_away"
+
+
+def test_recovery_without_matching_offer_cannot_accept():
+    case = load_cases()["case:S01"]
+    sid = case["suppliers"][0]
+    events = thread_events({"offer_id": "offer:new", "status": "open", "closed": None,
+        "messages": [{"from": "supplier", "status": "open", "term_sheets": [
+            {"term_sheet_id": "offer:old", "terms": {"unit_price": 10, "payment_days": 14}}]}],
+        "timeouts": [{"offer_id": "offer:old", "terms": {"unit_price": 10, "payment_days": 14}}]})
+    assert standing(events) == (None, {})
+    assert RoutedAgent(None).closing_move(case, {sid: events})["message"]["action"]["type"] == "walk_away"
+
+
+def test_resumed_timeout_rounds_do_not_authorize_extra_sends(arena, monkeypatch):
+    case = arena.state.cases["case:S01"]
+    case["round_limit"] = 3
+    case["buyer"]["alternative"] = {"kind": "quote", "terms": {"unit_price": 20, "payment_days": 14}}
+    arena.state.rehearse(wait=0, cap=480, waves=1)
+    client = arena.client()
+    final = next(c for c in client.cases("final") if c["case_id"] == "case:R1-S01")
+    opened = client.open_session(final["case_id"])
+    arena.clock.advance(61)
+
+    def answer(session, thread, message, sheets):
+        return arena.state._mail(session, thread, "open", {"unit_price": 25, "payment_days": 14}, "New price")
+
+    monkeypatch.setattr(arena.state, "_answer", answer)
+    result = play(RemoteTable(client, final), final["case_id"], RoutedAgent(None, clock=arena.clock))
+    assert result["ended"] and not result["deal"]
+    session = arena.state.sessions[opened["session_id"]]
+    assert next(iter(session["threads"].values()))["round"] <= 3
+    assert not any(status == 409 for request, status in arena.requests
+                   if request.url.path.endswith("/messages"))
+
+
+@pytest.mark.parametrize("status", ["no_bid", "walked_away"])
+def test_terminal_opening_returns_result_without_document_work(status):
+    case = load_cases()["case:S01"]
+    result = {"ended": True, "deal": False, "end_reason": "no_deal"}
+
+    class TerminalTable:
+        def open(self, case_id):
+            return case, {case["suppliers"][0]: [{"from": "supplier", "status": status,
+                "term_sheets": [], "attachments": [{"name": "quote.pdf", "attachment_id": "unused"}]}]}
+
+        def result(self):
+            return result
+
+    assert play(TerminalTable(), case["case_id"], RoutedAgent(None)) is result
 
 
 def test_transient_timer_read_failure_closes_without_model_or_read_retry(arena):

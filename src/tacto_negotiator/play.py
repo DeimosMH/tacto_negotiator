@@ -62,7 +62,7 @@ class RemoteTable:
         state = self.client.session(session_id)
         if state["status"] == "ended":
             self.done = self.result()
-        return self.case, {s: self.client.thread(session_id, s)["messages"] for s in state["threads"]}
+        return self.case, {s: thread_events(self.client.thread(session_id, s)) for s in state["threads"]}
 
     def send(self, supplier_id, message):
         return self.client.send_message(self.session_id, supplier_id, message)
@@ -99,7 +99,8 @@ class RemoteTable:
                     continue
                 if sid in threads and (thread.get("offer_id") != standing(threads[sid])[0]
                                        or thread.get("status") != latest(threads[sid]).get("status")):
-                    threads[sid] = self.client.thread(self.session_id, sid, timeout=remaining(), retries=0)["messages"]
+                    threads[sid] = thread_events(self.client.thread(
+                        self.session_id, sid, timeout=remaining(), retries=0))
                     for message in threads[sid]:
                         fetch_documents(self, message, deadline=read_deadline)
                 left = thread.get("seconds_left")
@@ -119,17 +120,7 @@ class RemoteTable:
         state = self.client.session(self.session_id)
         if state.get("status") == "ended":
             return {"result": state.get("result") or {"deal": False, "end_reason": state.get("end_reason")}}
-        t = self.client.thread(self.session_id, supplier_id)
-        last = (t.get("timeouts") or [{}])[-1]
-        sheet = [{"term_sheet_id": t["offer_id"], "terms": last.get("terms", {})}]
-        return {
-            "from": "arena",
-            "status": "walked_away" if t["closed"] else t["status"],
-            "term_sheets": [] if t["closed"] else sheet,
-            "body": f"({error.detail})",
-            "missing_fields": last.get("missing_fields", []),
-            "attachments": [],
-        }
+        return {"messages": thread_events(self.client.thread(self.session_id, supplier_id))}
 
     def result(self):
         state = self.client.session(self.session_id)
@@ -147,6 +138,26 @@ def standing(events):
     return (sheets[0]["term_sheet_id"], sheets[0]["terms"]) if sheets else (None, {})
 
 
+def thread_events(thread):
+    """Restore a thread using only terms belonging to its current offer, including timeout rounds."""
+    events = list(thread["messages"])
+    offer_id = thread.get("offer_id")
+    current = next((m for m in reversed(events) if m.get("from") != "buyer"
+                    and any(s.get("term_sheet_id") == offer_id for s in m.get("term_sheets") or [])), None)
+    if current is None:
+        timeout = next((t for t in reversed(thread.get("timeouts", []))
+                        if offer_id and t.get("offer_id") == offer_id), None)
+        current = {"from": "arena", "term_sheets": [
+            {"term_sheet_id": offer_id, "terms": timeout["terms"]}] if timeout else [], "attachments": []}
+    restored = {**current, "status": "walked_away" if thread.get("closed") else thread["status"],
+                "rounds_used": sum(m.get("from") == "buyer" for m in events) + len(thread.get("timeouts", []))}
+    if events and events[-1] is current:
+        events[-1] = restored
+    else:
+        events.append(restored)
+    return events
+
+
 def live_threads(threads):
     """Suppliers whose thread has not ended."""
     return [sid for sid, ev in threads.items() if latest(ev).get("status") not in ENDED]
@@ -154,7 +165,11 @@ def live_threads(threads):
 
 def moves_left(case, events):
     """Messages you may still send in this thread (the round limit counts each of them)."""
-    return case.get("round_limit", 10) - sum(m.get("from") == "buyer" for m in events)
+    used = 0
+    for message in events:
+        used += message.get("from") == "buyer"
+        used = max(used, message.get("rounds_used", 0))
+    return max(0, case.get("round_limit", 10) - used)
 
 
 def fetch_documents(table, message, *, deadline=None):
@@ -203,6 +218,8 @@ def play(table, case_id, agent, deadline=None):
     case, threads = table.open(case_id)
     if getattr(table, "done", None):  # resumed a case that had already ended
         return table.done
+    if not live_threads(threads):
+        return table.result()
     received = dict.fromkeys(threads, time.monotonic())
     timed_decide = getattr(agent, "decide_timed", None)
     close = getattr(agent, "closing_move", closing_move)
@@ -268,6 +285,12 @@ def play(table, case_id, agent, deadline=None):
             log.info("%s: %s", sid, e.detail)
             reply = table.missed(sid, e)  # e.g. late, or the thread or the case has ended
             received[sid] = time.monotonic()
+            if "messages" in reply:
+                threads[sid] = reply["messages"]
+                if live_threads(threads):
+                    for message in threads[sid]:
+                        read(message)
+                continue  # the rejected request is not a buyer move
             if msg.get("action") and "result" not in reply:  # the case goes on: decide again
                 threads[sid].append(read(reply))
                 continue
