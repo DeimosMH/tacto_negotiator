@@ -24,6 +24,7 @@ from .play import (
     MIN_DECISION_S,
     MOVE_LIMIT_S,
     SEND_MARGIN_S,
+    close_before_lapse,
     closing_move,
     latest,
     live_threads,
@@ -409,9 +410,18 @@ def _match(variant, factory, scenario, wave, waves, decision_seconds):
                 agent.unavailable = set(lefts) - set(usable) if usable else set()
             budget = max(0, min(decision_seconds, thread_left - SEND_MARGIN_S,
                                 wave_left - CLOSE_BEFORE_CAP_S))
+
+            def ending(lapsing):  # as play(): threads whose next timeout ends them
+                return {sid for sid in lapsing if session["threads"][sid]["timeouts"] >= 2
+                        or session["threads"][sid]["round"] >= case.get("round_limit", 10) - 1}
+
+            if wave_left > CLOSE_BEFORE_CAP_S and not usable and not close_before_lapse(case, threads, ending(live)):
+                # As play(): no thread has decision time - send nothing and let the earliest one time out.
+                sim.now = min(session["threads"][sid]["last_at"] + MOVE_LIMIT_S for sid in live) + 0.25
+                continue
             before = counts["attempts"]
             decision_start = time.monotonic()
-            forced_close = wave_left <= CLOSE_BEFORE_CAP_S or thread_left <= SEND_MARGIN_S
+            forced_close = wave_left <= CLOSE_BEFORE_CAP_S or not usable
             if hasattr(agent, "last_decision"):
                 agent.last_decision = {}
             decision_error = None
@@ -445,9 +455,17 @@ def _match(variant, factory, scenario, wave, waves, decision_seconds):
                 break
             if elapsed > budget and budget > 0:
                 fresh = _public_threads(sim, session, cache)
-                decision = getattr(agent, "closing_move", closing_move)(case, fresh)
-                trace["fallback"] = True
-                trace["deadline_override"] = True
+                lapsing = {sid for sid in live_threads(fresh) if sid in session["threads"]
+                           and session["threads"][sid]["last_at"] + MOVE_LIMIT_S - SEND_MARGIN_S <= sim.now}
+                on_time = not decision["message"].get("action") and decision["supplier_id"] not in lapsing
+                wave_near = wave_start + 480 - sim.now <= CLOSE_BEFORE_CAP_S
+                if wave_near or (not on_time and close_before_lapse(case, fresh, ending(lapsing))):
+                    decision = getattr(agent, "closing_move", closing_move)(case, fresh)
+                    trace["fallback"] = True
+                    trace["deadline_override"] = True
+                elif not on_time:  # as play(): the late move is not sent; the thread times out once
+                    trace["deadline_skip"] = True
+                    continue
             sent_at = sim.now
             if failure := _submit(sim, session, case, decision, trace):
                 invalid_moves += int(failure.status == 422)

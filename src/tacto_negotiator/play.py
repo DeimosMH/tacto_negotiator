@@ -34,6 +34,10 @@ SEND_MARGIN_S = 5  # leave time for validation, shared pacing and submitting the
 # another idle thread whose clock would run out before that reply is in and decided. Earlier, the
 # message waits: it can then cite the reply (replica P05 lost 0.014 sending every opening at once).
 CONCURRENT_BELOW_S = 50
+# A missed thread deadline costs one timeout, not the case (api.md, Time): the third in a row, or one
+# after the last round, ends the thread. While waiting for such a timeout the runner sleeps in steps of
+# at most this long and then refreshes the timers.
+LAPSE_POLL_S = 1.0
 # In the Live Final, close this long before the wave's cap - or the slowest round of the case so far
 # (your decision plus a supplier reply of up to about a minute) plus a margin, if that is longer.
 CLOSE_BEFORE_CAP_S, ROUND_MARGIN_S = 90, 15
@@ -419,6 +423,28 @@ def closing_move(case, threads):
     return {"supplier_id": best[1], "message": {"action": {"type": "accept", "term_sheet_id": best[2]}}}
 
 
+def mark_lapse(case, events, count=1):
+    """Record `count` timeouts in a thread: each uses a round (`moves_left`) and the offer stands."""
+    used = case.get("round_limit", 10) - moves_left(case, events)
+    message = latest(events)
+    message["rounds_used"] = max(message.get("rounds_used", 0), used + count)
+
+
+def last_chance(case, events, lapses):
+    """True if the next timeout ends this thread: two already in a row, or no round left after it."""
+    return lapses >= 2 or moves_left(case, events) <= 1
+
+
+def close_before_lapse(case, threads, ending):
+    """Close the case instead of letting threads time out? Only if the timeout ends a thread (`ending`)
+    that holds an acceptable offer, or no live thread would be left."""
+    if not ending:
+        return False
+    if set(live_threads(threads)) <= ending:
+        return True
+    return any(acceptable_offer(case, threads[sid], sid) for sid in ending if sid in case.get("suppliers", [sid]))
+
+
 def play(table, case_id, agent, deadline=None):
     """Play one case to its end. `deadline` (time.time(), or a function returning it): a Live Final
     wave's cap - shortly before it, `closing_move` closes the case so it does not end without a deal."""
@@ -432,7 +458,11 @@ def play(table, case_id, agent, deadline=None):
     close = getattr(agent, "closing_move", closing_move)
 
     def read_deadline(limit=SEND_MARGIN_S):
-        expires = min(received[sid] + MOVE_LIMIT_S for sid in live_threads(threads)) - SEND_MARGIN_S
+        # Bounded by the threads that can still be answered: one that is timing out anyway does not
+        # stop the timer refresh that records its timeout.
+        now = time.monotonic()
+        expires = min([t for t in (received[sid] + MOVE_LIMIT_S - SEND_MARGIN_S for sid in live_threads(threads))
+                       if t > now] or [now + limit])
         cap = deadline() if callable(deadline) else deadline
         if cap is not None:
             expires = min(expires, time.monotonic() + cap - time.time() - SEND_MARGIN_S)
@@ -444,6 +474,44 @@ def play(table, case_id, agent, deadline=None):
 
     concurrent = getattr(agent, "concurrent_move", None) if timed_decide else None
     concurrent_sent = {}
+    lapses = dict.fromkeys(threads, 0)  # timeouts in a row per thread (none known at the start/resume)
+    lapsed = {}  # thread -> when we last saw its clock run out; a timer that says otherwise is stale
+
+    def note_window(sid, start, lapse=False):
+        """A thread's 60 s window now starts at `start`; a restart we did not cause is a timeout."""
+        if sid not in received:
+            received[sid] = start
+            return
+        if start < lapsed.get(sid, -math.inf) - 1:
+            return  # the arena has not recorded the timeout yet: keep our own estimate
+        if (count := round((start - received[sid]) / MOVE_LIMIT_S)) >= 1 or (lapse and start > received[sid]):
+            count = max(count, 1)
+            if sid in live_threads(threads):
+                lapses[sid] = lapses.get(sid, 0) + count
+                mark_lapse(case, threads[sid], count)
+                log.info("%s timed out (%d in a row)", sid, lapses[sid])
+            if lapse:
+                lapsed[sid] = start
+        received[sid] = start
+
+    def ending(lapsing):
+        return {sid for sid in lapsing if last_chance(case, threads[sid], lapses.get(sid, 0))}
+
+    def wait_for_lapse(thread_deadlines, cap, reserve):
+        """Send nothing and let the earliest expiring thread time out once (bounded sleeps; the next
+        loop refreshes the timers and the threads)."""
+        now = time.monotonic()
+        due = min(thread_deadlines.get(sid, now) for sid in live_threads(threads))
+        pause = min(max(due - now + 0.25, 0.05), LAPSE_POLL_S)
+        if cap:
+            pause = min(pause, max(cap - reserve - time.time(), 0.0) + 0.05)
+        time.sleep(pause)
+        now = time.monotonic()
+        for sid in live_threads(threads):
+            # the arena restarts the thread's clock after a timeout (once per 60 s window)
+            if (expiry := thread_deadlines.get(sid)) is not None and expiry < now and (
+                    expiry >= received[sid] + MOVE_LIMIT_S - 1):
+                note_window(sid, expiry, lapse=True)
 
     def send(supplier, message):
         try:
@@ -484,7 +552,7 @@ def play(table, case_id, agent, deadline=None):
             read(m)
     slowest = 0.0  # the longest round so far: decision + the supplier's reply
     while live_threads(threads):
-        decision_deadline = None
+        decision_deadline, usable = None, None
         if timed_decide:
             reread_skipped_documents(table, threads)
             if get_deadlines := getattr(table, "thread_deadlines", None):
@@ -492,7 +560,9 @@ def play(table, case_id, agent, deadline=None):
                 if thread_deadlines is None:
                     thread_deadlines = {sid: received[sid] + MOVE_LIMIT_S for sid in live_threads(threads)}
                 else:
-                    received.update({sid: expires - MOVE_LIMIT_S for sid, expires in thread_deadlines.items()})
+                    for sid, expires in thread_deadlines.items():
+                        note_window(sid, expires - MOVE_LIMIT_S)
+                        thread_deadlines[sid] = received[sid] + MOVE_LIMIT_S
                 if getattr(table, "done", None):
                     return table.done
                 if not live_threads(threads):
@@ -514,6 +584,14 @@ def play(table, case_id, agent, deadline=None):
         if cap and time.time() > cap - reserve:
             log.info("%s: the wave's cap is near - closing", case_id)
             decision = close(case, threads)
+        elif timed_decide and not usable:
+            # No thread has time for a decision: a late message is one timeout, not the end of the case.
+            if close_before_lapse(case, threads, ending(expires)):
+                log.info("%s: the next timeout would end a thread - closing", case_id)
+                decision = close(case, threads)
+            else:
+                wait_for_lapse(thread_deadlines, cap, reserve)
+                continue
         elif timed_decide:
             wave_left = cap - time.time() if cap is not None else None
             if wave_left is not None:
@@ -525,10 +603,22 @@ def play(table, case_id, agent, deadline=None):
             log.warning("decision took %.1fs - the limit is %ss per message", took, MOVE_LIMIT_S)
         # The decision itself may consume the closing reserve; the host may also extend the cap.
         cap = deadline() if callable(deadline) else deadline
-        if (cap and time.time() > cap - max(CLOSE_BEFORE_CAP_S, slowest + ROUND_MARGIN_S)) or (
-            decision_deadline is not None and time.monotonic() >= decision_deadline
-        ):
+        if cap and time.time() > cap - max(CLOSE_BEFORE_CAP_S, slowest + ROUND_MARGIN_S):
             decision = close(case, threads)
+        elif decision_deadline is not None and time.monotonic() >= decision_deadline and usable is not None:
+            # The decision missed its thread deadline. The move is not sent (a fallback after a late
+            # model may be a walk-away); the thread times out once and the next loop decides again -
+            # unless that timeout would end the thread (F3 in docs/reviews/FLOW.md).
+            now = time.monotonic()
+            lapsing = {s for s in live_threads(threads) if thread_deadlines.get(s, now) - SEND_MARGIN_S <= now}
+            on_time = not decision["message"].get("action") and decision["supplier_id"] not in lapsing
+            if on_time:
+                pass  # a message to a thread that still has time: send it, the others time out
+            elif close_before_lapse(case, threads, ending(lapsing)):
+                decision = close(case, threads)
+            else:
+                log.info("%s: decision missed the thread deadline - letting the thread time out", case_id)
+                continue
         sid, msg = decision["supplier_id"], decision["message"]
         if msg.get("action"):
             try:
@@ -545,8 +635,12 @@ def play(table, case_id, agent, deadline=None):
             sent = msg if supplier == sid else concurrent_sent[supplier]
             if isinstance(reply, ArenaError):
                 log.info("%s: %s", supplier, reply.detail)
+                late = "late" in str(reply.detail).lower()
                 reply = table.missed(supplier, reply)  # e.g. late, or the thread or the case has ended
                 received[supplier] = time.monotonic()
+                lapsed.pop(supplier, None)
+                if late:  # the late message counted as a timeout (its round is in the refreshed thread)
+                    lapses[supplier] = lapses.get(supplier, 0) + 1
                 if "messages" in reply:
                     threads[supplier] = reply["messages"]
                     if live_threads(threads):
@@ -559,7 +653,8 @@ def play(table, case_id, agent, deadline=None):
             if "result" in reply:  # the reply ended the case, e.g. the last supplier walked away
                 ended = ended or reply["result"]
                 continue
-            received[supplier] = replied_at
+            received[supplier], lapses[supplier] = replied_at, 0
+            lapsed.pop(supplier, None)
             threads[supplier] += [{**sent, "from": "buyer"}, read(reply)]
             log.info("%s %s %s", supplier, reply.get("status"), standing(threads[supplier])[1])
         if ended:

@@ -67,15 +67,60 @@ def f2_off_repeat_breaks_the_hold():
 
 
 def f3_no_time_ends_the_case():
-    """F3: no decision time left (a 60 s per-message window) closes the CASE: here a walk-away
-    with all 10 moves left, although a late message only costs one timeout (api.md, Time)."""
-    case, sid = s01()
-    case["buyer"]["must_haves"] = [{"field": "payment_days", "op": ">=", "value": 60}]  # standing offer fails it
-    threads = {sid: [supplier(20, 1)]}
-    agent = RoutedAgent(None, clock=Clock())
-    move = agent.decide_timed(case, threads, deadline=100)
-    print(f"F3 deadline already reached with 10 moves left -> {move['message']}")
-    assert move["message"]["action"]["type"] == "walk_away"
+    """F3 (fixed): a decision that misses its thread's 60 s window no longer closes the CASE. The
+    late move (here the walk-away a late model fallback produces) is not sent; the thread times out
+    once (api.md, Time) and the next decision gets a fresh window. Played through `play()` on the
+    in-memory simulator with a virtual clock."""
+    import types
+
+    import importlib
+
+    runner = importlib.import_module("tacto_negotiator.play")
+    from tacto_negotiator.sim import Sim
+
+    clock = Clock()
+
+    def advance(seconds):
+        clock.now += seconds
+
+    sim = Sim(load_cases(), clock=clock)
+
+    class Table:
+        def open(self, case_id):
+            opened = sim.open("probe", case_id)
+            self.sid = opened["session_id"]
+            return opened["case"], opened["threads"]
+
+        def send(self, supplier_id, message):
+            return sim.message("probe", self.sid, supplier_id, message)
+
+        def close(self, supplier_id, message):
+            return self.send(supplier_id, message).get("result")
+
+        def result(self):
+            return sim.sessions[self.sid]["result"]
+
+    budgets = []
+
+    class Agent:
+        def decide_timed(self, case, threads, *, deadline, wave_seconds_left):
+            budgets.append(round(deadline - clock(), 1))
+            sid = next(iter(threads))
+            if len(budgets) == 1:
+                clock.now = deadline + 0.1  # the decision ran past the thread's deadline
+            return {"supplier_id": sid, "message": {"action": {"type": "walk_away"}}}
+
+    saved = runner.time
+    runner.time = types.SimpleNamespace(time=clock, monotonic=clock, sleep=advance)
+    try:
+        table = Table()
+        runner.play(table, "case:S01", Agent())
+    finally:
+        runner.time = saved
+    thread = next(iter(sim.sessions[table.sid]["threads"].values()))
+    print(f"F3 late first decision -> timeouts {len(thread['late'])}, decision budgets {budgets}: "
+          f"the walk-away is only sent from a fresh window")
+    assert len(thread["late"]) == 1 and len(budgets) == 2 and budgets[1] > 50
 
 
 def f4_final_offer_can_be_countered():

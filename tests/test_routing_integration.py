@@ -18,7 +18,7 @@ from tacto_negotiator.agents.completion import CompletionClient
 from tacto_negotiator.agents.routed import RoutedAgent
 from tacto_negotiator.client import ArenaError
 from tacto_negotiator.cost import complete_offer
-from tacto_negotiator.play import RemoteTable, moves_left, play, play_waves, standing, thread_events
+from tacto_negotiator.play import RemoteTable, closing_move, moves_left, play, play_waves, standing, thread_events
 from tacto_negotiator.sim import load_cases
 
 
@@ -54,7 +54,8 @@ class LocalTable:
 
 
 def runner_clock(monkeypatch, clock):
-    monkeypatch.setattr(sys.modules["tacto_negotiator.play"], "time", SimpleNamespace(time=clock, monotonic=clock))
+    monkeypatch.setattr(sys.modules["tacto_negotiator.play"], "time",
+                        SimpleNamespace(time=clock, monotonic=clock, sleep=clock.advance))
 
 
 def walk(case, threads):
@@ -143,10 +144,11 @@ def test_idle_rfq_threads_are_messaged_while_another_supplier_replies(monkeypatc
 def test_a_late_custom_completion_cannot_submit_its_counteroffer(monkeypatch):
     clock = Clock()
     runner_clock(monkeypatch, clock)
-    closed = []
+    closed, decided = [], []
 
     class Late:
         def decide_timed(self, case, threads, *, deadline, wave_seconds_left):
+            decided.append(clock())
             clock.now = deadline + 0.1
             return {"supplier_id": next(iter(threads)), "message": {"body": "Late counter-offer"}}
 
@@ -156,7 +158,9 @@ def test_a_late_custom_completion_cannot_submit_its_counteroffer(monkeypatch):
 
     table = LocalTable(clock)
     play(table, table.case["case_id"], Late())
-    assert closed == [True] and not table.sent and len(table.closed) == 1
+    # Each late decision costs one timeout; the third in a row would end the threads, so it closes.
+    assert len(decided) == 3 and closed == [True] and not table.sent and len(table.closed) == 1
+    assert all(moves_left(table.case, events) == table.case["round_limit"] - 2 for events in table.threads.values())
 
 
 def test_resumed_routed_case_uses_server_time_remaining(arena):
@@ -339,26 +343,109 @@ def test_unavailable_quote_documents_cannot_cause_unguarded_acceptance(arena, fa
         assert any(path.endswith(f"{accepted.split(':')[-1]}-quote") for path in read), (accepted, read)
 
 
-def test_thread_deadline_closure_preserves_attempted_model_and_timeout(arena):
+def test_thread_deadline_closure_preserves_attempted_model_and_timeout(arena, monkeypatch):
+    monkeypatch.setattr(sys.modules["tacto_negotiator.play"].time, "sleep", arena.clock.advance)
     arena.state.cases["case:S03"]["buyer"]["category_goal"] = "secure_supply"
     arena.state.rehearse(wait=0, cap=480, waves=1)
     client = arena.client()
     case = next(c for c in client.cases("final") if c["case_id"] == "case:R1-S03")
-    client.open_session(case["case_id"])
+    opened = client.open_session(case["case_id"])
     arena.clock.advance(35)
+    budgets = []
 
     def complete(system, user, *, deadline):
+        budgets.append(deadline - arena.clock())
         arena.clock.now = deadline
         raise TimeoutError("synthetic exact-deadline timeout")
 
-    agent = RoutedAgent(complete, clock=arena.clock)
+    agent = RoutedAgent(complete, clock=arena.clock, max_decision_seconds=60)  # the model uses the thread's time
     result = play(RemoteTable(client, case), case["case_id"], agent, deadline=arena.clock() + 445)
     assert result["ended"]
+    # A missed thread deadline costs one timeout (api.md, Time); the third miss in a row closes.
+    assert len(budgets) == 3 and budgets[0] == 20
+    thread = next(iter(arena.state.sessions[opened["session_id"]]["threads"].values()))
+    assert len(thread["late"]) == 2 and thread["round"] == 2
     assert agent.last_decision["route"] == "fast" and agent.last_decision["fallback"]
     assert agent.last_decision["reason"] == "TimeoutError"
     assert agent.last_decision["case_id"] == case["case_id"]
-    assert agent.last_decision["budget_s"] == 20
     assert agent.last_decision["closure"] == "deadline_close"
+
+
+def _messages(arena):
+    return [json.loads(r.content)["message"] for r, _ in arena.requests if r.url.path.endswith("/messages")]
+
+
+def test_a_missed_thread_deadline_with_moves_left_costs_one_timeout_not_the_case(arena, monkeypatch):
+    # F3 (docs/reviews/FLOW.md): a late decision - here a walk-away fallback - is not sent; the thread
+    # times out once (api.md, Time) and the negotiation goes on.
+    monkeypatch.setattr(sys.modules["tacto_negotiator.play"].time, "sleep", arena.clock.advance)
+    arena.state.rehearse(wait=0, cap=480, waves=1)
+    client = arena.client()
+    case = next(c for c in client.cases("final") if c["case_id"] == "case:R1-S01")
+    opened = client.open_session(case["case_id"])
+    budgets = []
+
+    class Agent:
+        def decide_timed(self, case, threads, *, deadline, wave_seconds_left):
+            budgets.append(deadline - arena.clock())
+            sid = next(iter(threads))
+            if len(budgets) == 1:
+                arena.clock.now = deadline + 0.1  # e.g. a model that answered too late
+                return {"supplier_id": sid, "message": {"action": {"type": "walk_away"}}}
+            if len(budgets) == 2:
+                return {"supplier_id": sid, "message": {"body": "Please review your price."}}
+            return {"supplier_id": sid, "message": {"action": {"type": "walk_away"}}}
+
+    result = play(RemoteTable(client, case), case["case_id"], Agent(), deadline=arena.clock() + 480)
+    thread = next(iter(arena.state.sessions[opened["session_id"]]["threads"].values()))
+    assert len(budgets) == 3 and budgets[1] > 50  # a fresh 60 s window after the timeout
+    assert [m.get("body") or m["action"]["type"] for m in _messages(arena)] == ["Please review your price.",
+                                                                            "walk_away"]
+    assert len(thread["late"]) == 1 and result["ended"] and not result["deal"]
+    assert arena.state.sessions[opened["session_id"]]["end_reason"] == "walked_away"
+
+
+def test_no_decision_time_left_waits_for_the_timeout_instead_of_closing(arena, monkeypatch):
+    monkeypatch.setattr(sys.modules["tacto_negotiator.play"].time, "sleep", arena.clock.advance)
+    arena.state.rehearse(wait=0, cap=480, waves=1)
+    client = arena.client()
+    case = next(c for c in client.cases("final") if c["case_id"] == "case:R1-S01")
+    opened = client.open_session(case["case_id"])
+    arena.clock.advance(57)  # resumed with 3 s on the thread: too little to decide or send
+    budgets, closed = [], []
+
+    class Agent:
+        def decide_timed(self, case, threads, *, deadline, wave_seconds_left):
+            budgets.append(deadline - arena.clock())
+            return {"supplier_id": next(iter(threads)), "message": {"action": {"type": "walk_away"}}}
+
+        def closing_move(self, case, threads):
+            closed.append(True)
+            return closing_move(case, threads)
+
+    play(RemoteTable(client, case), case["case_id"], Agent(), deadline=arena.clock() + 420)
+    thread = next(iter(arena.state.sessions[opened["session_id"]]["threads"].values()))
+    assert not closed and len(budgets) == 1 and budgets[0] > 50 and len(thread["late"]) == 1
+
+
+def test_the_third_consecutive_miss_accepts_an_acceptable_offer(arena, monkeypatch):
+    monkeypatch.setattr(sys.modules["tacto_negotiator.play"].time, "sleep", arena.clock.advance)
+    arena.state.rehearse(wait=0, cap=480, waves=1)
+    client = arena.client()
+    case = next(c for c in client.cases("final") if c["case_id"] == "case:R1-S01")
+    opened = client.open_session(case["case_id"])
+    decided = []
+
+    class Late:
+        def decide_timed(self, case, threads, *, deadline, wave_seconds_left):
+            decided.append(True)
+            arena.clock.now = deadline + 0.1
+            return {"supplier_id": next(iter(threads)), "message": {"body": "Too late."}}
+
+    result = play(RemoteTable(client, case), case["case_id"], Late(), deadline=arena.clock() + 480)
+    thread = next(iter(arena.state.sessions[opened["session_id"]]["threads"].values()))
+    assert len(decided) == 3 and len(thread["late"]) == 2 and thread["closed"] != "timeout"
+    assert [m["action"]["type"] for m in _messages(arena)] == ["accept"] and result["deal"]
 
 
 def test_provider_timeout_cancels_io_and_closes_once(arena, monkeypatch):
