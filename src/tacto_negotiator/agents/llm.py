@@ -221,7 +221,8 @@ class LLMAgent:
             t = complete_offer(case, {**terms, **ts.get("terms", ts)}, standard_terms(events))
             if t not in sheets:
                 sheets.append(t)
-        offers = {standing(ev)[0] for ev in threads.values()}
+        offers = {sheet.get("term_sheet_id") for supplier in live_threads(threads)
+                  for sheet in latest(threads[supplier]).get("term_sheets", [])}
 
         def known(m):  # an ID the data does not have would read as a lie
             if m.group(0) in offers or self.fact(case, m.group(0)):

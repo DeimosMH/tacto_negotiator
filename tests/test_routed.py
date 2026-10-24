@@ -177,6 +177,17 @@ def test_guard_rejects_invalid_fields_options_claims_and_stale_offer_selection(s
     assert agent.validate(case, threads, {"supplier_id": sid, **decision}) is None
 
 
+def test_current_alternative_sheet_can_be_cited_without_becoming_the_accepted_offer(scenario):
+    case, threads, sid = scenario
+    threads[sid][-1]["term_sheets"].append({"term_sheet_id": "offer:1-a", "terms": {
+        "unit_price": 19, "payment_days": 14}})
+    agent = RoutedAgent(None)
+    assert agent.validate(case, threads, {"supplier_id": sid, "action": "send",
+                                         "body": "Your offer:1-a quotes EUR 19; please improve it."})
+    accepted = agent.validate(case, threads, {"supplier_id": sid, "action": "accept"})
+    assert accepted["message"]["action"]["term_sheet_id"] == "offer:1"
+
+
 def test_closure_selects_only_a_live_known_valid_supplier(scenario):
     case, threads, sid = scenario
     case["suppliers"] += ["sup:valid", "sup:ended"]

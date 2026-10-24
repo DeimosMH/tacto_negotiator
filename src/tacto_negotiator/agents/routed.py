@@ -67,7 +67,8 @@ class RoutedAgent:
             body, subject = decision.get("body", ""), decision.get("subject", f"Re: {case['title']}")
             if not isinstance(body, str) or len(body) > 8000 or not isinstance(subject, str) or len(subject) > 300:
                 return None
-            offers = {standing(ev)[0] for ev in threads.values()}
+            offers = {sheet.get("term_sheet_id") for supplier in live_threads(threads)
+                      for sheet in latest(threads[supplier]).get("term_sheets", [])}
             if any(ref not in offers and not self.context.fact(case, ref) for ref in ID_RE.findall(body)):
                 return None
             sheets = decision.get("term_sheets", [])
