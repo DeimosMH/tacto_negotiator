@@ -78,3 +78,14 @@ def test_rfq_rounds_stay_scripted_and_idle_bidders_are_served_while_another_repl
     concurrent = [d for d in row["decisions"] if d.get("concurrent")]
     assert concurrent and all(d["sent_action"]["action"] == "send" for d in concurrent)
     assert row["thread_timeouts"] == 0 and row["score"] > 0.84
+
+
+def test_replica_checks_claims_against_the_whole_data_package():
+    from tacto_negotiator.hosted_like import HostedLikeSim
+
+    scenario = next(s for s in build_replica_scenarios(0) if s.name == "P08")
+    sim = HostedLikeSim(scenario, 1)
+    session = sim.open("team", scenario.case["case_id"])
+    checker = sim.sessions[session["session_id"]]["checker"]
+    claim = {"type": "index_change", "refs": ["idx:AS-14404@2026-06", "idx:AS-14404@2026-09"]}
+    assert checker.check("sup:70710", [claim]) == [{"index": 0, "result": "verified"}]

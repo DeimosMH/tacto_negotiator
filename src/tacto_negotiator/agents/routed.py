@@ -547,6 +547,34 @@ class RoutedAgent:
         return (f"The forecast for {part} increased by {change:g}% ({ref}); "
                 "please reflect this additional business in your price.")
 
+    def _index_evidence(self, case, threads, slots):
+        """Up to `slots` claims that a cost driver of the part fell (`DataPackage.index_falls`), each
+        series cited once per case, for price-led goals only.
+
+        Model rounds already cite falls; scripted ones did not. Hosted P18 answered the same 4.87-4.88
+        opening at 5.40 with two verified index falls cited and at 5.70 with a forecast alone, and closed
+        at 5.20 against 5.40; a P05 bidder conceded 3.00 instead of 2.50 to a near-equal counter with
+        them. Relationship goals stay with the model: there the supplier's health, not its cost, binds."""
+        package = getattr(self.context, "package", None)
+        if (slots <= 0 or package is None or not hasattr(package, "index_falls")
+                or case["buyer"].get("category_goal", "routine") not in {"routine", "leverage"}):
+            return ""
+        if "_index_falls" not in case:
+            try:
+                case["_index_falls"] = package.index_falls(case)
+            except Exception:  # an older or partial package: no index claims
+                case["_index_falls"] = []
+        cited = {ref.split("@")[0] for events in threads.values() for message in events
+                 if message.get("from") == "buyer" for ref in ID_RE.findall(message.get("body", ""))}
+        out = []
+        for _, series, start, end, change in case["_index_falls"]:
+            first, last = package.lookup(start), package.lookup(end)
+            if len(out) >= slots or f"idx:{series}" in cited or not first or not last:
+                continue
+            out.append(f"{series} fell from {round(first['value'], 4)} ({start}) to {round(last['value'], 4)} "
+                       f"({end}), a change of {change:.2f}%.")
+        return " ".join(out)
+
     def _rival_evidence(self, case, threads, sid):
         current = acceptable_offer(case, threads[sid], sid)
         cited = {ref for message in threads[sid] if message.get("from") == "buyer"
@@ -671,10 +699,12 @@ class RoutedAgent:
                         break
                     if terms not in chosen:
                         chosen.append(terms)
-            rival = self._rival_evidence(case, threads, sid)
+            rival, forecast = self._rival_evidence(case, threads, sid), self._forecast_evidence(case, threads)
+            falls = self._index_evidence(case, threads, 3 - bool(rival) - bool(forecast))
             move = self.validate(case, threads, {"supplier_id": sid, "action": "send",
-                "body": ("Please consider these complete packages for the stated requirement. "
-                         + self._forecast_evidence(case, threads) + " " + rival).strip(),
+                "body": " ".join(part for part in (
+                    "Please consider these complete packages for the stated requirement.",
+                    forecast, falls, rival) if part),
                 "term_sheets": chosen})
             if move:
                 reason = "bounded_concession" if sent else "enumerated_opening"
@@ -755,7 +785,9 @@ class RoutedAgent:
             if not missing and not any(m.get("from") == "buyer" for m in threads[sid]):
                 anchor = ANCHOR_BY_GOAL.get(case["buyer"].get("category_goal"), 0.15)
                 proposal = {**std, **terms, "unit_price": round(terms["unit_price"] * (1 - anchor), 2)}
-                d = {"supplier_id": sid, "action": "send", "body": "Thank you. Please consider this price proposal.",
+                body = " ".join(part for part in ("Thank you. Please consider this price proposal.",
+                                                  self._index_evidence(case, threads, 3)) if part)
+                d = {"supplier_id": sid, "action": "send", "body": body,
                      "term_sheets": [complete_offer(case, proposal, std)]}
                 move = self.validate(case, threads, d)
                 if move and (decision_cost(case, move["message"]["term_sheets"][0]["terms"], std, sid)

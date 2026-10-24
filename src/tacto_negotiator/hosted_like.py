@@ -120,8 +120,10 @@ class HostedLikeSim(CompetitionSim):
             package = HostedLikeSim._package
         self.package = package
         self.reference = {"cost": scenario.reference["c_best"], "kind": "recorded hosted C_best"}
-        self.facts = dict(package.facts) if package is not None else {}
         Sim.__init__(self, {scenario.case["case_id"]: copy.deepcopy(scenario.case)}, clock=lambda: self.now)
+        # After Sim.__init__, which resets the facts: hosted checks claims against the whole package
+        # (cited index falls verified there), so an empty fact table marked every claim contradicted.
+        self.facts = {**(package.facts if package is not None else {}), **scenario.case.get("facts", {})}
         self.rehearse(wait=0, cap=480, brk=0, waves=waves)
 
     def open(self, team, case_id):

@@ -179,6 +179,25 @@ class DataPackage:
                 out[sid] = {"standard": standard, "interest_rate": 0.07, "full_cost": round(0.98 * unit, 4)}
         return out
 
+    def index_falls(self, case):
+        """[(weight, series, start_ref, end_ref, change_pct)] for the case's cost-driver and index-clause
+        series with a steepest recent fall (`_steepest_fall`), heaviest-weighted fall first. The weight is
+        the part's cost-driver weight (an index clause's material share otherwise)."""
+        weights = {}
+        if self.db and "cost_drivers" in self.tables():
+            for part in sorted(case["parts"]):
+                for row in self.query("SELECT series_id, weight FROM cost_drivers WHERE part_id = ?", (part,)):
+                    weights[row["series_id"]] = max(weights.get(row["series_id"], 0.0), row.get("weight") or 0.0)
+        for clause in case.get("term_options", {}).get("index_clause") or []:
+            if clause and clause.get("series"):
+                weights.setdefault(clause["series"], clause.get("material_share") or 0.0)
+        out = []
+        for name, weight in weights.items():
+            refs = self.ids(f"idx:{name}@")
+            if refs and (fall := self._steepest_fall(refs)):
+                out.append((weight, name, *fall))
+        return sorted(out, key=lambda row: (row[0] * row[4], row[4], row[1]))
+
     def _steepest_fall(self, refs):
         """The steepest index fall of 3-12 months ending in the series' last 6 months, at least -1 %.
 

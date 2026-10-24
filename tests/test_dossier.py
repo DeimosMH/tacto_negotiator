@@ -99,3 +99,26 @@ def test_dossier_offers_the_steepest_recent_fall_and_flags_a_rise(tmp_path):
     assert "idx:M@2025-09" not in dossier and "computed_change_pct" not in dossier["idx:M@2026-09"]
     fall = dossier["idx:M@2026-06"]  # 106 -> 99: the steepest 3-12 month fall ending in the last 6 months
     assert fall["comparison_ref"] == "idx:M@2026-03" and fall["computed_change_pct"] == -6.6
+
+
+def test_script_cites_each_falling_cost_driver_once_within_the_claim_slots(tmp_path):
+    facts = {f"idx:M@2026-{m:02d}": {"series": "M", "month": f"2026-{m:02d}", "value": v}
+             for m, v in zip(range(1, 10), (100, 104, 106, 103, 101, 99, 100, 102, 105), strict=True)}
+    facts |= {f"idx:E@2026-{m:02d}": {"series": "E", "month": f"2026-{m:02d}", "value": 100 - m}
+              for m in range(1, 10)}
+    (tmp_path / "facts.json").write_text(json.dumps(facts))
+    package = DataPackage(tmp_path)
+    clause = {"series": "M", "material_share": 0.4, "deadband_pct": 0}
+    case = {"parts": ["part:A"], "buyer": {"category_goal": "leverage"},
+            "term_options": {"index_clause": [None, clause, {**clause, "series": "E", "material_share": 0.1}]}}
+    assert [row[1] for row in package.index_falls(case)] == ["M", "E"]  # -6.6 % x 0.4 before -8.1 % x 0.1
+    agent = RoutedAgent(None, package=package)
+    body = agent._index_evidence(case, {}, 3)
+    assert "M fell from 106 (idx:M@2026-03) to 99 (idx:M@2026-06), a change of -6.60%." in body
+    assert "(idx:E@2026-" in body
+    assert agent._index_evidence(dict(case), {}, 1).count("fell from") == 1
+    assert not agent._index_evidence(dict(case), {}, 0)
+    threads = {"sup:A": [{"from": "buyer", "body": body}]}
+    assert not agent._index_evidence(case, threads, 3)  # each series is claimed once per case
+    relationship = {**case, "buyer": {"category_goal": "stabilise"}}
+    assert not agent._index_evidence(relationship, {}, 3)
