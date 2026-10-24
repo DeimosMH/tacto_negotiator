@@ -23,6 +23,7 @@ from ..cost import (
 from ..play import (
     ANCHOR_BY_GOAL,
     CLOSE_BEFORE_CAP_S,
+    HOLD_STEP,
     acceptable_offer,
     ask_limit,
     closing_move,
@@ -31,6 +32,7 @@ from ..play import (
     live_threads,
     moves_left,
     opening_price_cap,
+    price_within,
     standing,
 )
 from .llm import ID_RE, SYSTEM, LLMAgent, parse
@@ -125,7 +127,7 @@ class RoutedAgent:
             conformed = []
             for t in clean:
                 ceiling = max(cap, cheapest_price(case, t, std, sid) or 0) if opening else math.inf
-                if decision_cost(case, t, std, sid) > limit * 1.005 + 0.01 or t["unit_price"] > ceiling + 0.02:
+                if total_cost(case, t, std) > limit * 1.005 + 0.01 or t["unit_price"] > ceiling + 0.02:
                     t = {**t, "unit_price": self._price_within(case, t, std, sid, limit, ceiling)}
                 if t not in conformed:
                     conformed.append(t)
@@ -133,11 +135,48 @@ class RoutedAgent:
             if clean:  # the supplier picks the sheet dearest for us (hosted P03): keep equal-cost sheets only
                 cheapest = min(decision_cost(case, t, std, sid) for t in clean)
                 clean = [t for t in clean if decision_cost(case, t, std, sid) <= cheapest * 1.003 + 0.01]
+                if reprice:  # a mirrored supplier package goes back alone
+                    clean += self._toward_sheets(case, events, sid, clean, 3 - len(clean), limit)
             move = {"supplier_id": sid, "message": {
                 "subject": subject, "body": body, "term_sheets": [{"terms": t} for t in clean]}}
             return move if len(json.dumps({"message": move["message"]}).encode()) <= 64_000 else None
         except (KeyError, TypeError, ValueError, OverflowError, AttributeError):
             return None
+
+    def _toward_sheets(self, case, events, sid, sheets, room, limit=math.inf):
+        """Up to `room` equal-cost variants of our cheapest sheet, each moving one term to the option
+        nearest the supplier's own quote. The supplier answers the sheet it prefers, so a trade it values
+        above our cost gets priced; equal cost keeps any accepted sheet as good for us. Hosted P10 models
+        sent one 42-day sheet and got a 33.8 final offer (0.555); sheets including the supplier's 56 days
+        drew 31.6 (0.671) although the 14 late days cost EUR 33,600. A variant whose equal-cost price
+        falls below its health floor is offered at the floor if that costs at most one held step
+        (`HOLD_STEP` of the gap to the supplier's standing offer) more and the ask limit allows it."""
+        if room <= 0 or not sheets:
+            return []
+        _, terms, std, missing = known_offer(case, events)
+        if missing:
+            return []
+        position = {**std, **case.get("fixed_terms", {}), **terms}
+        base = min(sheets, key=lambda t: decision_cost(case, t, std, sid))
+        cost, cash = decision_cost(case, base, std, sid), total_cost(case, base, std)
+        held = cost + HOLD_STEP * max(0.0, decision_cost(case, terms, std, sid) - cost)
+        out = []
+        for field in case["negotiable"]:
+            target = self._toward(case, field, position.get(field), std)
+            if len(out) >= room or field == "unit_price" or target is None or base[field] == target:
+                continue
+            variant = {**base, field: target}
+            if not must_haves_ok(case, variant, std):
+                continue
+            variant["unit_price"] = price_within(case, variant, std, sid, cash)
+            equal = (decision_cost(case, variant, std, sid) <= cost * 1.003 + 0.01
+                     and total_cost(case, variant, std) <= cash + 0.01)
+            at_floor = variant["unit_price"] <= (cheapest_price(case, variant, std, sid) or 0) + 0.01
+            near = (at_floor and decision_cost(case, variant, std, sid) <= held
+                    and total_cost(case, variant, std) <= limit)
+            if (equal or near) and variant not in sheets + out:
+                out.append(variant)
+        return out
 
     @staticmethod
     def _strip_wasted_claims(case, threads, body):
@@ -190,22 +229,7 @@ class RoutedAgent:
 
     @staticmethod
     def _price_within(case, sheet, std, sid, limit, cap=math.inf):
-        """The highest price for these terms with C <= limit and price <= cap, never below the health
-        floor. C rises with price above that floor (below it the margin penalty grows), so search there;
-        a search from half the price stalled hosted P02 at the floor for four rounds."""
-        floor = cheapest_price(case, sheet, std, sid) or 0.0
-        low, high = max(floor, sheet["unit_price"] * 0.5), min(sheet["unit_price"], cap)
-        if high <= low:
-            return round(max(floor, high), 2)
-        if decision_cost(case, {**sheet, "unit_price": low}, std, sid) > limit:
-            return round(low, 2)  # the limit is below what these terms can cost: ask at the floor
-        for _ in range(40):
-            middle = (low + high) / 2
-            if decision_cost(case, {**sheet, "unit_price": middle}, std, sid) <= limit:
-                low = middle
-            else:
-                high = middle
-        return max(math.floor(low * 100) / 100, round(floor, 2))
+        return price_within(case, sheet, std, sid, limit, cap)
 
     @staticmethod
     def _premature(case, threads, sid):
@@ -264,11 +288,41 @@ class RoutedAgent:
                 quotes.append(None if missing else {**std, **case.get("fixed_terms", {}), **terms})
         return len(quotes) >= 3 and quotes[-1] is not None and quotes[-1] == quotes[-2] == quotes[-3]
 
+    @staticmethod
+    def _toward(case, field, position, standard=None):
+        """The option of `field` nearest the supplier's own position (its quoted value), or None. Its
+        own standard value is legal even outside the options."""
+        options = case.get("term_options", {}).get(field) or []
+        if position in options or (standard and field in standard and position == standard[field]):
+            return position
+        numeric = [o for o in options if type(o) in (int, float)]
+        if type(position) in (int, float) and numeric:
+            return min(numeric, key=lambda o: (abs(o - position), -o))
+        return None
+
+    def _distance(self, case, proposal, position, standard=None):
+        """How far a package's terms sit from the supplier's position, in option steps."""
+        total = 0
+        for field, value in proposal.items():
+            options = case.get("term_options", {}).get(field) or []
+            target = self._toward(case, field, (position or {}).get(field), standard)
+            if field == "unit_price" or target is None or value == target:
+                continue
+            total += abs(options.index(value) - options.index(target)) if value in options and target in options else 1
+        return total
+
     def _packages(self, case, options, target_cost, alternative, reference_price, *, price_ceiling=math.inf,
-                  sid=None, standard=None):
-        """Price each trade under the same full-cost ceiling, including the outside option."""
+                  sid=None, standard=None, position=None):
+        """Price each trade under the same cash-cost ceiling (`ask_limit`), including the outside option.
+
+        With the supplier's `position`, an anchored opening price binds as a cost among packages that
+        commit the same quantity: the cheapest at the anchor sets it and a fixed-cost trade carries the
+        price of equal cost. The same price on every sheet made a slower lead time look dear to us, so
+        it was never offered (hosted P10: 33.8 at 42 days scored 0.555, the supplier's 31.6 at 56 days
+        0.671 although 14 late days cost EUR 33,600). Equal-cost packages rank by closeness to the
+        supplier's own terms, which cost it least to grant."""
         fields = [field for field in case["negotiable"] if field != "unit_price"]
-        rows = []
+        candidates = []
         ceiling = min(target_cost, alternative - 0.01)
         for values in itertools.product(*options):
             proposal = dict(zip(fields, values, strict=True))
@@ -278,22 +332,34 @@ class RoutedAgent:
             slope = (reference_cost - base) / reference_price
             if not math.isfinite(slope) or slope <= 0:
                 continue
-            proposal["unit_price"] = min(price_ceiling, math.floor((ceiling - base) / slope * 100) / 100)
+            floor = cheapest_price(case, {**proposal, "unit_price": reference_price}, standard, sid)
+            candidates.append((proposal, base, slope, floor or 0.0))
+        anchors = {}  # per committed quantity (C's slope in price): only fixed-cost trades shift the price
+        if math.isfinite(price_ceiling) and position is not None:
+            for _, base, slope, floor in candidates:
+                key = round(slope, 4)
+                anchors[key] = min(anchors.get(key, math.inf), base + slope * max(price_ceiling, floor))
+        rows = []
+        for proposal, base, slope, floor in candidates:
+            cap = (anchors[round(slope, 4)] - base) / slope if anchors else price_ceiling
+            price = min(cap, (ceiling - base) / slope)
+            proposal["unit_price"] = math.floor(price * 100) / 100
             if proposal["unit_price"] <= 0:
                 continue
-            floor = cheapest_price(case, proposal, standard, sid)  # never squeeze into the health penalty
-            if floor and proposal["unit_price"] < floor:
+            if floor and proposal["unit_price"] < floor:  # never squeeze into the health penalty
                 proposal["unit_price"] = floor
-            cost = decision_cost(case, proposal, standard, sid)
-            if cost > ceiling:
+            cash = total_cost(case, proposal, standard)
+            if cash > ceiling:
                 proposal["unit_price"] = round(proposal["unit_price"] - 0.01, 2)
-                cost = decision_cost(case, proposal, standard, sid)
-            if proposal["unit_price"] <= 0 or not math.isfinite(cost) or cost > ceiling or cost >= alternative:
+                cash = total_cost(case, proposal, standard)
+            cost = decision_cost(case, proposal, standard, sid)
+            if proposal["unit_price"] <= 0 or not math.isfinite(cost) or cash > ceiling or cost >= alternative:
                 continue
             if must_haves_ok(case, proposal):
                 rows.append((cost, proposal))
-        return sorted(rows, key=lambda row: decision_cost(case, {**row[1], "unit_price": reference_price},
-                                                          standard, sid))
+        return sorted(rows, key=lambda row: (
+            round(decision_cost(case, {**row[1], "unit_price": reference_price}, standard, sid), 2),
+            self._distance(case, row[1], position, standard)))
 
     def _opening_sheets(self, case, record, rows, alternative, cap):
         """Open on the supplier's own non-price terms - only must-have fields moved, to the nearest
@@ -453,10 +519,15 @@ class RoutedAgent:
             cap = math.inf if sent else max(round(current["unit_price"] * (1 - anchor), 2),
                                             opening_price_cap(case, threads[sid], sid))
             rows = self._packages(case, record["options"], target_cost, alternative, current["unit_price"],
-                                  price_ceiling=cap, sid=sid, standard=record["std"])
+                                  price_ceiling=cap, sid=sid, standard=record["std"], position=current)
             if not rows:
                 continue
-            opening = None if sent else self._opening_sheets(case, record, rows, alternative, cap)
+            opening = None
+            if not sent and case["buyer"].get("category_goal") not in RELATIONSHIP_GOALS:
+                # the supplier's own terms open at the anchored price itself, not at an equal-cost one
+                plain = self._packages(case, record["options"], target_cost, alternative, current["unit_price"],
+                                       price_ceiling=cap, sid=sid, standard=record["std"])
+                opening = self._opening_sheets(case, record, plain, alternative, cap) if plain else None
             if opening:
                 chosen = opening
             else:
@@ -466,6 +537,17 @@ class RoutedAgent:
                 )), None)
                 if baseline and baseline not in chosen:
                     chosen.append(baseline)
+                # One-field moves toward the supplier's own terms at equal cost (validate keeps only those):
+                # the supplier picks the sheet it prefers, so a trade it values above our cost gets priced.
+                for field in case["negotiable"]:
+                    target = self._toward(case, field, current.get(field), record["std"])
+                    if field == "unit_price" or target is None or rows[0][1][field] == target:
+                        continue
+                    variant = next((terms for cost, terms in rows if cost <= rows[0][0] * 1.003 + 0.01 and all(
+                        terms[f] == (target if f == field else rows[0][1][f])
+                        for f in case["negotiable"] if f != "unit_price")), None)
+                    if variant and variant not in chosen and len(chosen) < 3:
+                        chosen.append(variant)
                 for _, terms in rows:
                     if len(chosen) == 3:
                         break

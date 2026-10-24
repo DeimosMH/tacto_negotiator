@@ -50,7 +50,7 @@ def test_supplier_estimates_reproduce_hosted_health_charges():
 
 def test_counter_price_moves_above_the_health_floor_when_the_limit_allows():
     from tacto_negotiator.agents.routed import RoutedAgent
-    from tacto_negotiator.cost import cheapest_price, decision_cost
+    from tacto_negotiator.cost import cheapest_price, total_cost
 
     feedback = json.loads((ROOT / "tests/fixtures/practice_feedback.json").read_text())
     case = dict(feedback["cases"]["case:P02"])
@@ -58,7 +58,64 @@ def test_counter_price_moves_above_the_health_floor_when_the_limit_allows():
     sid, std = "sup:70510", {"ppm_commitment": 250, "chargeback_eur_per_complaint": 0.0}
     sheet = {"unit_price": 373.88, "payment_days": 90, "index_clause": None}
     floor = cheapest_price(case, sheet, std, sid)
-    limit = decision_cost(case, {**sheet, "unit_price": floor + 4}, std, sid)  # hosted P02 repeated the floor
+    limit = total_cost(case, {**sheet, "unit_price": floor + 4}, std)  # hosted P02 repeated the floor
     price = RoutedAgent._price_within(case, sheet, std, sid, limit)
-    assert floor + 3.9 <= price <= floor + 4.01
-    assert decision_cost(case, {**sheet, "unit_price": price}, std, sid) <= limit
+    assert floor + 3.99 <= price <= floor + 4.01
+    assert total_cost(case, {**sheet, "unit_price": price}, std) <= limit
+    below = total_cost(case, {**sheet, "unit_price": floor - 5}, std)
+    assert RoutedAgent._price_within(case, sheet, std, sid, below) == floor  # never below the health floor
+
+
+def test_concession_schedule_moves_the_price_not_the_flat_health_cost():
+    """Hosted P02 v6: 20 % of a gap in C including supplier health moved the ask 361.51 -> 366.94
+    against a 373.88 counter; the schedule now moves 20 % of the price gap."""
+    from tacto_negotiator.agents.routed import RoutedAgent
+    from tacto_negotiator.play import ask_limit, known_offer
+
+    feedback = json.loads((ROOT / "tests/fixtures/practice_feedback.json").read_text())
+    case = dict(feedback["cases"]["case:P02"])
+    case["_supplier_estimates"] = DataPackage(ROOT / "data").supplier_estimates(case)
+    sid = "sup:70510"
+    quote = [{"name": "quote.pdf", "text": "Our standard terms\nPayment terms (days net) 30\nIncoterm DAP"}]
+
+    def sheet(price, pay):
+        return {"unit_price": price, "payment_days": pay, "index_clause": None}
+
+    events = [{"from": "supplier", "status": "open", "attachments": quote,
+               "term_sheets": [{"term_sheet_id": "offer:0", "terms": sheet(370.96, 30)}]},
+              {"from": "buyer", "term_sheets": [{"terms": sheet(361.51, 90)}]},
+              {"from": "supplier", "status": "open", "attachments": quote,
+               "term_sheets": [{"term_sheet_id": "offer:1", "terms": sheet(373.88, 90)}]}]
+    limit = ask_limit(case, events, sid)
+    std = known_offer(case, events)[2]
+    price = RoutedAgent._price_within(case, {**sheet(373.88, 90)}, std, sid, limit)
+    assert 363.5 <= price <= 364.5  # 361.51 + 0.2 x 12.37
+
+
+def test_opening_offers_the_suppliers_lead_time_at_equal_cost():
+    """Hosted P10: one 42-day sheet drew a 33.8 final offer (0.555); with the supplier's 56 days at an
+    equal-cost price it answered 31.6 (0.671). Scripts and model sheets both carry that variant."""
+    from tacto_negotiator.agents.routed import RoutedAgent
+    from tacto_negotiator.cost import decision_cost
+    from tacto_negotiator.play import known_offer
+
+    feedback = json.loads((ROOT / "tests/fixtures/practice_feedback.json").read_text())
+    case = dict(feedback["cases"]["case:P10"])
+    case["_supplier_estimates"] = DataPackage(ROOT / "data").supplier_estimates(case)
+    sid = "sup:70410"
+    opening = {"unit_price": 32.2, "lead_time_days": 54, "volume_per_year": 19890, "contract_months": 12}
+    quote = [{"name": "quote.pdf", "text": "Our standard terms\nPayment terms (days net) 30\nIncoterm DAP"}]
+    threads = {sid: [{"from": "supplier", "status": "open", "attachments": quote,
+                      "term_sheets": [{"term_sheet_id": "offer:0", "terms": opening}]}]}
+    agent = RoutedAgent(None)
+    scripted = agent._structured_bargain(case, threads)[1]["message"]["term_sheets"]
+    model = agent.validate(case, threads, {"supplier_id": sid, "action": "send", "term_sheets": [
+        {"unit_price": 26.3, "volume_per_year": 23400, "contract_months": 36, "lead_time_days": 42}]})
+    for sheets in (scripted, model["message"]["term_sheets"]):
+        terms = [sheet["terms"] for sheet in sheets]
+        slow = [t for t in terms if t["lead_time_days"] == 56]
+        assert slow and all(t["volume_per_year"] >= 22230 and t["contract_months"] >= 24 for t in terms)
+        fast = [t for t in terms if t["lead_time_days"] == 42]
+        assert slow[0]["unit_price"] < min(t["unit_price"] for t in fast)
+        std = known_offer(case, threads[sid])[2]
+        assert decision_cost(case, slow[0], std, sid) <= min(decision_cost(case, t, std, sid) for t in fast) * 1.03

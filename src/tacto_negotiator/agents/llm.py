@@ -20,7 +20,7 @@ import httpx
 
 from ..cost import complete_offer, cost_breakdown, decision_cost, must_haves_ok, total_cost
 from ..docs import standard_terms
-from ..play import acceptable_offer, ask_limit, closing_move, latest, live_threads, moves_left, standing
+from ..play import acceptable_offer, ask_limit, closing_move, latest, live_threads, moves_left, price_within, standing
 from .naive import NaiveAgent
 
 log = logging.getLogger("arena")
@@ -191,9 +191,14 @@ class LLMAgent:
                 f"{json.dumps(terms)} -> C = {c}; standard terms {json.dumps(std)}"
             )
             if math.isfinite(limit := ask_limit(case, events, sid)) and moves_left(case, events) > 0:
+                resolved = {**std, **case.get("fixed_terms", {}), **terms}
+                price = (price_within(case, {f: resolved[f] for f in case["negotiable"]}, std, sid, limit)
+                         if sheet_id and all(f in resolved for f in case["negotiable"]) else None)
+                at_price = f" (on the standing terms: EUR {price:g} per unit)" if price else ""
                 out.append(f"ASK LIMIT: every term sheet you send to {sid} now must have C <= {limit:,.0f} "
-                           "(an ambitious opening, then 20% of the remaining gap per round). Sheets above it are "
-                           "rejected. Accepting a standing offer is not limited.")
+                           f"without the supplier-health term{at_price} (an ambitious opening, then 20% of the "
+                           "remaining gap per round); code reprices sheets above it. Accepting a standing offer "
+                           "is not limited.")
             if components:
                 health = ("relationship = estimated supplier-health cost: pushing the price below the supplier's "
                           "sustainable margin raises C" if estimate else "supplier health not estimated")

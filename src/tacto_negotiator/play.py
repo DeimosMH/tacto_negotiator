@@ -308,34 +308,57 @@ def opening_price_cap(case, events, sid=None):
 
 
 def ask_limit(case, events, sid=None):
-    """Highest buyer cost C our next term sheet in this thread may carry (excluding supplier health).
+    """Highest buyer cash cost (`total_cost`, without the supplier-health term) our next term sheet in
+    this thread may carry; `price_within` keeps the price at or above the health floor separately.
 
     Suppliers concede only in response to movement, so every round moves - but by a share of the
-    gap, never straight to the supplier's number. After a large supplier concession we hold more."""
+    gap, never straight to the supplier's number. After a large supplier concession we hold more.
+    The schedule leaves the health term out: C including it is flat near the health floor, so a share
+    of that gap moved the price twice as far (hosted P02 v6 moved 361.51 -> 366.94 of a 373.88 counter,
+    44 % in one round, and the supplier's final offer then came at 372.15)."""
     try:
         _, terms, std, missing = known_offer(case, events)
         if missing:
             return math.inf
         resolved = {**std, **case.get("fixed_terms", {}), **terms}
-        current = decision_cost(case, terms, std, sid)
+        current = total_cost(case, terms, std)
         sent = [e for e in events if e.get("from") == "buyer" and e.get("term_sheets")]
         if not sent:
             opening = {**resolved, "unit_price": opening_price_cap(case, events, sid)}
-            return min(current, decision_cost(case, {f: opening[f] for f in case["negotiable"]}, std, sid))
-        ours = min(decision_cost(case, s.get("terms", s), std, sid) for s in sent[-1]["term_sheets"])
+            return min(current, total_cost(case, {f: opening[f] for f in case["negotiable"]}, std))
+        ours = min(total_cost(case, s.get("terms", s), std) for s in sent[-1]["term_sheets"])
         if current <= ours:
             return current
         step = GAP_STEP
         if len(sent) >= 2:  # the supplier's last concession, measured against the gap before it
-            before = min(decision_cost(case, s.get("terms", s), std, sid) for s in sent[-2]["term_sheets"])
+            before = min(total_cost(case, s.get("terms", s), std) for s in sent[-2]["term_sheets"])
             index = events.index(sent[-1])
             _, prior_terms, prior_std, _ = known_offer(case, events[:index])
-            previous = decision_cost(case, prior_terms, prior_std, sid)
+            previous = total_cost(case, prior_terms, prior_std)
             if previous > before and previous - current > 0.5 * (previous - before):
                 step = HOLD_STEP
         return ours + step * (current - ours)
     except (KeyError, TypeError, ValueError, OverflowError, AttributeError, StopIteration, ZeroDivisionError):
         return math.inf
+
+
+def price_within(case, sheet, std, sid, limit, cap=math.inf):
+    """The highest price for these terms with cash cost `total_cost` <= `limit` (`ask_limit`) and
+    price <= cap, never below the health floor (`cheapest_price`): below it the margin penalty makes C
+    rise again. A search from half the price stalled hosted P02 at the floor for four rounds."""
+    floor = cheapest_price(case, sheet, std, sid) or 0.0
+    low, high = max(floor, sheet["unit_price"] * 0.5), min(sheet["unit_price"], cap)
+    if high <= low:
+        return round(max(floor, high), 2)
+    if total_cost(case, {**sheet, "unit_price": low}, std) > limit:
+        return round(low, 2)  # the limit is below what these terms can cost: ask at the floor
+    for _ in range(40):
+        middle = (low + high) / 2
+        if total_cost(case, {**sheet, "unit_price": middle}, std) <= limit:
+            low = middle
+        else:
+            high = middle
+    return max(math.floor(low * 100) / 100, round(floor, 2))
 
 
 def closing_move(case, threads):
