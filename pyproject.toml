@@ -16,6 +16,7 @@ sim = ["fastapi>=0.115", "uvicorn>=0.30"]
 tacto = "tacto_negotiator.cli:main"
 tacto-sim = "tacto_negotiator.sim:main"
 tacto-compete = "tacto_negotiator.compete:main"
+tacto-ui = "tacto_negotiator.web:main"
 
 [dependency-groups]
 dev = ["pytest>=8", "ruff>=0.6"]
