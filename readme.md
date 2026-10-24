@@ -2,9 +2,15 @@
 
 Industrial Agents Hackathon - TACTO CHALLENGE
 
+:tacto:  About our challenge:
+https://arena.tacto.ai/
+The live score board for today: https://arena.tacto.ai/live?tv=1
 
-https://arena.tacto.ai
+You apply & sign-up for our track here https://arena.tacto.ai/apply
 
+--- starter kit
+
+https://github.com/tacto-playground/negotiation-arena-kit
 
 # starter-kit/.env
 ARENA_URL=https://arena.tacto.ai
