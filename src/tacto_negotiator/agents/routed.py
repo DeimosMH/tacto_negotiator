@@ -197,11 +197,16 @@ class RoutedAgent:
                 if step := self._limit_sheet(case, events, sid, limit):
                     clean = [step]
             if clean:  # the supplier picks the sheet dearest for us (hosted P03): keep equal-cost sheets only
+                proposed = clean
                 cheapest = min(decision_cost(case, t, std, sid) for t in clean)
                 clean = [t for t in clean if decision_cost(case, t, std, sid) <= cheapest * 1.003 + 0.01]
                 if reprice and (protected := self._clause_sheet(case, events, sid, clean)):
                     clean = [protected, *clean[:2]]
-                if reprice:  # a mirrored supplier package goes back alone
+                    clean += self._toward_sheets(case, events, sid, clean, 3 - len(clean), limit)
+                elif (reprice and sent and len(live_threads(threads)) == 1 and latest(events).get("status") == "open"
+                        and self._imposed_clause(events)):
+                    clean = [self._held_package(case, sent[-1], proposed, clean[0], std)]
+                elif reprice:  # a mirrored supplier package goes back alone
                     clean += self._toward_sheets(case, events, sid, clean, 3 - len(clean), limit)
                 # Equal cost to us is not credibility to the supplier: hosted P18 v8 got a 2.78 sheet (a 12-month
                 # term priced against uncovered demand) next to 4.57 and countered 6.00 instead of 5.40.
@@ -248,6 +253,31 @@ class RoutedAgent:
             if (equal or near) and variant not in sheets + out:
                 out.append(variant)
         return out
+
+    @staticmethod
+    def _imposed_clause(events):
+        """The supplier answered our first, clause-free sheets with an index clause of its own: it set
+        the structure, and what is left to negotiate is the price."""
+        first = next((i for i, e in enumerate(events) if e.get("from") == "buyer" and e.get("term_sheets")), None)
+        if first is None or any(s.get("terms", s).get("index_clause") for s in events[first]["term_sheets"]):
+            return False
+        reply = next((e for e in events[first + 1:] if e.get("from") != "buyer" and e.get("term_sheets")), None)
+        return bool(reply and (reply["term_sheets"][0].get("terms") or {}).get("index_clause"))
+
+    @staticmethod
+    def _held_package(case, previous, sheets, fallback, std):
+        """One sheet to a lone supplier that imposed its index clause (`_imposed_clause`): the package of
+        our previous lead sheet if one of `sheets` keeps it, else `fallback` (our cheapest). Hosted
+        P08/P18 (32 sessions): new deadband, contract and payment variants every round drew a final offer
+        at our 2nd message (P18 11 of 16, no price move) or a counter priced up for the deadband (P08
+        +0.07); an earlier team's single sheet on an unchanged package stayed open at P18 in 31 of 31
+        games and drew 0.15-0.25 cuts at P08 (record 0.912; ours 0.744 from the same first counter)."""
+        def package(t):
+            resolved = {**std, **case.get("fixed_terms", {}), **t}
+            return {f: resolved.get(f) for f in case["negotiable"] if f != "unit_price"}
+
+        lead = package(previous["term_sheets"][0].get("terms", previous["term_sheets"][0]))
+        return next((t for t in sheets if package(t) == lead), fallback)
 
     def _clause_sheet(self, case, events, sid, sheets):
         """Relationship goals: our cheapest sheet with an index clause, priced at its own health floor,

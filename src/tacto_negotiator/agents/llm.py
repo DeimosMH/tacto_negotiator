@@ -51,6 +51,10 @@ Reply with ONE JSON object and nothing else:
 
 - term_sheets: 0-3 alternative packages over the negotiable fields. Only term sheets bind.
   Every proposed package must satisfy the must-haves and use only the listed term_options.
+  When a single supplier answered your clause-free sheets with its own index clause, code sends only
+  ONE sheet from then on: put first the package of your previous lead sheet (same clause, contract
+  length, payment) and move its price. New deadband/contract/payment variants every round read as a
+  package to sign: suppliers went final at once or priced the variant up.
 - Arguments need data: cite the ID from FACTS and its figure in the same sentence, one argument
   per sentence. The supplier checks the figure; a wrong one or an unknown ID costs trust. A figure
   without an ID (a threshold, cost share, computed effect, "secure base load") draws "please send

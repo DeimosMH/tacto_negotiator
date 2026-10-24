@@ -131,6 +131,40 @@ def test_quality_opening_repairs_only_the_must_have_and_trades_chargebacks_at_eq
     assert all(price > by_chargeback[0] for charge, price in by_chargeback.items() if charge > 0)
 
 
+def test_one_held_sheet_once_a_lone_supplier_imposes_its_index_clause(negotiation):
+    """Hosted P08/P18: answering the supplier's own clause with new deadband/contract variants drew a
+    final offer at our 2nd message; a single sheet on our previous package kept it moving."""
+    case, threads = negotiation
+    clause = {"series": "AS", "material_share": 0.45, "deadband_pct": 0.0, "base_month": "2026-08"}
+    db5 = {**clause, "deadband_pct": 5.0}
+    case["negotiable"] = ["unit_price", "payment_days", "contract_months", "index_clause"]
+    case["fixed_terms"] = {"volume_per_year": 1000, "lead_time_days": 14, "tooling_eur": 0, "incoterm": "DAP"}
+    case["term_options"] = {"payment_days": [14, 30, 60], "contract_months": [12, 24],
+                            "index_clause": [None, clause, db5]}
+    case["buyer"].update(horizon_years=2)
+    threads["sup:A"] = [quote({"unit_price": 110, "payment_days": 30, "contract_months": 12, "index_clause": None})]
+    lead = {"unit_price": 90.0, "payment_days": 60, "contract_months": 24, "index_clause": None}
+    threads["sup:A"].append({"from": "buyer", "body": "Our packages.", "term_sheets": [
+        {"terms": lead}, {"terms": {**lead, "payment_days": 30, "unit_price": 89.5}}]})
+    agent, _ = agent_with_calls()
+    proposal = {"supplier_id": "sup:A", "action": "send", "body": "We move toward you.", "term_sheets": [
+        {**lead, "contract_months": 12, "unit_price": 93.0}, {**lead, "index_clause": db5, "unit_price": 92.0},
+        {**lead, "unit_price": 94.0}]}
+
+    def sheets(counter_clause):
+        events = copy.deepcopy(threads)
+        events["sup:A"].append(quote({"unit_price": 105, "payment_days": 60, "contract_months": 24,
+                                      "index_clause": counter_clause}, 1))
+        move = agent.validate(case, events, copy.deepcopy(proposal))
+        return [s["terms"] for s in move["message"]["term_sheets"]]
+
+    held = sheets(clause)
+    assert len(held) == 1
+    assert {k: v for k, v in held[0].items() if k in lead and k != "unit_price"} == {
+        k: v for k, v in lead.items() if k != "unit_price"}
+    assert len(sheets(None)) > 1  # without an imposed clause the variants stay
+
+
 def test_opening_still_asks_security_terms_the_supplier_did_not_offer(negotiation):
     """Contract length is security, not cash, for the supplier: the opening may still extend it."""
     case, threads = negotiation
