@@ -103,7 +103,12 @@ def test_terminal_offer_closes_without_any_model(scenario, terminal):
     calls = []
     agent = RoutedAgent(completion(sid, calls))
     move = agent.decide(case, threads)
-    assert calls == [] and move["message"]["action"] == {"type": "accept", "term_sheet_id": "offer:1"}
+    if terminal == "final_offer":  # ask once for 0.25 % less, then accept the repeated final offer
+        assert calls == [] and agent.last_decision["reason"] == "final_offer_push"
+        assert move["message"]["term_sheets"][0]["terms"]["unit_price"] == 19.95
+        threads[sid] += [{**move["message"], "from": "buyer"}, copy.deepcopy(threads[sid][-1])]
+        move = agent.decide(case, threads)
+    assert calls == [] and move["message"]["action"]["type"] == "accept"
     assert agent.last_decision["reason"] == "terminal_offers"
 
 
@@ -330,7 +335,7 @@ def test_model_accepting_an_open_offer_above_our_ask_counters_instead(scenario):
     move = agent.decide(case, threads)  # hosted P02 accepted 373.88 in round 2 against our 361.51 ask
     assert agent.last_decision["fallback"] and "action" not in move["message"]
     assert move["message"]["term_sheets"][0]["terms"]["unit_price"] < 19
-    threads[sid][-1]["status"] = "final_offer"  # a final offer may be accepted
+    threads[sid][-1]["status"] = "agreed"  # an agreement may be accepted
     assert RoutedAgent(completion(sid, [], json.dumps({"supplier_id": sid, "action": "accept"}))).decide(
         case, threads)["message"]["action"]["type"] == "accept"
 

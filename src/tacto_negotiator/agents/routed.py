@@ -37,6 +37,7 @@ from .llm import ID_RE, SYSTEM, LLMAgent, parse
 
 log = logging.getLogger("arena")
 MAX_SCRIPT_CANDIDATES = 256
+FINAL_PUSH = 0.0025  # share of the price asked off a final offer, once
 # shortcut: conservative phrase matching; use structured side-condition extraction for broader prose coverage.
 CONDITIONAL_WORDING = ("subject to", "provided that", "only if", "pending approval", "conditional on", "unless",
                        "please clarify", "please explain", "capacity constraint", "of our cost", "whole range",
@@ -59,7 +60,7 @@ class RoutedAgent:
         self.last_decision = {}
         self.unavailable = set()  # suppliers whose reply clock runs out before a message could arrive
 
-    def validate(self, case, threads, decision):
+    def validate(self, case, threads, decision, *, schedule=True):
         """One gate for scripts, model proposals and fallback. Return a wire move or None."""
         try:
             if not isinstance(decision, dict):
@@ -114,8 +115,8 @@ class RoutedAgent:
             # The shared concession schedule binds scripts and models: a sheet above the ask limit (or an
             # opening above the anchored price) is repriced to it, keeping the chosen terms. Rejecting
             # them sent 8 of 10 hosted v4 openings to the fallback.
-            limit = ask_limit(case, events, sid)
-            opening = not any(e.get("from") == "buyer" and e.get("term_sheets") for e in events)
+            limit = ask_limit(case, events, sid) if schedule else math.inf
+            opening = schedule and not any(e.get("from") == "buyer" and e.get("term_sheets") for e in events)
             cap = opening_price_cap(case, events, sid) if opening else math.inf
             conformed = []
             for t in clean:
@@ -430,11 +431,39 @@ class RoutedAgent:
             return best[3], best[4]
         return None
 
+    def _final_push(self, case, threads, move):
+        """Instead of accepting a final offer at once, ask once for 0.25 % less on the same terms.
+        Sandbox suppliers agreed to 0.16 % (3 of 3) and repeated their final offer at 1.3 % (1 of 1);
+        none walked. A repeated final offer is then accepted."""
+        sid = move["supplier_id"]
+        events = threads[sid]
+        first_final = next((i for i, e in enumerate(events) if e.get("from") != "buyer"
+                            and e.get("status") == "final_offer"), None)
+        if (move["message"].get("action", {}).get("type") != "accept" or first_final is None
+                or latest(events).get("status") != "final_offer" or moves_left(case, events) <= 1
+                or any(e.get("from") == "buyer" for e in events[first_final:])):
+            return None
+        _, terms, std, missing = known_offer(case, events)
+        if missing:
+            return None
+        resolved = {**std, **case.get("fixed_terms", {}), **terms}
+        sheet = {f: resolved[f] for f in case["negotiable"]}
+        price = max(round(sheet["unit_price"] * (1 - FINAL_PUSH), 2), cheapest_price(case, sheet, std, sid) or 0)
+        if price >= sheet["unit_price"]:
+            return None
+        return self.validate(case, threads, {"supplier_id": sid, "action": "send",
+            "body": "Thank you for your final offer. We are very close; this package is the last step we can take, "
+                    "and we would like to conclude with you today.",
+            "term_sheets": [{**sheet, "unit_price": price}]}, schedule=False)
+
     def _script(self, case, threads):
         live = live_threads(threads)
         if all(latest(threads[s]).get("status") in {"agreed", "final_offer"}
                or moves_left(case, threads[s]) <= 0 for s in live):
-            return "terminal_offers", closing_move(case, threads)
+            move = closing_move(case, threads)
+            if push := self._final_push(case, threads, move):
+                return "final_offer_push", push
+            return "terminal_offers", move
         for sid in live:
             _, _, _, missing = known_offer(case, threads[sid])
             already_asked = any(m.get("from") == "buyer" and m.get("body", "").startswith("Please confirm these terms:")

@@ -176,8 +176,18 @@ class HostedLikeSim(CompetitionSim):
         if best is None:  # prose only: the supplier restates its position
             reply = self._mail(state, thread, thread["status"], stated, "We hold our offer.", ["quote.pdf"])
         elif thread["status"] == "final_offer" and not best[0]:
-            thread["closed"] = "walked_away"
-            reply = self._mail(state, thread, "walked_away", stated, "We cannot improve further.")
+            # Sandbox pushes after a final offer: 0.16 % below it was agreed (3 of 3), 1.3 % below drew the
+            # same final offer again (1 of 1); no supplier walked. A second push is not observed: walk.
+            extra = premium(case, best[2], profile["opening"], profile["standard"], p0)
+            final = stated["unit_price"] + extra - premium(case, stated, profile["opening"], profile["standard"], p0)
+            if best[2]["unit_price"] >= final * (1 - 0.003):
+                reply = self._mail(state, thread, "agreed", best[2], "Agreed - let us conclude.", ["quote.pdf"])
+            elif not thread.get("pushed"):
+                thread["pushed"] = True
+                reply = self._mail(state, thread, "final_offer", stated, "Our final offer stands.", ["quote.pdf"])
+            else:
+                thread["closed"] = "walked_away"
+                reply = self._mail(state, thread, "walked_away", stated, "We cannot improve further.")
         else:
             agreed, _, terms, price, status, key, gap = best
             thread["cumulative_gap"] += gap
