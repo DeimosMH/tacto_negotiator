@@ -167,21 +167,27 @@ class RoutedAgent:
                 rows.append((cost, proposal))
         return sorted(rows, key=lambda row: total_cost(case, {**row[1], "unit_price": reference_price}))
 
-    def _forecast_evidence(self, case, threads, limit=3):
+    def _forecast_evidence(self, case, threads):
+        """One forecast argument per case: hosted replays mark any later `fc:` claim duplicate, even for
+        another part or month, so extra forecasts would only spend claim slots."""
         facts = {**getattr(self.context.package, "facts", {}), **case.get("facts", {})}
-        cited = {ref for events in threads.values() for message in events if message.get("from") == "buyer"
-                 for ref in ID_RE.findall(message.get("body", ""))}
-        arguments = []
+        if any(ref.startswith("fc:") for events in threads.values() for message in events
+               if message.get("from") == "buyer" for ref in ID_RE.findall(message.get("body", ""))):
+            return ""
+        candidates = []
         for part in case["parts"]:
             refs = sorted(ref for ref, fact in facts.items() if ref.startswith("fc:") and fact.get("part") == part)
             if not refs:
                 continue
             ref = refs[-1]
-            change = facts[ref].get("change_pct")
-            if ref not in cited and type(change) in (int, float) and math.isfinite(change) and change > 0:
-                arguments.append(f"The forecast for {part} increased by {change:g}% ({ref}); "
-                                 "please reflect this additional business in your price.")
-        return " ".join(arguments[:limit])
+            change, volume = facts[ref].get("change_pct"), facts[ref].get("volume_per_year") or 1
+            if type(change) in (int, float) and math.isfinite(change) and change > 0:
+                candidates.append((change * volume, part, change, ref))
+        if not candidates:
+            return ""
+        _, part, change, ref = max(candidates)
+        return (f"The forecast for {part} increased by {change:g}% ({ref}); "
+                "please reflect this additional business in your price.")
 
     def _rival_evidence(self, case, threads, sid):
         current = acceptable_offer(case, threads[sid])
@@ -289,7 +295,7 @@ class RoutedAgent:
             rival = self._rival_evidence(case, threads, sid)
             move = self.validate(case, threads, {"supplier_id": sid, "action": "send",
                 "body": ("Please consider these complete packages for the stated requirement. "
-                         + self._forecast_evidence(case, threads, limit=2 if rival else 3) + " " + rival).strip(),
+                         + self._forecast_evidence(case, threads) + " " + rival).strip(),
                 "term_sheets": chosen})
             if move:
                 reason = "bounded_concession" if sent else "enumerated_opening"

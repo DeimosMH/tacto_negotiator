@@ -204,7 +204,8 @@ class Sim:
         for i, ref in enumerate(list(dict.fromkeys(msg.get("refs", []) + ID_RE.findall(msg.get("body", ""))))[:3]):
             known = ref in self.facts or ref in s["case"].get("facts", {}) or ref in s["offers"]
             # a rival's quote may be cited to every bidder: it counts once per supplier, the rest once per case
-            seen = (th["key"], ref) if ref.startswith(("quote:", "offer:")) else ref
+            # forecasts count once per case whatever the part or month (observed in hosted replays)
+            seen = (th["key"], ref) if ref.startswith(("quote:", "offer:")) else "fc:" if ref.startswith("fc:") else ref
             result = "contradicted" if not known else "duplicate" if seen in s["used"] else "verified"
             results.append({"index": i, "result": result})
             if known:

@@ -1,0 +1,65 @@
+{
+  "purpose": "read-only P11 model replay diagnosis; no new arena session",
+  "budget": {
+    "cap_usd": 1.0,
+    "estimated_known_usage_usd": 0.0667,
+    "reserved_in_flight_usd": 0.0,
+    "unreconciled_reservations_usd": 0.0,
+    "committed_usd": 0.0667,
+    "remaining_usd": 0.9333,
+    "budget_rejections": 0,
+    "halted": false,
+    "price_basis": "Conservative standard estimate: all input at 1.25x default 30-minute cache-write rate, output at standard rate; not a billing reconciliation",
+    "calls": [
+      {
+        "call_id": 0,
+        "model": "gpt-6-astra",
+        "status": "completed",
+        "input_bound": 15274,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 4444,
+          "output_tokens": 223,
+          "reasoning_tokens": 0,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 5.389672,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.395725,
+        "estimated_cost_usd": 0.0667
+      }
+    ]
+  },
+  "additional_calls": {
+    "cap_usd": 1.0,
+    "estimated_known_usage_usd": 0.0233675,
+    "reserved_in_flight_usd": 0.0,
+    "unreconciled_reservations_usd": 0.0,
+    "committed_usd": 0.0233675,
+    "remaining_usd": 0.9766325,
+    "budget_rejections": 0,
+    "halted": false,
+    "price_basis": "Conservative standard estimate: all input at 1.25x default 30-minute cache-write rate, output at standard rate; not a billing reconciliation",
+    "calls": [
+      {
+        "call_id": 0,
+        "model": "gpt-6.1-sol",
+        "status": "completed",
+        "input_bound": 26849,
+        "output_bound": 4096,
+        "usage": {
+          "input_tokens": 8231,
+          "output_tokens": 279,
+          "reasoning_tokens": 51,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 8.038141,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.1080825,
+        "estimated_cost_usd": 0.0233675
+      }
+    ]
+  }
+}

@@ -1,0 +1,1021 @@
+{
+  "status": "running",
+  "source": "local_replay_decisions",
+  "config": {
+    "workers": 4,
+    "arena_calls": 0
+  },
+  "matches": [
+    {
+      "variant_id": "sol_low",
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P05",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 5.456450728001073,
+      "deadline_s": 25,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70240",
+        "action": "send",
+        "subject": "HX shaft: binding commitment and revised delivery package",
+        "body": "Dear Ms Proch\u00e1zkov\u00e1,\n\nYour note doc:20260924-70240-M1 requests a binding 12-month commitment for additional volumes; our proposed 24-month commitment provides a longer planning horizon.\n\nCould you review a package of \u20ac29.50 per shaft, payment at 60 days and delivery within 35 days, with 4,200 pieces annually from 1 January 2027, DAP and no tooling charge?\n\nWhat is the earliest lead time you can firmly reserve against this commitment? If 35 days is not feasible, please quote your best price for a firm 42-day lead time and explain which scheduling constraints prevent a shorter delivery.\n\nKind regards,\nHollerau Pumpenwerke Purchasing",
+        "term_sheets": [
+          {
+            "unit_price": 29.5,
+            "payment_days": 60,
+            "lead_time_days": 35
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        247800.0
+      ],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "sol_low",
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P02",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 6.212779035005951,
+      "deadline_s": 25,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70510",
+        "action": "send",
+        "subject": "2027 motor supply \u2014 pricing committee review",
+        "body": "Dear Ms Lechner,\n\nThe forecast fc:350011@2026-09 records volume growth of 11.9%, supporting better utilisation and a review of the proposed increase.\n\nCould your pricing committee review \u20ac355 per unit, fixed for 2027, with 60-day payment for the full 6,110-unit annual commitment, DAP and 35-day lead time?\n\nPlease explain how copper purchasing coverage and productivity savings affect the increase actually required, and whether earlier payment would enable a materially better fixed-price package. We want an arrangement that supports reliable supply and your business sustainably.\n\nKind regards,\nHollerau Pumpenwerke Purchasing",
+        "term_sheets": [
+          {
+            "unit_price": 355.0,
+            "payment_days": 60,
+            "index_clause": null
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        2169050.0
+      ],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "sol_low",
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P07",
+      "valid": false,
+      "error": "HTTPStatusError",
+      "elapsed_s": 0.7405847439949866,
+      "deadline_s": 25,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "sol_low",
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P04",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 6.303449326995178,
+      "deadline_s": 25,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70620",
+        "action": "send",
+        "subject": "6306 renewal \u2013 multi-year volume agreement",
+        "body": "Dear Mr Gruber,\n\nThe bearing index moved from 118.8 to 119.8, only 0.84%, per idx:PPI-C2815@2026-08 and idx:PPI-C2815@2025-08, supporting a more moderate renewal price.\n\nWe propose \u20ac4.35 per unit for a 24-month commitment covering 20,000 pieces annually, with 60-day payment, effective 1 January 2027, retaining DAP delivery and seven-day lead time.\n\nWould a 36-month commitment unlock further savings? Please have your authorized pricing team review this multi-year package and share the material and processing cost bridge behind the proposed increase.\n\nBest regards,\nHollerau Pumpenwerke Purchasing",
+        "term_sheets": [
+          {
+            "unit_price": 4.35,
+            "payment_days": 60,
+            "contract_months": 24
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        174000.0
+      ],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "sol_low",
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P08",
+      "valid": false,
+      "error": "HTTPStatusError",
+      "elapsed_s": 0.568243996000092,
+      "deadline_s": 25,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "sol_low",
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P10",
+      "valid": false,
+      "error": "HTTPStatusError",
+      "elapsed_s": 0.7879222699993988,
+      "deadline_s": 25,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "sol_low",
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P18",
+      "valid": false,
+      "error": "HTTPStatusError",
+      "elapsed_s": 0.5680303490007645,
+      "deadline_s": 25,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "sol_low",
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P01",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 7.78637533300207,
+      "deadline_s": 25,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70110",
+        "action": "send",
+        "subject": "HN casings: revised pricing and payment package",
+        "body": "Guten Tag Herr Brandlhuber,\n\nContract ctr:4600070110 runs through 31 December 2026 and records 90 days\u2019 notice, so please review the proposed November implementation.\n\nThe energy index fell from 137.0 (idx:PPI-D351@2025-08) to 131.9 (idx:PPI-D351@2026-08), a decrease of 3.72%, which should also enter the adjustment calculation.\n\nWe propose \u20ac136.75 per casing from 1 April 2027, with payment within 14 days to support your cash flow and all fixed terms unchanged.\n\nCould your office manager review an updated material, energy and conversion-cost breakdown and confirm whether this faster-payment package supports the proposed price and date?\n\nWe value a sustainable agreement for both businesses.\n\nMit freundlichen Gr\u00fc\u00dfen\nHollerau Pumpenwerke",
+        "term_sheets": [
+          {
+            "unit_price": 136.75,
+            "effective_date": "2027-04-01",
+            "payment_days": 14
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        1106579.86
+      ],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "astra_low",
+      "model": "gpt-6-astra",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P01",
+      "valid": false,
+      "error": "HTTPStatusError",
+      "elapsed_s": 0.7622031689970754,
+      "deadline_s": 25,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "astra_low",
+      "model": "gpt-6-astra",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P03",
+      "valid": false,
+      "error": "HTTPStatusError",
+      "elapsed_s": 0.5137146250053775,
+      "deadline_s": 25,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "astra_low",
+      "model": "gpt-6-astra",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P04",
+      "valid": false,
+      "error": "HTTPStatusError",
+      "elapsed_s": 0.6897425700008171,
+      "deadline_s": 25,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "astra_low",
+      "model": "gpt-6-astra",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P07",
+      "valid": false,
+      "error": "HTTPStatusError",
+      "elapsed_s": 0.5583255679957801,
+      "deadline_s": 25,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "astra_low",
+      "model": "gpt-6-astra",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P08",
+      "valid": false,
+      "error": "HTTPStatusError",
+      "elapsed_s": 0.6157293459982611,
+      "deadline_s": 25,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "astra_low",
+      "model": "gpt-6-astra",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P10",
+      "valid": false,
+      "error": "HTTPStatusError",
+      "elapsed_s": 0.7347579500055872,
+      "deadline_s": 25,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "astra_low",
+      "model": "gpt-6-astra",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P11",
+      "valid": false,
+      "error": "HTTPStatusError",
+      "elapsed_s": 0.5899596649978776,
+      "deadline_s": 25,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "astra_low",
+      "model": "gpt-6-astra",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P18",
+      "valid": false,
+      "error": "HTTPStatusError",
+      "elapsed_s": 0.6257344319965341,
+      "deadline_s": 25,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "sol_low",
+      "model": "gpt-6.1-sol",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P11",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 5.556250043002365,
+      "deadline_s": 25,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70140",
+        "action": "send",
+        "subject": "Bearing bracket agreement: quality commitment and cost recovery",
+        "body": "Dear Mr Lis,\n\nScorecard sc:70140@2026Q3 records 2376 ppm, so the proposed 6400 ppm commitment would not provide a credible improvement baseline.\n\nPlease consider our complete counteroffer below, with the fixed annual volume and commercial terms unchanged. We seek \u20ac44.00 per unit, a 1500 ppm ceiling and \u20ac500 cost recovery per complaint.\n\nCould you provide a binding improvement plan and explain which inspection or process changes would support this commitment? If this package requires approval, please obtain an authorized pricing and quality review. We would also welcome a cheaper variant with equivalent defect-cost protection.\n\nKind regards,\nHollerau Pumpenwerke Purchasing",
+        "term_sheets": [
+          {
+            "unit_price": 44.0,
+            "ppm_commitment": 1500,
+            "chargeback_eur_per_complaint": 500
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        724086.0
+      ],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "astra_max",
+      "model": "gpt-6-astra",
+      "effort": "max",
+      "scenario": "recorded_opening",
+      "case_id": "case:P02",
+      "valid": false,
+      "error": "HTTPStatusError",
+      "elapsed_s": 0.5915543959999923,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "astra_max",
+      "model": "gpt-6-astra",
+      "effort": "max",
+      "scenario": "recorded_opening",
+      "case_id": "case:P03",
+      "valid": false,
+      "error": "HTTPStatusError",
+      "elapsed_s": 0.4688711409980897,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "astra_max",
+      "model": "gpt-6-astra",
+      "effort": "max",
+      "scenario": "recorded_opening",
+      "case_id": "case:P04",
+      "valid": false,
+      "error": "HTTPStatusError",
+      "elapsed_s": 0.5840338249981869,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "astra_low",
+      "model": "gpt-6-astra",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P05",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 5.421166220003215,
+      "deadline_s": 25,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70250",
+        "action": "send",
+        "subject": "HX shaft: competitive review and prompt-payment package",
+        "body": "Hallo Frau Fuchsreiter,\n\nThe current rival offer offer:70240-0 is \u20ac31.50 per unit, although its 52-day lead time is not acceptable for this award.\n\nYour request doc:20260904-70250-M4 offered a cash discount for payment within 10 days; could you quantify your best price with reliable 14-day payment instead?\n\nWe propose \u20ac30.50 per unit, 14-day payment and 35-day delivery for the fixed 4,200-piece annual commitment over 24 months, DAP, without tooling charges. This would combine predictable loading with prompt cash receipts. Can you approve this package, or identify the closest achievable price on that basis?\n\nKind regards\nHollerau Pumpenwerke Purchasing",
+        "term_sheets": [
+          {
+            "unit_price": 30.5,
+            "payment_days": 14,
+            "lead_time_days": 35
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        258818.93
+      ],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "astra_low",
+      "model": "gpt-6-astra",
+      "effort": "low",
+      "scenario": "recorded_opening",
+      "case_id": "case:P02",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 6.648930371004099,
+      "deadline_s": 25,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70510",
+        "action": "send",
+        "subject": "2027 motor agreement \u2014 pricing review",
+        "body": "Dear Ms Lechner,\n\nForecast fc:350011@2026-09 records growth of 11.9%, supporting a review of volume efficiencies against the requested increase.\n\nCould your pricing committee review a fixed \u20ac355.00 price with 60-day payment for our annual commitment? Please explain how copper purchasing dates and existing coverage affect the increase actually incurred, and which productivity offsets are available.\n\nWe seek a sustainable agreement rather than an unsupported cost reduction. If this package is not workable, could you identify the closest sustainable fixed-price package and the payment terms that would help you deliver it?\n\nKind regards,\nHollerau Pumpenwerke Purchasing",
+        "term_sheets": [
+          {
+            "unit_price": 355.0,
+            "payment_days": 60,
+            "index_clause": null
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        2169050.0
+      ],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "astra_max",
+      "model": "gpt-6-astra",
+      "effort": "max",
+      "scenario": "recorded_opening",
+      "case_id": "case:P05",
+      "valid": false,
+      "error": "HTTPStatusError",
+      "elapsed_s": 0.520257311000023,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "astra_max",
+      "model": "gpt-6-astra",
+      "effort": "max",
+      "scenario": "recorded_opening",
+      "case_id": "case:P07",
+      "valid": false,
+      "error": "HTTPStatusError",
+      "elapsed_s": 0.5414961150017916,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "astra_max",
+      "model": "gpt-6-astra",
+      "effort": "max",
+      "scenario": "recorded_opening",
+      "case_id": "case:P10",
+      "valid": false,
+      "error": "HTTPStatusError",
+      "elapsed_s": 0.5182431200009887,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "astra_max",
+      "model": "gpt-6-astra",
+      "effort": "max",
+      "scenario": "recorded_opening",
+      "case_id": "case:P11",
+      "valid": false,
+      "error": "HTTPStatusError",
+      "elapsed_s": 0.46568655600276543,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "astra_max",
+      "model": "gpt-6-astra",
+      "effort": "max",
+      "scenario": "recorded_opening",
+      "case_id": "case:P18",
+      "valid": false,
+      "error": "HTTPStatusError",
+      "elapsed_s": 0.4994651960005285,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": null,
+      "candidate_costs_excluding_health_eur": [],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "astra_max",
+      "model": "gpt-6-astra",
+      "effort": "max",
+      "scenario": "recorded_opening",
+      "case_id": "case:P08",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 53.49231996999879,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70710",
+        "action": "send",
+        "subject": "1.4404 bar: cost review and 24-month proposal",
+        "body": "Dear Mr Aigner,\n\ndoc:20260706-70710-M1 confirms fixed-price nickel/alloy coverage until March 2027, so please reflect that protection rather than an immediate full alloy uplift.\nctr:4600070710 specifies 60-day payment terms.\nWe propose \u20ac5.30/kg fixed for 24 months from 1 January 2027, covering 94,800 kg/year, with 60-day payment, DAP and 10-day lead time.\nCould your owner provide the material/hourly-rate breakdown offered on 21 April 2026 (doc:20260421-70710-M2) and review this package?\nWhat additional price reduction would a 36-month commitment support?\n\nKind regards,\nHollerau Pumpenwerke Purchasing",
+        "term_sheets": [
+          {
+            "unit_price": 5.3,
+            "index_clause": null,
+            "payment_days": 60,
+            "contract_months": 24
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        1004880.0
+      ],
+      "score": null,
+      "deal": null
+    },
+    {
+      "variant_id": "astra_max",
+      "model": "gpt-6-astra",
+      "effort": "max",
+      "scenario": "recorded_opening",
+      "case_id": "case:P01",
+      "valid": true,
+      "error": null,
+      "elapsed_s": 96.46170370100299,
+      "deadline_s": 240,
+      "model_attempts": 1,
+      "proposal": {
+        "supplier_id": "sup:70110",
+        "action": "send",
+        "subject": "HN casings \u2013 cost review and payment/date package",
+        "body": "Guten Tag Herr Brandlhuber,\n\nContract ctr:4600070110 specifies 90 days\u2019 notice and validity through 31 December 2026, supporting implementation after year-end.\nThe electricity index moved from 137.0 (idx:PPI-D351@2025-08) to 131.9 (idx:PPI-D351@2026-08), -3.72%, offsetting some cost pressure.\nYour request for payment within 10 days (doc:20260902-70110-M2) suggests scope for a cash-flow trade.\nWe propose \u20ac136.75/pc effective 1 April 2027, offering net 14-day payment in exchange, with fixed terms unchanged.\nCould your office manager provide the net cost bridge and confirm whether this early-payment package supports sustainable supply?\n\nKind regards,\nHollerau Pumpenwerke Purchasing",
+        "term_sheets": [
+          {
+            "unit_price": 136.75,
+            "effective_date": "2027-04-01",
+            "payment_days": 14
+          }
+        ]
+      },
+      "candidate_costs_excluding_health_eur": [
+        1106579.86
+      ],
+      "score": null,
+      "deal": null
+    }
+  ],
+  "limitations": [
+    "No arena sessions or supplier model calls: these are decisions on recorded public openings.",
+    "Validity and arithmetic can be assessed; proposed packages are not accepted deals and have no actual score.",
+    "Astra max gets 240 seconds here; operational qualification separately enforces 25 seconds."
+  ],
+  "budget": {
+    "cap_usd": 100.0,
+    "estimated_known_usage_usd": 0.7456425,
+    "reserved_in_flight_usd": 0.0,
+    "unreconciled_reservations_usd": 30.984025,
+    "committed_usd": 31.7296675,
+    "remaining_usd": 68.2703325,
+    "budget_rejections": 0,
+    "halted": false,
+    "price_basis": "Conservative standard estimate: all input at 1.25x default 30-minute cache-write rate, output at standard rate; not a billing reconciliation",
+    "calls": [
+      {
+        "call_id": 0,
+        "model": "gpt-6.1-sol",
+        "status": "completed",
+        "input_bound": 17113,
+        "output_bound": 32768,
+        "usage": {
+          "input_tokens": 5004,
+          "output_tokens": 314,
+          "reasoning_tokens": 65,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 7.786045,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.3704625,
+        "estimated_cost_usd": 0.01565
+      },
+      {
+        "call_id": 1,
+        "model": "gpt-6.1-sol",
+        "status": "completed",
+        "input_bound": 16547,
+        "output_bound": 32768,
+        "usage": {
+          "input_tokens": 4709,
+          "output_tokens": 212,
+          "reasoning_tokens": 0,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 6.303178,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.3690475,
+        "estimated_cost_usd": 0.0138925
+      },
+      {
+        "call_id": 2,
+        "model": "gpt-6.1-sol",
+        "status": "completed",
+        "input_bound": 16059,
+        "output_bound": 32768,
+        "usage": {
+          "input_tokens": 4718,
+          "output_tokens": 217,
+          "reasoning_tokens": 24,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 6.212547,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.3678275,
+        "estimated_cost_usd": 0.013965
+      },
+      {
+        "call_id": 3,
+        "model": "gpt-6.1-sol",
+        "status": "completed",
+        "input_bound": 23996,
+        "output_bound": 32768,
+        "usage": {
+          "input_tokens": 7318,
+          "output_tokens": 210,
+          "reasoning_tokens": 0,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 5.456161,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.38767,
+        "estimated_cost_usd": 0.020395
+      },
+      {
+        "call_id": 4,
+        "model": "gpt-6.1-sol",
+        "status": "error",
+        "input_bound": 15498,
+        "output_bound": 32768,
+        "usage": null,
+        "latency_s": 0.740551,
+        "error_class": "HTTPStatusError",
+        "reserved_usd": 0.366425,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 5,
+        "model": "gpt-6.1-sol",
+        "status": "error",
+        "input_bound": 16037,
+        "output_bound": 32768,
+        "usage": null,
+        "latency_s": 0.568208,
+        "error_class": "HTTPStatusError",
+        "reserved_usd": 0.3677725,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 6,
+        "model": "gpt-6.1-sol",
+        "status": "error",
+        "input_bound": 14534,
+        "output_bound": 32768,
+        "usage": null,
+        "latency_s": 0.78788,
+        "error_class": "HTTPStatusError",
+        "reserved_usd": 0.364015,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 7,
+        "model": "gpt-6.1-sol",
+        "status": "completed",
+        "input_bound": 14999,
+        "output_bound": 32768,
+        "usage": {
+          "input_tokens": 4338,
+          "output_tokens": 207,
+          "reasoning_tokens": 0,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 5.556034,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.3651775,
+        "estimated_cost_usd": 0.012915
+      },
+      {
+        "call_id": 8,
+        "model": "gpt-6.1-sol",
+        "status": "error",
+        "input_bound": 17708,
+        "output_bound": 32768,
+        "usage": null,
+        "latency_s": 0.567991,
+        "error_class": "HTTPStatusError",
+        "reserved_usd": 0.37195,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 9,
+        "model": "gpt-6-astra",
+        "status": "error",
+        "input_bound": 17113,
+        "output_bound": 32768,
+        "usage": null,
+        "latency_s": 0.762166,
+        "error_class": "HTTPStatusError",
+        "reserved_usd": 1.8523125,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 10,
+        "model": "gpt-6-astra",
+        "status": "completed",
+        "input_bound": 16059,
+        "output_bound": 32768,
+        "usage": {
+          "input_tokens": 4718,
+          "output_tokens": 189,
+          "reasoning_tokens": 0,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 6.648712,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 1.8391375,
+        "estimated_cost_usd": 0.068425
+      },
+      {
+        "call_id": 11,
+        "model": "gpt-6-astra",
+        "status": "error",
+        "input_bound": 16090,
+        "output_bound": 32768,
+        "usage": null,
+        "latency_s": 0.51368,
+        "error_class": "HTTPStatusError",
+        "reserved_usd": 1.839525,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 12,
+        "model": "gpt-6-astra",
+        "status": "error",
+        "input_bound": 16547,
+        "output_bound": 32768,
+        "usage": null,
+        "latency_s": 0.689706,
+        "error_class": "HTTPStatusError",
+        "reserved_usd": 1.8452375,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 13,
+        "model": "gpt-6-astra",
+        "status": "completed",
+        "input_bound": 23996,
+        "output_bound": 32768,
+        "usage": {
+          "input_tokens": 7318,
+          "output_tokens": 216,
+          "reasoning_tokens": 0,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 5.420936,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 1.93835,
+        "estimated_cost_usd": 0.102275
+      },
+      {
+        "call_id": 14,
+        "model": "gpt-6-astra",
+        "status": "error",
+        "input_bound": 15498,
+        "output_bound": 32768,
+        "usage": null,
+        "latency_s": 0.558289,
+        "error_class": "HTTPStatusError",
+        "reserved_usd": 1.832125,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 15,
+        "model": "gpt-6-astra",
+        "status": "error",
+        "input_bound": 16037,
+        "output_bound": 32768,
+        "usage": null,
+        "latency_s": 0.61569,
+        "error_class": "HTTPStatusError",
+        "reserved_usd": 1.8388625,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 16,
+        "model": "gpt-6-astra",
+        "status": "error",
+        "input_bound": 14534,
+        "output_bound": 32768,
+        "usage": null,
+        "latency_s": 0.73472,
+        "error_class": "HTTPStatusError",
+        "reserved_usd": 1.820075,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 17,
+        "model": "gpt-6-astra",
+        "status": "error",
+        "input_bound": 14999,
+        "output_bound": 32768,
+        "usage": null,
+        "latency_s": 0.589924,
+        "error_class": "HTTPStatusError",
+        "reserved_usd": 1.8258875,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 18,
+        "model": "gpt-6-astra",
+        "status": "error",
+        "input_bound": 17708,
+        "output_bound": 32768,
+        "usage": null,
+        "latency_s": 0.625698,
+        "error_class": "HTTPStatusError",
+        "reserved_usd": 1.85975,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 19,
+        "model": "gpt-6-astra",
+        "status": "completed",
+        "input_bound": 17113,
+        "output_bound": 32768,
+        "usage": {
+          "input_tokens": 5004,
+          "output_tokens": 4716,
+          "reasoning_tokens": 4470,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 96.461436,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 1.8523125,
+        "estimated_cost_usd": 0.29835
+      },
+      {
+        "call_id": 20,
+        "model": "gpt-6-astra",
+        "status": "error",
+        "input_bound": 16059,
+        "output_bound": 32768,
+        "usage": null,
+        "latency_s": 0.591518,
+        "error_class": "HTTPStatusError",
+        "reserved_usd": 1.8391375,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 21,
+        "model": "gpt-6-astra",
+        "status": "error",
+        "input_bound": 16090,
+        "output_bound": 32768,
+        "usage": null,
+        "latency_s": 0.468835,
+        "error_class": "HTTPStatusError",
+        "reserved_usd": 1.839525,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 22,
+        "model": "gpt-6-astra",
+        "status": "error",
+        "input_bound": 16547,
+        "output_bound": 32768,
+        "usage": null,
+        "latency_s": 0.583995,
+        "error_class": "HTTPStatusError",
+        "reserved_usd": 1.8452375,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 23,
+        "model": "gpt-6-astra",
+        "status": "error",
+        "input_bound": 23996,
+        "output_bound": 32768,
+        "usage": null,
+        "latency_s": 0.520217,
+        "error_class": "HTTPStatusError",
+        "reserved_usd": 1.93835,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 24,
+        "model": "gpt-6-astra",
+        "status": "error",
+        "input_bound": 15498,
+        "output_bound": 32768,
+        "usage": null,
+        "latency_s": 0.541448,
+        "error_class": "HTTPStatusError",
+        "reserved_usd": 1.832125,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 25,
+        "model": "gpt-6-astra",
+        "status": "completed",
+        "input_bound": 16037,
+        "output_bound": 32768,
+        "usage": {
+          "input_tokens": 4706,
+          "output_tokens": 2819,
+          "reasoning_tokens": 2588,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 53.4921,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 1.8388625,
+        "estimated_cost_usd": 0.199775
+      },
+      {
+        "call_id": 26,
+        "model": "gpt-6-astra",
+        "status": "error",
+        "input_bound": 14534,
+        "output_bound": 32768,
+        "usage": null,
+        "latency_s": 0.518207,
+        "error_class": "HTTPStatusError",
+        "reserved_usd": 1.820075,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 27,
+        "model": "gpt-6-astra",
+        "status": "error",
+        "input_bound": 14999,
+        "output_bound": 32768,
+        "usage": null,
+        "latency_s": 0.46565,
+        "error_class": "HTTPStatusError",
+        "reserved_usd": 1.8258875,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 28,
+        "model": "gpt-6-astra",
+        "status": "error",
+        "input_bound": 17708,
+        "output_bound": 32768,
+        "usage": null,
+        "latency_s": 0.499428,
+        "error_class": "HTTPStatusError",
+        "reserved_usd": 1.85975,
+        "estimated_cost_usd": null
+      }
+    ]
+  }
+}

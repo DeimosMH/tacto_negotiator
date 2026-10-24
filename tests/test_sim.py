@@ -86,6 +86,8 @@ def test_a_rival_quote_counts_once_per_supplier_the_rest_once_per_case(sim):
     assert cite(b, ["quote:9001", "idx:PPI-C241@2026-08", rival]) == ["verified", "duplicate", "verified"]
     assert cite(b, ["quote:9001", rival, "idx:NOPE@2026-01"]) == ["duplicate", "duplicate", "contradicted"]
     assert cite(b, ["idx:NOPE@2026-01"]) == ["contradicted"]  # an unknown ID never becomes a duplicate
+    state.facts.update({"fc:A@2026-09": {"change_pct": 6.0}, "fc:B@2026-06": {"change_pct": 9.0}})
+    assert cite(a, ["fc:A@2026-09", "fc:B@2026-06"]) == ["verified", "duplicate"]  # forecasts: once per case
 
 
 def test_errors_limits_and_retries(sim):

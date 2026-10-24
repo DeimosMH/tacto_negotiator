@@ -156,6 +156,8 @@ class LLMAgent:
                         for ref in ID_RE.findall(message.get("body", ""))})
         if cited:
             out.append("ALREADY CITED (avoid duplicate claims): " + ", ".join(cited))
+        if any(ref.startswith("fc:") for ref in cited):
+            out.append("A forecast (fc:) is already cited: further fc: claims in this case are duplicates.")
         alt = case["buyer"].get("alternative") or {}
         if alt.get("kind") not in (None, "none") and alt.get("terms", {}).get("unit_price"):
             out.append(f"\nYour alternative without a deal: C = {total_cost(case, alt['terms']):,.0f}")

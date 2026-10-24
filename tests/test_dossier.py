@@ -74,3 +74,14 @@ def test_script_cites_latest_positive_forecast_once_without_model():
     assert "12.5%" in body and "fc:A@2026-01" in body
     assert "2025" not in body and "part:B" not in body
     assert not agent._forecast_evidence(case, {"sup:A": [{"from": "buyer", "body": body}]})
+
+
+def test_script_sends_one_forecast_per_case_weighted_by_volume():
+    agent = RoutedAgent(None)
+    case = {"parts": ["part:A", "part:B"], "facts": {
+        "fc:A@2026-01": {"part": "part:A", "change_pct": 20, "volume_per_year": 100},
+        "fc:B@2026-01": {"part": "part:B", "change_pct": 5, "volume_per_year": 1000}}}
+    body = agent._forecast_evidence(case, {})
+    assert "fc:B@2026-01" in body and "fc:A" not in body
+    # hosted replays mark any later forecast claim duplicate, so another part is not cited either
+    assert not agent._forecast_evidence(case, {"sup:X": [{"from": "buyer", "body": body}]})

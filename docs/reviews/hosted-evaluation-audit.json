@@ -1,0 +1,51 @@
+{
+  "sessions": 32,
+  "component_checks": 310,
+  "score_checks": 32,
+  "claim_checks": 38,
+  "unmodeled_claims": [],
+  "mismatches": [],
+  "observed_health_required": [
+    {
+      "session_id": "28aa40944e99365d",
+      "case_id": "case:P02",
+      "observed_eur": 644.74
+    },
+    {
+      "session_id": "6c3bb7d82f297172",
+      "case_id": "case:P01",
+      "observed_eur": 2888.57
+    },
+    {
+      "session_id": "786fe39d65019ff1",
+      "case_id": "case:P02",
+      "observed_eur": 113.42
+    },
+    {
+      "session_id": "7f302584ef21847d",
+      "case_id": "case:P02",
+      "observed_eur": 195.3
+    },
+    {
+      "session_id": "bf8246d4b86a8f43",
+      "case_id": "case:P03",
+      "observed_eur": 297.07
+    },
+    {
+      "session_id": "de2c623f5ea3d101",
+      "case_id": "case:P01",
+      "observed_eur": 957.25
+    },
+    {
+      "session_id": "e1e7e8e400b56e41",
+      "case_id": "case:P03",
+      "observed_eur": 337.04
+    }
+  ],
+  "limitations": [
+    "Supplier health is an observed result component, not a prediction of private costs.",
+    "C_open and C_best are recorded references; unseen final references remain unknown.",
+    "Claims are already interpreted by the host; free-text interpretation is not cloned.",
+    "Matching a claim verdict does not predict the supplier's concession."
+  ]
+}
