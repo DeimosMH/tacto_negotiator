@@ -14,7 +14,7 @@ def test_dossier_reads_related_correspondence_and_release_without_unrelated_supp
         "quote:1": {"part": "part:A", "supplier": "sup:B", "unit_price": 10, "price_unit": 100},
         "quote:unrelated": {"part": "part:A", "unit_price": 1},
         "idx:METAL@2025-09": {"series": "METAL", "month": "2025-09", "value": 100},
-        "idx:METAL@2026-09": {"series": "METAL", "month": "2026-09", "value": 110},
+        "idx:METAL@2026-09": {"series": "METAL", "month": "2026-09", "value": 90},
     }
     (tmp_path / "facts.json").write_text(json.dumps(facts))
     release = tmp_path / "release-sunday"
@@ -31,7 +31,7 @@ def test_dossier_reads_related_correspondence_and_release_without_unrelated_supp
     assert dossier["news:new"]["text"] == "New capacity."
     assert dossier["quote:1"]["price_unit"] == 100
     assert {"idx:METAL@2025-09", "idx:METAL@2026-09"} <= dossier.keys()
-    assert dossier["idx:METAL@2026-09"]["computed_change_pct"] == 10
+    assert dossier["idx:METAL@2026-09"]["computed_change_pct"] == -10  # a fall: both endpoints shown
     assert "Material hedged" in LLMAgent(None, package).prepare(case)
 
 
@@ -95,6 +95,7 @@ def test_dossier_offers_the_steepest_recent_fall_and_flags_a_rise(tmp_path):
     package = DataPackage(tmp_path)
     case = {"suppliers": ["sup:A"], "parts": ["part:A"], "buyer": {"index_paths": {"M": []}}}
     dossier = package.negotiation_facts(case)
-    assert dossier["idx:M@2026-09"]["note"].startswith("rising")  # +16.7 % over twelve months
+    assert dossier["idx:M@2026-09"]["note"].startswith("rose")  # +16.7 % over twelve months
+    assert "idx:M@2025-09" not in dossier and "computed_change_pct" not in dossier["idx:M@2026-09"]
     fall = dossier["idx:M@2026-06"]  # 106 -> 99: the steepest 3-12 month fall ending in the last 6 months
     assert fall["comparison_ref"] == "idx:M@2026-03" and fall["computed_change_pct"] == -6.6

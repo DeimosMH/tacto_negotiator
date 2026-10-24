@@ -299,3 +299,12 @@ def test_post_deadline_closure_preserves_the_failed_model_attempt(scenario, capl
     another = {**case, "case_id": "case:new"}
     agent.closing_move(another, threads)
     assert agent.last_decision["case_id"] == "case:new" and not agent.last_decision["fallback"]
+
+
+def test_wasted_claim_ids_are_stripped_before_sending(scenario):
+    case, threads, sid = scenario
+    case["refs"] = ["quote:case"]
+    threads[sid].insert(0, {"from": "buyer", "body": "Forecast fc:A@2026-09 rose 6%."})
+    body = RoutedAgent._strip_wasted_claims(
+        case, threads, "Again fc:A@2026-09, also fc:B@2026-09 (fc:B@2026-09); rival quote:other; ours quote:case.")
+    assert "fc:" not in body and "quote:other" not in body and "quote:case" in body

@@ -8,6 +8,7 @@ import itertools
 import json
 import logging
 import math
+import re
 import time
 
 from ..cost import (
@@ -82,6 +83,7 @@ class RoutedAgent:
                       for sheet in latest(threads[supplier]).get("term_sheets", [])}
             if any(ref not in offers and not self.context.fact(case, ref) for ref in ID_RE.findall(body)):
                 return None
+            body = self._strip_wasted_claims(case, threads, body)
             sheets = decision.get("term_sheets", [])
             if not isinstance(sheets, list) or len(sheets) > 3:
                 return None
@@ -121,6 +123,29 @@ class RoutedAgent:
             return move if len(json.dumps({"message": move["message"]}).encode()) <= 64_000 else None
         except (KeyError, TypeError, ValueError, OverflowError, AttributeError):
             return None
+
+    @staticmethod
+    def _strip_wasted_claims(case, threads, body):
+        """Remove IDs whose check cannot help: hosted replays wasted 18 of 38 claims on already-cited
+        IDs, any second forecast (counted once per case), and quotes outside the case."""
+        cited = {ref for events in threads.values() for message in events if message.get("from") == "buyer"
+                 for ref in ID_RE.findall(message.get("body", ""))}
+        quotes = set(case.get("refs", [])) | {(case["buyer"].get("alternative") or {}).get("ref")}
+        forecast = any(ref.startswith("fc:") for ref in cited)
+        kept = set()
+
+        def keep(match):
+            nonlocal forecast
+            ref = match.group(0)
+            if ref in kept:
+                return ref
+            if ref in cited or (ref.startswith("quote:") and ref not in quotes) or (ref.startswith("fc:") and forecast):
+                return ""
+            forecast = forecast or ref.startswith("fc:")
+            kept.add(ref)
+            return ref
+
+        return re.sub(r"\s*\(\s*[,;\s]*\)", "", ID_RE.sub(keep, body)).strip()
 
     def _record(self, case, route, reason, start, deadline, fallback=False):
         self.last_decision = {"case_id": case["case_id"], "route": route, "reason": reason,

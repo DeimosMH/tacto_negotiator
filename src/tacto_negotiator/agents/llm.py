@@ -48,6 +48,9 @@ Reply with ONE JSON object and nothing else:
 - Evidence that moves suppliers (observed on this arena): cite an index only where it FELL - a rising
   index confirms the supplier's case. Purchase-order price history does not move suppliers; skip it.
   Verified claims work best in the first message. Bluffs, urgency and ultimatums do not help.
+- Cite a should-cost (cost:) only where it is clearly below the supplier's price; above it, it
+  supports the supplier. Meeting notes, letters and contracts (doc:, ctr:) are context the arena
+  does not check - use their content, but put checkable IDs (idx, fc, sc, quote, offer, cost) in claims.
 - When the supplier asks about volume or commitment, answer with the exact figures of your term
   sheets (pieces per year, contract months). A vague answer has lost bidders.
 - The supplier's team reads your e-mail as a person would. Ask questions (the earliest lead time,

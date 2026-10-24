@@ -138,8 +138,11 @@ class DataPackage:
                 change = (selected[newest]["value"] / selected[previous]["value"] - 1) * 100
                 selected[newest] = {**selected[newest], "comparison_ref": previous,
                                     "computed_change_pct": round(change, 2)}
-                if change > 0:
-                    selected[newest]["note"] = "rising: supports the supplier's case, do not cite"
+                if change > 0:  # keep the level, drop the year-ago row: the rise must not become a claim
+                    selected.pop(previous)
+                    selected[newest] = {k: v for k, v in selected[newest].items()
+                                        if k not in ("comparison_ref", "computed_change_pct")}
+                    selected[newest]["note"] = "rose over twelve months: supports the supplier's case, do not cite"
             if fall := self._steepest_fall(refs):
                 start, end, change = fall
                 selected[start] = self.lookup(start)
