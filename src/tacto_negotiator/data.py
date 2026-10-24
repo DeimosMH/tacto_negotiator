@@ -109,10 +109,16 @@ class DataPackage:
                 selected[ref] = dict(fact)
                 if prefix in ("doc:", "news:"):
                     selected[ref]["text"] = self.document(ref)[:1800]
-                elif prefix == "cost:":
+                elif prefix in ("cost:", "quote:"):
                     # The estimate's supplier and uncertainty matter; it is not a private reservation price.
                     selected[ref].update(self._ids.get(ref, {}))
         series = set(case["buyer"].get("index_paths", {}))
+        if self.db and "cost_drivers" in self.tables():
+            for part in sorted(parts):
+                drivers = self.query("SELECT * FROM cost_drivers WHERE part_id = ?", (part,))
+                if drivers:
+                    selected[part] = {"estimated_cost_drivers": drivers}
+                    series.update(row["series_id"] for row in drivers)
         for clause in case.get("term_options", {}).get("index_clause", []):
             if clause:
                 series.add(clause["series"])
@@ -126,6 +132,10 @@ class DataPackage:
             for ref in (previous, newest):
                 if fact := self.lookup(ref):
                     selected[ref] = fact
+            if previous in selected and selected[previous]["value"] > 0:
+                change = (selected[newest]["value"] / selected[previous]["value"] - 1) * 100
+                selected[newest] = {**selected[newest], "comparison_ref": previous,
+                                    "computed_change_pct": round(change, 2)}
         return selected
 
     @cached_property

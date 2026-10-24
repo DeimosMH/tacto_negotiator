@@ -53,6 +53,9 @@ Reply with ONE JSON object and nothing else:
   Do not raise unit price merely because extending coverage reduces uncovered demand. A longer
   commitment is also valuable to the supplier. Do not volunteer a large premium before they ask.
 - Whatever a term sheet leaves out closes on the supplier's standard terms (its quote PDF).
+- Use the computed term tradeoffs to compare alternatives. A quality commitment and a chargeback
+  can cover the same defect cost; do not pay twice for protection. Ask the supplier to make the
+  cheapest attractive alternative its primary standing offer before accepting it.
 - Compare the complete need over the entire horizon. Shorter contracts or lower volume leave
   uncovered demand at fallback cost plus risk. Use the computed cost components, not price alone.
 - The case's category_goal sets its rates. In stabilise and secure_supply cases C also charges for
@@ -163,6 +166,23 @@ class LLMAgent:
             )
             if components:
                 out.append(f"C COMPONENTS (EUR, nonzero; supplier health not estimated): {json.dumps(components)}")
+                comparisons = []
+                current_cost = total_cost(case, terms, std)
+                for field, options in case.get("term_options", {}).items():
+                    for value in options[:20]:
+                        variant_cost = total_cost(case, {**terms, field: value}, std)
+                        if math.isfinite(variant_cost):
+                            comparisons.append({"field": field, "value": value,
+                                                "cost_eur": variant_cost,
+                                                "delta_eur": round(variant_cost - current_cost, 2)})
+                out.append("TERM TRADEOFFS (one field changed, other terms and price held fixed; "
+                           "not supplier commitments; health excluded): " + json.dumps(comparisons))
+                alternatives = [{"term_sheet_id": sheet.get("term_sheet_id"), "terms": sheet["terms"],
+                                 "cost_eur": total_cost(case, sheet["terms"], std)}
+                                for sheet in latest(events).get("term_sheets", [])[1:]
+                                if math.isfinite(total_cost(case, sheet["terms"], std))]
+                if alternatives:
+                    out.append("SUPPLIER ALTERNATIVES: " + json.dumps(alternatives))
             for m in events[-6:]:
                 head = {k: m.get(k) for k in ("status", "term_sheets", "missing_fields", "claim_results") if m.get(k)}
                 out.append(f"--- {m.get('from')}: {json.dumps(head)}\n{m.get('body', '')[:800]}")

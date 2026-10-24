@@ -102,7 +102,11 @@ An exact evaluated-cost tie with the alternative now favors acceptance: the fina
 
 Acceptance and closing now use acceptable_offer and closing_move in play.py, also used by the legacy model guard and generic deadline closer. An unrecognized index-clause string is rejected; only explicit none means no clause. The simulator formats structured clauses in the parser's supported representation. See the [review fixes and regressions](reviews/FIXES.md).
 
-This does not complete the larger evidence buyer. Claim IDs and numeric terms are checkable, but arbitrary natural-language claims still require better grounding. Full supplier-health estimation, case dossiers and concurrent service of RFQ threads remain further work.
+The buyer now reads a bounded dossier of related supplier correspondence, news, cost estimates, comparable quotes and forecasts, including the Sunday overlay. It adds relevant index endpoints and computes their annual changes. Cost estimates retain supplier attribution and uncertainty; quotes retain units and dates. Model context prices each allowed term change at an unchanged unit price and prices supplier alternatives, so the model can see the financial tradeoffs.
+
+Cost claims, financing requests and semantic alternatives trigger model interpretation. Once a case needs that interpretation, follow-up bargaining retains model context; terminal and deadline closure remain scripts. Scripted openings cap unit price at 90% of the standing quote as well as applying the full-cost ceiling, preventing a longer commitment from causing an unnecessarily generous opening price.
+
+Claim IDs and numeric terms are checkable, but arbitrary natural-language claims still require better grounding. Full supplier-health estimation and concurrent service of RFQ threads remain further work. [Hosted practice results](LIVE_PRACTICE.md) separate measured improvements from these remaining limits.
 
 ## How the time budget works
 
