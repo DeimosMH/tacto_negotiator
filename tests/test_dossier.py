@@ -83,8 +83,8 @@ def test_bank_cites_latest_positive_forecast_once_per_supplier():
     assert "12.5%" in fact.sentence and "fc:A@2026-01" in fact.sentence and "2025" not in fact.sentence
     threads["sup:A"].append({"from": "buyer", "body": fact.sentence})
     assert not bank.assign(case, threads, "sup:A")
-    # every bidder of an RFQ is its own negotiation: a fact told to one is new to the other
-    assert [f.key for f in bank.assign(case, threads, "sup:B")] == ["fc:"]
+    # the arena counts each ID once per case: re-citing it to another bidder is a duplicate (round 2 B2)
+    assert not bank.assign(case, threads, "sup:B")
 
 
 def test_bank_sends_one_forecast_weighted_by_volume():

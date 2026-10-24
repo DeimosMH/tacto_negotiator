@@ -176,13 +176,15 @@ def test_resumed_routed_case_uses_server_time_remaining(arena):
         budgets.append(deadline - arena.clock())
         return json.dumps({"supplier_id": case["suppliers"][0], "action": "walk_away"})
 
-    def strong(*args, **kwargs):
-        pytest.fail("a resumed case with 15 seconds of model budget cannot use the strong route")
+    def strong(system, user, *, deadline):
+        assert budgets, "a resumed case with 15 seconds of model budget cannot use the strong route"
+        return fast(system, user, deadline=deadline)
 
     agent = RoutedAgent(fast, strong, clock=arena.clock)
     table = RemoteTable(client, case)
     assert play(table, case["case_id"], agent, deadline=arena.clock() + 440)["ended"]
-    assert budgets == [15] and table.session_id == opened["session_id"]
+    # the first decision gets the server's remaining 15 s; the rejected walk-away (rounds left) continues
+    assert budgets[0] == 15 and table.session_id == opened["session_id"]
     assert len(arena.state.sessions) == 1
 
 

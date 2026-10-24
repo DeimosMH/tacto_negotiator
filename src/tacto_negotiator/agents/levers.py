@@ -30,7 +30,7 @@ NEAR_CLOSE_TEXT = ("Thank you - we are very close. We can sign today on your own
 HOLD_SHARE = 0.005  # a counter that moved less than this share of its price after our move is a hold
 _FLOOR_WORDS = re.compile(r"lowest|any further|further than|floor|best possible|minimum|cannot go below|"
                           r"cannot reduce|cannot drop|bottom line", re.I)
-_PRICE = re.compile(r"(?<![\w.])(\d{1,6}(?:[.,]\d{1,2})?)(?![\w.%])")
+_PRICE = re.compile(r"(?<![\w.])(\d{1,6}(?:[.,]\d{1,2})?)(?![\w%])(?![.,]\d)")  # a sentence-final price counts
 
 
 def _buyer_bodies(events):
@@ -155,7 +155,8 @@ def named_floors(events):
             continue
         for sentence in re.split(r"(?<=[.!?])\s+|\n", message.get("body") or ""):
             if _FLOOR_WORDS.search(sentence):
-                out += [float(p.replace(",", ".")) for p in _PRICE.findall(sentence)]
+                plain = re.sub(r"(?<=\d),(?=\d{3}\b)", "", sentence)  # "1,250.00" is one price (B5)
+                out += [float(p.replace(",", ".")) for p in _PRICE.findall(plain)]
     return out
 
 

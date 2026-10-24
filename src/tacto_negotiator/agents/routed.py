@@ -112,9 +112,8 @@ class RoutedAgent:
                 live = live_threads(threads)
                 if any(acceptable_offer(case, threads[s], s) for s in live):
                     return None
-                alternative = (case["buyer"].get("alternative") or {}).get("kind") not in (None, "none")
-                if not alternative and any(moves_left(case, threads[s]) > 1 for s in live):
-                    return None
+                if any(moves_left(case, threads[s]) > 1 for s in live):
+                    return None  # rounds left: counter instead (round 2 review L-A6; an alternative included)
                 return {"supplier_id": sid, "message": {"action": {"type": "walk_away"}}}
             events = threads[sid]
             if action == "accept":
@@ -133,8 +132,11 @@ class RoutedAgent:
                       for sheet in latest(threads[supplier]).get("term_sheets", [])}
             if any(ref not in offers and not self.context.fact(case, ref) for ref in ID_RE.findall(body)):
                 return None
-            body = self._paced_body(case, threads, sid, body) if reprice else self._strip_wasted_claims(
-                case, threads, body)
+            try:
+                body = self._paced_body(case, threads, sid, body) if reprice else self._strip_wasted_claims(
+                    case, threads, body)
+            except Exception:  # a text-filter bug must not turn into an accept (round 2 review R-A1)
+                log.exception("text filter failed; sending the unfiltered body")
             sheets = decision.get("term_sheets", [])
             if not isinstance(sheets, list) or len(sheets) > 3:
                 return None
@@ -189,7 +191,8 @@ class RoutedAgent:
                 if limit > ours and min(total_cost(case, t, std) for t in clean) < ours + 0.5 * (limit - ours):
                     clean = [{**t, "unit_price": self._price_within(
                         case, {**t, "unit_price": t["unit_price"] * 1.5}, std, sid, limit)} for t in clean]
-            if reprice and not clean and sent and math.isfinite(limit) and not self._new_fact(case, threads, sid, body):
+            if (reprice and not clean and sent and math.isfinite(limit) and latest(events).get("status") == "open"
+                    and not self._new_fact(case, threads, sid, body)):  # never a sheet to a final offer (B1)
                 # neither movement nor a new fact: hosted P18 walked and P02 went final after such an e-mail
                 if step := self._limit_sheet(case, events, sid, limit):
                     clean = [step]
@@ -988,6 +991,9 @@ class RoutedAgent:
             return move
         except Exception as error:
             # Providers enforce cancellation; this also discards late results from injected completions.
+            # Anything but a model timeout or a rejected model reply is a code bug: keep its traceback.
+            log.warning("decision fallback after %s: %s", type(error).__name__, error,
+                        exc_info=not isinstance(error, (TimeoutError, ValueError)))
             move = closing_move(case, threads)
             action = move["message"].get("action", {}).get("type")
             # Accepting an open_offer opening after a failed model call scored 0 in hosted P01.

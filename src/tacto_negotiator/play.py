@@ -611,7 +611,11 @@ def play(table, case_id, agent, deadline=None):
             # unless that timeout would end the thread (F3 in docs/reviews/FLOW.md).
             now = time.monotonic()
             lapsing = {s for s in live_threads(threads) if thread_deadlines.get(s, now) - SEND_MARGIN_S <= now}
-            on_time = not decision["message"].get("action") and decision["supplier_id"] not in lapsing
+            kind = (decision["message"].get("action") or {}).get("type")
+            if kind == "accept":  # its own thread decides: an idle bidder's clock must not drop it (B4)
+                on_time = thread_deadlines.get(decision["supplier_id"], now) > now + 1
+            else:
+                on_time = kind is None and decision["supplier_id"] not in lapsing
             if on_time:
                 pass  # a message to a thread that still has time: send it, the others time out
             elif close_before_lapse(case, threads, ending(lapsing)):

@@ -85,3 +85,13 @@ def test_a_named_floor_at_the_standing_price_stops_probing():
     events[-1]["body"] = "We can drop the price to 44.50 EUR per unit, which is the lowest we can go."
     assert not floor_reached(events)  # a floor below its standing price leaves room
     assert not floor_reached(_thread(47.0, 45.0, body="The lowest we can go is 45.00 EUR."))  # never asked
+
+
+def test_a_named_floor_with_a_thousands_separator_is_recognised():
+    from tacto_negotiator.agents.levers import FLOOR_QUESTION, floor_reached
+
+    for body in ("EUR 1,250.00 is the lowest we can go.", "The lowest price we can offer is EUR 1,250.00."):
+        events = [{"from": "buyer", "body": FLOOR_QUESTION},
+                  {"from": "supplier", "status": "open", "body": body,
+                   "term_sheets": [{"term_sheet_id": "offer:1", "terms": {"unit_price": 1250.0}}]}]
+        assert floor_reached(events), body  # round 2 review B5 and the sentence-final price

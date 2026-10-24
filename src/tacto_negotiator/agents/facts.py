@@ -281,9 +281,12 @@ class FactBank:
         if sid not in threads:
             return []
         current = acceptable_offer(case, threads[sid], sid)
+        price = standing(threads[sid])[1].get("unit_price")
         rivals = [(accepted[1], other, accepted[0]) for other in live_threads(threads) if other != sid
                   if (accepted := acceptable_offer(case, threads[other], other))
-                  and (not current or accepted[1] < current[1])]
+                  and (not current or accepted[1] < current[1])
+                  # its unit price must be below this one's: else the claim says the market charges more (B3)
+                  and (price is None or standing(threads[other])[1].get("unit_price", math.inf) < price)]
         if not rivals:
             return []
         _, other, ref = min(rivals)
@@ -309,9 +312,11 @@ class FactBank:
     # ----- pacing ---------------------------------------------------------------------------------
     @staticmethod
     def used(threads, sid):
-        """Fact keys already cited to `sid` (an index series and a forecast count once)."""
-        return {fact_key(ref) for message in threads.get(sid, []) if message.get("from") == "buyer"
-                for ref in checked_ids(message.get("body", ""))}
+        """Fact keys already cited: per case, as the arena counts them, except rival quotes and offers,
+        which count once per supplier (an index series and a forecast count once)."""
+        return {fact_key(ref) for other, events in threads.items() for message in events
+                if message.get("from") == "buyer" for ref in checked_ids(message.get("body", ""))
+                if other == sid or not ref.startswith(("quote:", "offer:"))}
 
     @staticmethod
     def shrugged(threads, sid):
