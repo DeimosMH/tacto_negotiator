@@ -365,7 +365,37 @@ def test_validate_sends_the_grounded_body(scenario):
     move = RoutedAgent(completion(sid, [])).validate(case, threads, {
         "supplier_id": sid, "action": "send", "term_sheets": [{"unit_price": 15, "payment_days": 30}],
         "body": "Could you improve? As this exceeds 2 %, please ask your management for an authorized review."})
-    assert move["message"]["body"] == "Could you improve?"
+    body = move["message"]["body"]  # the fact bank may append the round's assigned fact
+    assert body.startswith("Could you improve?") and "management" not in body and "2 %" not in body
+def test_model_round_gets_its_assigned_fact_and_validate_enforces_it(scenario):
+    case, threads, sid = scenario
+    after_opening(threads, sid)
+    part = case["parts"][0]
+    case["facts"] = {"fc:P@2026-09": {"part": part, "change_pct": 12.0},
+                     f"cost:{part[5:]}": {"part": part, "unit_cost": 12.5, "price_unit": 1}}
+    calls = []
+    reply = json.dumps({"supplier_id": sid, "action": "send", "term_sheets": [{"unit_price": 15, "payment_days": 30}],
+                        "body": "Our forecast fc:P@2026-09 rose 12%. Could you improve?\n\nKind regards"})
+    agent = RoutedAgent(completion(sid, calls, reply))
+    move = agent.decide(case, threads)
+    assert "USE THIS FACT NOW" in calls[0]["prompt"] and "cost:" in calls[0]["prompt"].split("USE THIS FACT NOW")[1]
+    body = move["message"]["body"]
+    # one new fact after round 1: the assigned should-cost goes in, the forecast waits for a later round
+    assert "fc:P" not in body and f"EUR 12.5 per unit (cost:{part[5:]})" in body
+    assert body.endswith("Kind regards") and "Could you improve?" in body
+
+
+def test_a_message_without_a_new_fact_or_a_sheet_moves_a_step(scenario):
+    case, threads, sid = scenario
+    case["facts"] = {"fc:P@2026-09": {"part": case["parts"][0], "change_pct": 12.0}}
+    threads[sid] += [{"from": "buyer", "body": "Forecast (fc:P@2026-09) rose 12%.",
+                      "term_sheets": [{"terms": {"unit_price": 15, "payment_days": 30}}]},
+                     {"from": "supplier", "status": "open", "body": "Counter.",
+                      "term_sheets": [{"term_sheet_id": "offer:2", "terms": {"unit_price": 19, "payment_days": 30}}]}]
+    move = RoutedAgent(None).validate(case, threads, {"supplier_id": sid, "action": "send",
+                                                      "body": "When can you deliver?"})
+    [sheet] = move["message"]["term_sheets"]
+    assert 15 < sheet["terms"]["unit_price"] < 19  # a real step instead of an empty round
 
 
 def test_parse_takes_the_first_complete_object_despite_trailing_braces():

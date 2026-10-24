@@ -38,13 +38,13 @@ from ..play import (
     price_within,
     standing,
 )
+from .facts import FactBank, checked_ids, fact_key
 from .levers import (
     FLOOR_QUESTION,
     NEAR_CLOSE_TEXT,
     floor_question_due,
     floor_reached,
     near_close_sheet,
-    order_path_sentence,
 )
 from .llm import ID_RE, SYSTEM, LLMAgent, parse
 
@@ -90,6 +90,7 @@ class RoutedAgent:
         self.max_decision_seconds, self.strong_min_seconds = max_decision_seconds, strong_min_seconds
         self.min_model_seconds = min_model_seconds
         self.context = LLMAgent(None, package)
+        self.bank = FactBank(package)
         self.last_decision = {}
         self.unavailable = set()  # suppliers whose reply clock runs out before a message could arrive
 
@@ -121,7 +122,8 @@ class RoutedAgent:
                       for sheet in latest(threads[supplier]).get("term_sheets", [])}
             if any(ref not in offers and not self.context.fact(case, ref) for ref in ID_RE.findall(body)):
                 return None
-            body = self._strip_wasted_claims(case, threads, body)
+            body = self._paced_body(case, threads, sid, body) if reprice else self._strip_wasted_claims(
+                case, threads, body)
             sheets = decision.get("term_sheets", [])
             if not isinstance(sheets, list) or len(sheets) > 3:
                 return None
@@ -174,6 +176,10 @@ class RoutedAgent:
                 if limit > ours and min(total_cost(case, t, std) for t in clean) < ours + 0.5 * (limit - ours):
                     clean = [{**t, "unit_price": self._price_within(
                         case, {**t, "unit_price": t["unit_price"] * 1.5}, std, sid, limit)} for t in clean]
+            if reprice and not clean and sent and math.isfinite(limit) and not self._new_fact(case, threads, sid, body):
+                # neither movement nor a new fact: hosted P18 walked and P02 went final after such an e-mail
+                if step := self._limit_sheet(case, events, sid, limit):
+                    clean = [step]
             if clean:  # the supplier picks the sheet dearest for us (hosted P03): keep equal-cost sheets only
                 cheapest = min(decision_cost(case, t, std, sid) for t in clean)
                 clean = [t for t in clean if decision_cost(case, t, std, sid) <= cheapest * 1.003 + 0.01]
@@ -315,6 +321,47 @@ class RoutedAgent:
             return rise > 0 and rise >= CLAUSE_RISE_RATIO * ours
         except (KeyError, TypeError, ValueError, AttributeError, ZeroDivisionError):
             return False
+
+    def _paced_body(self, case, threads, sid, body):
+        """The body with exactly this round's facts from the bank (`FactBank.assign`): sentences citing
+        other checked IDs go (kept for later rounds, or already used), missing assigned sentences are
+        added. Without any bank entry for the supplier only wasted IDs are stripped."""
+        if not self.bank.has_any(case, threads, sid) and not self.bank.used(threads, sid):
+            return self._strip_wasted_claims(case, threads, body)
+        return self.bank.enforce(body, self.bank.assign(case, threads, sid))
+
+    def _new_fact(self, case, threads, sid, body):
+        used = self.bank.used(threads, sid)
+        return any(ref not in used for ref in map(fact_key, checked_ids(body)))
+
+    def _limit_sheet(self, case, events, sid, limit):
+        """One sheet on the supplier's standing terms at our ask limit, if below its price."""
+        _, terms, std, missing = known_offer(case, events)
+        if missing or "unit_price" not in terms:
+            return None
+        resolved = {**std, **case.get("fixed_terms", {}), **terms}
+        sheet = {f: resolved[f] for f in case["negotiable"]}
+        price = self._price_within(case, sheet, std, sid, limit)
+        return {**sheet, "unit_price": price} if price < sheet["unit_price"] else None
+
+    def fact_prompt(self, case, threads):
+        """The round's assigned facts per live supplier, for the model's prompt."""
+        lines = []
+        for sid in live_threads(threads):
+            if moves_left(case, threads[sid]) <= 0:
+                continue
+            assigned = self.bank.assign(case, threads, sid)
+            if assigned:
+                lines.append(f"USE THIS FACT NOW in a message to {sid} (copy verbatim, figure and ID together): "
+                             + " ".join(f.sentence for f in assigned))
+            elif self.bank.has_any(case, threads, sid):
+                lines.append(f"No new fact is left for {sid}: a message to it must move its term sheet a real "
+                             "step toward the supplier's offer.")
+        if lines:
+            lines.append("Cite no other checked data ID (idx, fc, sc, cost, quote, offer, po, qn, news) this round: "
+                         "code removes such sentences and keeps those facts for later rounds, one new fact per "
+                         "message. Context IDs (doc, ctr) may be used freely.")
+        return "\n".join(lines)
 
     @staticmethod
     def _strip_wasted_claims(case, threads, body):
@@ -641,69 +688,6 @@ class RoutedAgent:
                 chosen.append(terms)
         return chosen
 
-    def _forecast_evidence(self, case, threads):
-        """One forecast argument per case: hosted replays mark any later `fc:` claim duplicate, even for
-        another part or month, so extra forecasts would only spend claim slots."""
-        facts = {**getattr(self.context.package, "facts", {}), **case.get("facts", {})}
-        if any(ref.startswith("fc:") for events in threads.values() for message in events
-               if message.get("from") == "buyer" for ref in ID_RE.findall(message.get("body", ""))):
-            return ""
-        candidates = []
-        for part in case["parts"]:
-            refs = sorted(ref for ref, fact in facts.items() if ref.startswith("fc:") and fact.get("part") == part)
-            if not refs:
-                continue
-            ref = refs[-1]
-            change, volume = facts[ref].get("change_pct"), facts[ref].get("volume_per_year") or 1
-            if type(change) in (int, float) and math.isfinite(change) and change > 0:
-                candidates.append((change * volume, part, change, ref))
-        if not candidates:
-            return ""
-        _, part, change, ref = max(candidates)
-        return (f"The forecast for {part} increased by {change:g}% ({ref}); "
-                "please reflect this additional business in your price.")
-
-    def _index_evidence(self, case, threads, slots):
-        """Up to `slots` claims that a cost driver of the part fell (`DataPackage.index_falls`), each
-        series cited once per case, for price-led goals only.
-
-        Model rounds already cite falls; scripted ones did not. Hosted P18 answered the same 4.87-4.88
-        opening at 5.40 with two verified index falls cited and at 5.70 with a forecast alone, and closed
-        at 5.20 against 5.40; a P05 bidder conceded 3.00 instead of 2.50 to a near-equal counter with
-        them. Relationship goals stay with the model: there the supplier's health, not its cost, binds."""
-        package = getattr(self.context, "package", None)
-        if (slots <= 0 or package is None or not hasattr(package, "index_falls")
-                or case["buyer"].get("category_goal", "routine") not in {"routine", "leverage"}):
-            return ""
-        if "_index_falls" not in case:
-            try:
-                case["_index_falls"] = package.index_falls(case)
-            except Exception:  # an older or partial package: no index claims
-                case["_index_falls"] = []
-        cited = {ref.split("@")[0] for events in threads.values() for message in events
-                 if message.get("from") == "buyer" for ref in ID_RE.findall(message.get("body", ""))}
-        out = []
-        for _, series, start, end, change in case["_index_falls"]:
-            first, last = package.lookup(start), package.lookup(end)
-            if len(out) >= slots or f"idx:{series}" in cited or not first or not last:
-                continue
-            out.append(f"{series} fell from {round(first['value'], 4)} ({start}) to {round(last['value'], 4)} "
-                       f"({end}), a change of {change:.2f}%.")
-        return " ".join(out)
-
-    def _rival_evidence(self, case, threads, sid):
-        current = acceptable_offer(case, threads[sid], sid)
-        cited = {ref for message in threads[sid] if message.get("from") == "buyer"
-                 for ref in ID_RE.findall(message.get("body", ""))}
-        rivals = [(accepted[1], other, accepted[0]) for other in live_threads(threads) if other != sid
-                  if (accepted := acceptable_offer(case, threads[other], other)) and accepted[0] not in cited
-                  and (not current or accepted[1] < current[1])]
-        if not rivals:
-            return ""
-        _, other, ref = min(rivals)
-        price = standing(threads[other])[1]["unit_price"]
-        return f"A valid competing offer is EUR {price:g} per unit ({ref}); please improve your complete package."
-
     def _structured_bargain(self, case, threads):
         """Use public quotes/options only; do not estimate a hidden floor or train on simulator rules."""
         records, combinations = [], 0
@@ -816,14 +800,10 @@ class RoutedAgent:
                         break
                     if terms not in chosen:
                         chosen.append(terms)
-            rival, forecast = self._rival_evidence(case, threads, sid), self._forecast_evidence(case, threads)
-            path = order_path_sentence(self.context.package, case, threads, sid)  # round 1 only
-            falls = self._index_evidence(case, threads, 3 - bool(rival) - bool(forecast) - bool(path))
             question = FLOOR_QUESTION if sent and floor_question_due(case, threads, sid) else ""
-            move = self.validate(case, threads, {"supplier_id": sid, "action": "send",
+            move = self.validate(case, threads, {"supplier_id": sid, "action": "send",  # facts: `_paced_body`
                 "body": " ".join(part for part in (
-                    path, "Please consider these complete packages for the stated requirement.",
-                    forecast, falls, rival, question) if part),
+                    "Please consider these complete packages for the stated requirement.", question) if part),
                 "term_sheets": chosen})
             if move:
                 reason = "bounded_concession" if sent else "enumerated_opening"
@@ -914,10 +894,7 @@ class RoutedAgent:
             if not missing and not any(m.get("from") == "buyer" for m in threads[sid]):
                 anchor = ANCHOR_BY_GOAL.get(case["buyer"].get("category_goal"), 0.15)
                 proposal = {**std, **terms, "unit_price": round(terms["unit_price"] * (1 - anchor), 2)}
-                path = order_path_sentence(self.context.package, case, threads, sid)
-                body = " ".join(part for part in (path, "Thank you. Please consider this price proposal.",
-                                                  self._index_evidence(case, threads, 3 - bool(path))) if part)
-                d = {"supplier_id": sid, "action": "send", "body": body,
+                d = {"supplier_id": sid, "action": "send", "body": "Thank you. Please consider this price proposal.",
                      "term_sheets": [complete_offer(case, proposal, std)]}
                 move = self.validate(case, threads, d)
                 if move and (decision_cost(case, move["message"]["term_sheets"][0]["terms"], std, sid)
@@ -967,6 +944,8 @@ class RoutedAgent:
                 self.context.brief = self.context.prepare(case)
                 self.context.case_id = case["case_id"]
             prompt = self.context.render(case, threads)
+            if facts := self.fact_prompt(case, threads):
+                prompt = f"{prompt}\n\n{facts}"
             remaining = deadline - self.clock()
             if remaining <= 0:
                 raise TimeoutError("decision budget exhausted during preparation")
