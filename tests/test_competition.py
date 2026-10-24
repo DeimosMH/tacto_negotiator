@@ -17,7 +17,7 @@ from tacto_negotiator.competition import (
     feasible_reference,
     run_competition,
 )
-from tacto_negotiator.cost import must_haves_ok
+from tacto_negotiator.cost import must_haves_ok, score, total_cost
 from tacto_negotiator.docs import standard_terms
 from tacto_negotiator.play import closing_move
 
@@ -210,6 +210,78 @@ def test_missing_defaults_are_absent_until_the_supplier_clarifies():
 
     report = run_competition({"clarify": Clarify}, scenarios=["incomplete_defaults"], seeds=(0,), waves=1)
     assert len(seen) == 2 and report["matches"][0]["error"] is None
+
+
+def test_score_baseline_excludes_ineligible_openings():
+    scenario = next(s for s in build_scenarios(0) if s.name == "competing_rfq")
+    case = scenario.case
+    case["suppliers"] = ["sup:A", "sup:B"]
+    scenario.profiles.pop("sup:C")
+    case["negotiable"].append("lead_time_days")
+    case["term_options"]["lead_time_days"] = [45, 14]
+    case["fixed_terms"].pop("lead_time_days")
+    case["buyer"]["late_cost_per_day"] = 0
+    case["buyer"]["must_haves"] = [{"field": "lead_time_days", "op": "<=", "value": 14}]
+    for sid, profile in scenario.profiles.items():
+        profile["standard"]["lead_time_days"] = 45 if sid == "sup:A" else 14
+        profile["floor"] = 30
+    sim = CompetitionSim(scenario, 1)
+    opened = sim.open("local", "case:R1-C04")
+    session = sim.sessions[opened["session_id"]]
+    opening = session["threads"]["sup:B"]["opening"]
+    eligible_cost = total_cost(case, {"unit_price": opening}, scenario.profiles["sup:B"]["standard"])
+    price = round(sum(th["opening"] for th in session["threads"].values()) / 2, 2)
+    reply = sim.message("local", session["id"], "sup:B", {"term_sheets": [{"terms": {
+        "unit_price": price, "payment_days": 14, "lead_time_days": 14}}]})
+    result = sim.message("local", session["id"], "sup:B", {"action": {
+        "type": "accept", "term_sheet_id": reply["term_sheets"][0]["term_sheet_id"]}})["result"]
+    assert result["c_open"] == eligible_cost == 45247.85
+    assert result["score"] == score(eligible_cost, result["c_deal"], result["c_best"])
+    assert result["score"] == pytest.approx(0.0325468784)
+
+
+def test_no_eligible_opening_is_rejected_instead_of_inventing_a_baseline():
+    scenario = next(s for s in build_scenarios(0) if s.name == "leadtime_repair")
+    for profile in scenario.profiles.values():
+        profile["standard"]["lead_time_days"] = 45
+    sim = CompetitionSim(scenario, 1)
+    with pytest.raises(ValueError, match="no eligible opening"):
+        sim.open("local", "case:R1-C03")
+
+
+def test_no_alternative_means_no_walkaway_score_or_feasible_outside_option():
+    scenario = next(s for s in build_scenarios(0) if s.name == "simple_price")
+    scenario.case["buyer"]["fallback_unit_price"] = 20
+    # Leftover terms cannot create an alternative when its declared kind is none.
+    scenario.case["buyer"]["alternative"]["terms"] = {"unit_price": 1}
+    reference = feasible_reference(scenario)
+    assert reference["supplier_id"] == "sup:A" and reference["cost"] > 20600
+
+    class Walk:
+        def decide(self, case, threads):
+            return {"supplier_id": "sup:A", "message": {"action": {"type": "walk_away"}}}
+
+    row = _match("walk", Walk, scenario, 1, 1, 25)
+    assert row["valid"] and not row["deal"] and row["score"] == 0
+    assert row["cost_eur"] is None and row["regret_eur"] is None
+    json.dumps(row, allow_nan=False)
+
+
+def test_reference_includes_legal_supplier_standard_values():
+    scenario = next(s for s in build_scenarios(0) if s.name == "competing_rfq")
+    scenario.case["term_options"]["payment_days"] = [14, 30]
+    for profile in scenario.profiles.values():
+        profile["standard"]["payment_days"] = 90
+        profile["payment_premium"] = 0
+    reference = feasible_reference(scenario)
+    assert reference["terms"]["payment_days"] == 90
+
+
+def test_no_feasible_reference_is_an_invalid_scenario():
+    scenario = next(s for s in build_scenarios(0) if s.name == "simple_price")
+    scenario.case["buyer"]["must_haves"] = [{"field": "lead_time_days", "op": "<=", "value": 1}]
+    with pytest.raises(ValueError, match="no feasible deal"):
+        feasible_reference(scenario)
 
 
 @pytest.mark.parametrize("options", [{"waves": 0}, {"workers": 0}, {"seeds": ()},

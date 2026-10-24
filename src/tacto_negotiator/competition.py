@@ -98,6 +98,11 @@ def build_scenarios(seed=0, *, holdout=False):
             }
         if name == "price_plateau":
             profiles["sup:A"].update(floor=round(price * 1.04, 2), step=0.0, plateau=1.0)
+        if name == "leadtime_repair":
+            # Keep the repair opportunity and provide an eligible opening for score normalization.
+            case["suppliers"].append("sup:B")
+            profiles["sup:B"] = copy.deepcopy(profiles["sup:A"])
+            profiles["sup:B"]["standard"]["lead_time_days"] = 30
         if name == "incomplete_defaults":
             profiles["sup:A"]["missing"] = "payment_days"
         if name == "contradicted_claims":
@@ -132,12 +137,15 @@ def _supplier(case, profile):
 
 
 def _outside_cost(case):
-    alternative = case["buyer"].get("alternative", {}).get("terms", {})
-    if alternative.get("unit_price"):
-        return total_cost(case, alternative)
-    buyer = case["buyer"]
-    return round(buyer["need_per_year"] * buyer["horizon_years"] * buyer["fallback_unit_price"]
-                 * (1 + buyer.get("fallback_risk_pct", 0) / 100), 2)
+    """Only a declared alternative is an attainable no-deal outcome."""
+    alternative = case["buyer"].get("alternative") or {}
+    if alternative.get("kind") in (None, "none"):
+        return None
+    terms = alternative.get("terms", {})
+    cost = total_cost(case, terms)
+    if not math.isfinite(cost) or not must_haves_ok(case, terms):
+        raise ValueError("scenario alternative must have a finite cost and satisfy must-haves")
+    return cost
 
 
 def feasible_reference(scenario):
@@ -147,10 +155,17 @@ def feasible_reference(scenario):
     because reducing price can increase relationship cost. Every candidate can be accepted.
     """
     case = scenario.case
-    best = (_outside_cost(case), None, None)
+    outside = _outside_cost(case)
+    best = (outside if outside is not None else math.inf, None, None)
     fields = case["negotiable"][1:]
     for sid, profile in scenario.profiles.items():
-        for combination in itertools.product(*(case["term_options"][f] for f in fields)):
+        choices = []
+        for field in fields:
+            options = list(case["term_options"][field])
+            if field in profile["standard"] and profile["standard"][field] not in options:
+                options.append(profile["standard"][field])
+            choices.append(options)
+        for combination in itertools.product(*choices):
             terms = dict(zip(fields, combination, strict=True))
             floor = _floor(case, profile, terms)
             prices = [floor]
@@ -162,6 +177,8 @@ def feasible_reference(scenario):
                     cost = total_cost(case, candidate, profile["standard"], _supplier(case, profile))
                     if cost < best[0]:
                         best = (cost, sid, candidate)
+    if not math.isfinite(best[0]):
+        raise ValueError("scenario has no feasible deal or declared alternative")
     return {"cost": best[0], "supplier_id": best[1], "terms": best[2],
             "kind": "best enumerated feasible deal or outside option"}
 
@@ -194,6 +211,15 @@ class CompetitionSim(Sim):
             if profile["contradicted"]:
                 message["claim_results"] = [{"index": 0, "result": "contradicted"}]
         opened["threads"] = {sid: list(th["messages"]) for sid, th in state["threads"].items()}
+        state["eligible_opening_cost"] = min((
+            total_cost(state["case"], {"unit_price": thread["opening"]}, self.scenario.profiles[sid]["standard"],
+                       _supplier(state["case"], self.scenario.profiles[sid]))
+            for sid, thread in state["threads"].items()
+            if must_haves_ok(state["case"], {"unit_price": thread["opening"]},
+                             self.scenario.profiles[sid]["standard"])
+        ), default=None)
+        if state["eligible_opening_cost"] is None:
+            raise ValueError("scenario has no eligible opening quote; arena score is undefined")
         return copy.deepcopy(opened)
 
     def _answer(self, state, thread, message, sheets):
@@ -243,8 +269,7 @@ class CompetitionSim(Sim):
     def _end(self, state, reason, sid):
         super()._end(state, reason, sid)
         case = state["case"]
-        opening = min(total_cost(case, {"unit_price": th["opening"]}, self.scenario.profiles[s]["standard"],
-                                 _supplier(case, self.scenario.profiles[s])) for s, th in state["threads"].items())
+        opening = state["eligible_opening_cost"]
         result = state["result"]
         realized = _outside_cost(case)
         if sid:
@@ -254,7 +279,7 @@ class CompetitionSim(Sim):
             result.update(terms=terms, c_deal=realized, must_haves_ok=must_haves_ok(case, terms),
                           cost_breakdown=cost_breakdown(case, terms, supplier=_supplier(case, profile)))
         valid = not sid or result["must_haves_ok"]
-        result.update(c_open=opening, c_best=self.reference["cost"], realized_cost=realized,
+        result.update(c_open=opening, c_alt=_outside_cost(case), c_best=self.reference["cost"], realized_cost=realized,
                       score=score(opening, realized, self.reference["cost"]) if valid else 0.0)
 
 
@@ -409,7 +434,8 @@ def _match(variant, factory, scenario, wave, waves, decision_seconds):
         "finished_before_cap": error is None and session["end_reason"] != "wave_cap",
         "score": result["score"] if valid else 0.0, "cost_eur": result["realized_cost"],
         "reference_cost_eur": sim.reference["cost"], "reference_kind": sim.reference["kind"],
-        "regret_eur": round(result["realized_cost"] - sim.reference["cost"], 2) if valid else None,
+        "regret_eur": (round(result["realized_cost"] - sim.reference["cost"], 2)
+                       if valid and result["realized_cost"] is not None else None),
         "end_reason": session["end_reason"], "error": error, "invalid_moves": invalid_moves,
         "thread_timeouts": sum(len(th["late"]) for th in session["threads"].values()),
         "model_attempts": counts["attempts"], "fallbacks": sum(bool(d["fallback"]) for d in decisions),
@@ -482,11 +508,13 @@ def run_competition(factories, scenarios=None, seeds=(0, 1, 2), waves=5, workers
             "routes": dict(sum((Counter(r["routes"]) for r in rows), Counter())),
         }
     return {
-        "config": {"seeds": list(seeds), "waves": waves, "wave_seconds": 480, "workers": workers,
+        "config": {"scoring_version": 2, "seeds": list(seeds), "waves": waves, "wave_seconds": 480, "workers": workers,
                    "holdout": holdout, "decision_seconds": decision_seconds,
                    "scenarios": [s.name for s in cases[:len(cases) // len(seeds)]]},
         "peak_active_matches": peak, "aggregate": aggregate, "matches": matches,
         "limitations": ["Synthetic supplier profiles do not predict hosted negotiation scores.",
+                        "Scoring v2 requires an eligible opening; leadtime_repair includes a valid second bidder.",
+                        "No deal without a declared alternative scores zero; its cost and regret are unknown (null).",
                         "Reference is a feasible candidate benchmark, not a proof of global optimality.",
                         "No arena HTTP rate limiting, venue network or shared hosted-service load is simulated.",
                         "Worker queue wait is excluded: each match starts its own virtual 480-second clock.",
