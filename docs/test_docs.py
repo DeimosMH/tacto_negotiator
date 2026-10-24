@@ -115,6 +115,23 @@ class AtlasTests(unittest.TestCase):
         self.assertNotIn("<", script)
         self.assertEqual(json.loads(script.split("window.ATLAS = ", 1)[1].removesuffix(";\n")), payload)
 
+    def test_competition_reports_embed_metrics_and_bounded_samples(self):
+        report = {"status": "completed", "config": {"waves": 5}, "aggregate": {"script": {"valid": 100}},
+                  "matches": [{"variant_id": "script", "score": 1, "decisions": [{"body": "omitted trace"}]}] * 100,
+                  "budget": {"committed_usd": 0.5, "calls": [{"usage": "omitted call"}] * 20}}
+        summary = build.report_summary(report)
+        self.assertEqual(summary["aggregate"], report["aggregate"])
+        self.assertEqual(summary["match_count"], 100)
+        self.assertEqual(summary["provider_call_count"], 20)
+        self.assertEqual(len(summary["sample_matches"]), 3)
+        self.assertEqual(summary["budget"], {"committed_usd": 0.5})
+        self.assertNotIn("omitted", json.dumps(summary))
+        for path, node in self.nodes.items():
+            if path.startswith("docs/results/"):
+                self.assertNotIn("content", node)
+                self.assertLessEqual(len(node["sample"]), 3)
+                self.assertLess(len(json.dumps(node)), 50_000)
+
     def test_app_loads_only_local_assets_and_guides_exist(self):
         html = (build.ROOT / "docs/index.html").read_text()
         for asset in re.findall(r'<script[^>]+src="([^"]+)"|<link[^>]+href="([^"]+)"', html):
@@ -124,7 +141,7 @@ class AtlasTests(unittest.TestCase):
             self.assertFalse(path.startswith(("http:", "https:", "//")))
             self.assertTrue((build.ROOT / "docs" / path).is_file())
         self.assertIn("connect-src 'none'", html)
-        for guide in ("README.md", "TUTORIAL.md", "IMPLEMENTATION.md", "DATA_GUIDE.md", "LOCAL_TESTING.md", "FINAL_READINESS.md", "MODEL_SELECTION.md", "ROUTING.md"):
+        for guide in ("README.md", "TUTORIAL.md", "IMPLEMENTATION.md", "DATA_GUIDE.md", "LOCAL_TESTING.md", "FINAL_READINESS.md", "MODEL_SELECTION.md", "ROUTING.md", "COMPETITION.md"):
             text = self.nodes["docs/" + guide]["content"]
             for target in re.findall(r"\]\(([^)]+)\)", text):
                 if "://" in target or target.startswith("#"):

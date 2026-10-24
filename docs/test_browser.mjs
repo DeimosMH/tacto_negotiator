@@ -149,6 +149,12 @@ try {
   await until("document.querySelector('#guide h1')?.textContent === 'Choose scripts, Sol or Astra for each decision'");
   assert.ok(await evaluate("document.querySelector('#guide').textContent.includes('RoutedAgent.last_decision')"));
   assert.ok(await evaluate("document.querySelector('#guide').textContent.includes('LLM_STRONG_MODEL')"));
+  await evaluate("document.querySelector('[data-tab=\"COMPETITION.md\"]').click()");
+  await until("location.hash === '#guide=COMPETITION.md' && document.querySelector('#guide h1') !== null");
+  assert.equal(await evaluate("document.querySelector('[data-tab=\"COMPETITION.md\"]').getAttribute('aria-current')"), "page");
+  assert.ok(await evaluate("document.querySelector('#guide').textContent.includes('scenario')"));
+  await select("docs/results/offline.json");
+  assert.ok(await evaluate("document.querySelector('#inspector').textContent.includes('match_count')"));
   await evaluate("document.querySelector('[data-tab=\"IMPLEMENTATION.md\"]').click()");
   await until("!document.querySelector('#guide').hidden");
   await until("document.querySelector('#guide').textContent.includes('One guard for every action')");

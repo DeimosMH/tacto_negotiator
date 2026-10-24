@@ -63,6 +63,24 @@ def field(name, value, description=""):
     return {"name": name, "value": value, "description": description}
 
 
+def report_summary(report):
+    """Keep competition metrics useful in the atlas without embedding every trace or API call."""
+    keys = ("status", "phase", "started_utc", "finished_utc", "baseline_commit", "policy_commit", "source_sha256",
+            "provider_calls", "campaign_accounting",
+            "models", "effort", "service_tier", "max_output_tokens", "config", "peak_active_matches", "aggregate",
+            "limitations", "excluded_from_comparison", "exclusion_reason")
+    summary = {key: report[key] for key in keys if key in report}
+    matches = report.get("matches", [])
+    budget = report.get("budget") or {}
+    summary.update(match_count=len(matches), provider_call_count=len(budget.get("calls", [])))
+    if budget:
+        summary["budget"] = {key: value for key, value in budget.items() if key != "calls"}
+    sample_fields = ("variant_id", "scenario", "seed", "wave", "case_id", "valid", "score", "cost_eur",
+                     "reference_cost_eur", "regret_eur", "error", "model_attempts", "decision_wall_s")
+    summary["sample_matches"] = [{key: row[key] for key in sample_fields if key in row} for row in matches[:3]]
+    return summary
+
+
 def python_details(text, path):
     """Read classes, function contracts and stored state without executing source code."""
     tree = ast.parse(text)
@@ -245,7 +263,16 @@ def generate(root=ROOT):
                 link(path, target, relation, "declared foreign key")
         elif file.suffix == ".json":
             data = json.loads(raw)
-            if file.name == "facts.json":
+            if path.startswith("docs/results/"):
+                summary = report_summary(data)
+                node["fields"] = [field(k, v, "Sanitized report summary; open the JSON file for full traces.")
+                                  for k, v in summary.items() if k != "sample_matches"]
+                node["sample"] = summary["sample_matches"]
+                node["rows"] = summary["match_count"]
+                link(path, CODE + "competition.py", "records paired simulation outcomes", "report format")
+                if data.get("budget"):
+                    link(path, CODE + "benchmark.py", "records provider usage accounting", "report budget")
+            elif file.name == "facts.json":
                 buckets = {}
                 for key, value in data.items():
                     bucket = buckets.setdefault(key.split(":")[0], {"count": 0, "example": {key: value}})
