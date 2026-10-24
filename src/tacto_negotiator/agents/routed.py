@@ -166,7 +166,7 @@ class RoutedAgent:
                 rows.append((cost, proposal))
         return sorted(rows, key=lambda row: total_cost(case, {**row[1], "unit_price": reference_price}))
 
-    def _forecast_evidence(self, case, threads):
+    def _forecast_evidence(self, case, threads, limit=3):
         facts = {**getattr(self.context.package, "facts", {}), **case.get("facts", {})}
         cited = {ref for events in threads.values() for message in events if message.get("from") == "buyer"
                  for ref in ID_RE.findall(message.get("body", ""))}
@@ -180,7 +180,20 @@ class RoutedAgent:
             if ref not in cited and type(change) in (int, float) and math.isfinite(change) and change > 0:
                 arguments.append(f"The forecast for {part} increased by {change:g}% ({ref}); "
                                  "please reflect this additional business in your price.")
-        return " ".join(arguments[:3])
+        return " ".join(arguments[:limit])
+
+    def _rival_evidence(self, case, threads, sid):
+        current = acceptable_offer(case, threads[sid])
+        cited = {ref for message in threads[sid] if message.get("from") == "buyer"
+                 for ref in ID_RE.findall(message.get("body", ""))}
+        rivals = [(accepted[1], other, accepted[0]) for other in live_threads(threads) if other != sid
+                  if (accepted := acceptable_offer(case, threads[other])) and accepted[0] not in cited
+                  and (not current or accepted[1] < current[1])]
+        if not rivals:
+            return ""
+        _, other, ref = min(rivals)
+        price = standing(threads[other])[1]["unit_price"]
+        return f"A valid competing offer is EUR {price:g} per unit ({ref}); please improve your complete package."
 
     def _structured_bargain(self, case, threads):
         """Use public quotes/options only; do not estimate a hidden floor or train on simulator rules."""
@@ -272,9 +285,11 @@ class RoutedAgent:
                     break
                 if terms not in chosen:
                     chosen.append(terms)
+            rival = self._rival_evidence(case, threads, sid)
             move = self.validate(case, threads, {"supplier_id": sid, "action": "send",
                 "body": ("Please consider these complete packages for the stated requirement. "
-                         + self._forecast_evidence(case, threads)).strip(), "term_sheets": chosen})
+                         + self._forecast_evidence(case, threads, limit=2 if rival else 3) + " " + rival).strip(),
+                "term_sheets": chosen})
             if move:
                 reason = "bounded_concession" if sent else "enumerated_opening"
                 if not must_haves_ok(case, current, record["std"]):

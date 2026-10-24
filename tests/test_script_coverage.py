@@ -114,6 +114,20 @@ def test_rfq_uses_full_cost_and_services_untried_suppliers(negotiation):
     assert calls == [] and second["supplier_id"] == "sup:A"
 
 
+def test_rival_evidence_uses_only_feasible_current_quotes_once_per_bidder(negotiation):
+    case, threads = negotiation
+    case["suppliers"].append("sup:B")
+    threads["sup:B"] = [quote({"unit_price": 90, "payment_days": 60, "incoterm": "DAP"}, number=2)]
+    agent, _ = agent_with_calls()
+    text = agent._rival_evidence(case, threads, "sup:A")
+    assert "EUR 90" in text and "offer:2" in text
+    threads["sup:A"].append({"from": "buyer", "body": text})
+    assert agent._rival_evidence(case, threads, "sup:A") == ""
+    threads["sup:A"].pop()
+    case["buyer"]["must_haves"] = [{"field": "payment_days", "op": ">=", "value": 90}]
+    assert agent._rival_evidence(case, threads, "sup:A") == ""
+
+
 def test_followup_concedes_in_full_cost_and_closes_agreement(negotiation):
     case, threads = negotiation
     agent, calls = agent_with_calls()
