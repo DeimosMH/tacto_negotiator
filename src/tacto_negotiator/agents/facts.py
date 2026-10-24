@@ -39,6 +39,8 @@ SHRUG_WORDS = ("not change our calculation", "not alter", "does not change our",
 # The supplier's own rising order-price path leads (`price_path`).
 PRIORITY = {"price_path": 0, "should_cost": 1, "rival_quote": 2, "volume_change": 3, "index_change": 4,
             "quality_record": 5, "delivery_record": 5}
+HEDGED = re.compile(r"(covered|bought|secured|hedged)[^.]{0,40}(fixed prices?|until)|fixed prices? until",
+                    re.IGNORECASE)
 SENTENCE_END = re.compile(r"((?<=[.!?])\s+)")
 CLOSING = re.compile(r"\n\s*(?:kind regards|best regards|regards|best|sincerely|yours)\b", re.IGNORECASE)
 
@@ -155,6 +157,8 @@ class FactBank:
             justified = case["buyer"].get("category_goal") in RELATIONSHIP_GOALS and self._justified_rise(case)
         except Exception:
             justified = False
+        if self._hedged(case, sid):
+            return []  # "That is not our reality": hosted P08 answered all 12 index citations so (hedged material)
         out = []
         for weight, series, start, end, change in case["_index_falls"]:
             first, last = package.lookup(start), package.lookup(end)
@@ -169,6 +173,20 @@ class FactBank:
                             {"type": "index_change", "refs": [start, end],
                              "asserted": {"change_pct": round(change, 2)}}))
         return out
+
+    def _hedged(self, case, sid):
+        """The supplier's own letters or news say its material is covered at fixed prices or hedged until a
+        later date: its costs do not follow the index, so an index fall is no argument to it."""
+        facts = self.facts(case)
+        for ref, fact in facts.items():
+            if ref.startswith(("doc:", "news:")) and fact.get("supplier") == sid:
+                try:
+                    text = self.package.document(ref) if self.package is not None else fact.get("body", "")
+                except Exception:
+                    text = fact.get("body", "") or ""
+                if HEDGED.search(text or ""):
+                    return True
+        return False
 
     def _justified_rise(self, case):
         """A cost driver or index-clause series of the case rose >= JUSTIFIED_RISE_PCT over twelve months."""

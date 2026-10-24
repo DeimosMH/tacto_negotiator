@@ -147,3 +147,10 @@ def test_paced_body_keeps_only_the_assigned_fact_and_adds_it_when_missing():
     assert body.index("cost:A") < body.index("Kind regards") and "Please review." in body
 
 
+
+
+def test_no_index_falls_for_a_supplier_whose_material_is_hedged():
+    from tacto_negotiator.agents.facts import HEDGED
+
+    assert HEDGED.search("our nickel and alloys requirement is covered at fixed prices until March 2027")
+    assert not HEDGED.search("Steel prices have risen sharply this year.")
