@@ -124,7 +124,8 @@ def test_usage_is_settled_and_reasoning_is_not_counted_twice():
     complete = wrapper(handle)
     complete("system", "prompt", deadline=time.monotonic() + 2)
     result = complete.ledger.snapshot()
-    assert result["estimated_known_usage_usd"] == (50 * 2 + 10 * 10) / 1_000_000
+    assert result["estimated_known_usage_usd"] == (50 * 2.5 + 10 * 10) / 1_000_000
+    assert "1.25x" in result["price_basis"]
     assert result["unreconciled_reservations_usd"] == result["reserved_in_flight_usd"] == 0
     assert result["calls"][0]["usage"]["reasoning_tokens"] == 4
     serialized = json.dumps(result)
@@ -190,10 +191,10 @@ def test_parallel_reservations_cannot_overdraw_the_ceiling():
 
     with ThreadPoolExecutor(max_workers=20) as pool:
         reservations = list(pool.map(attempt, range(20)))
-    assert sum(x is not None for x in reservations) == 3  # each reserves exactly $0.003
+    assert sum(x is not None for x in reservations) == 2  # each reserves exactly $0.0035
     snapshot = ledger.snapshot()
-    assert snapshot["committed_usd"] == 0.009 <= snapshot["cap_usd"]
-    assert snapshot["budget_rejections"] == 17
+    assert snapshot["committed_usd"] == 0.007 <= snapshot["cap_usd"]
+    assert snapshot["budget_rejections"] == 18
 
 
 def test_parallel_calls_keep_their_own_usage_and_latency():
@@ -213,7 +214,7 @@ def test_parallel_calls_keep_their_own_usage_and_latency():
     snapshot = complete.ledger.snapshot()
     assert sorted(c["usage"]["input_tokens"] for c in snapshot["calls"]) == [11, 12, 13, 14]
     assert all(c["latency_s"] >= 0 and c["status"] == "completed" for c in snapshot["calls"])
-    assert snapshot["estimated_known_usage_usd"] == ((11 + 12 + 13 + 14) * 2 + 40 * 10) / 1_000_000
+    assert snapshot["estimated_known_usage_usd"] == ((11 + 12 + 13 + 14) * 2.5 + 40 * 10) / 1_000_000
 
 
 def test_budget_rejection_happens_before_provider_dispatch():
@@ -248,8 +249,8 @@ def test_invalid_usage_is_not_treated_as_zero_cost(usage):
     assert response_metadata({"status": "completed", "usage": usage})["usage"] is None
 
 
-@pytest.mark.parametrize(("model", "expected"), [("gpt-6.1-sol", 12), ("gpt-6-astra", 60), ("gpt-6-luna", 0.6)])
-def test_standard_prices_for_one_million_input_and_output_tokens(model, expected):
+@pytest.mark.parametrize(("model", "expected"), [("gpt-6.1-sol", 12.5), ("gpt-6-astra", 62.5), ("gpt-6-luna", 0.625)])
+def test_default_cache_write_ceiling_for_one_million_input_and_output_tokens(model, expected):
     assert estimated_nano(model, 1_000_000, 1_000_000) / 1_000_000_000 == expected
 
 

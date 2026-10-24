@@ -2,7 +2,8 @@
 
 Importing this module performs no I/O. Offline callers inject transports. The caller must opt
 into live calls and explicitly select the key file; no Arena settings or environment are loaded.
-Dollar amounts are estimates from standard uncached token prices, not a billing reconciliation.
+Dollar amounts conservatively price every input token as a default 30-minute cache write,
+plus standard output prices. They are upper estimates, not a billing reconciliation.
 """
 
 import copy
@@ -71,13 +72,14 @@ def preflight_models(api_key, requested, *, transport=None):
 
 
 def estimated_nano(model, input_tokens, output_tokens):
-    """Conservative standard estimate: all input is uncached; reasoning is already in output."""
+    """All input at the 1.25x default cache-write rate; reasoning is already in output."""
     if model not in PRICES_PER_MILLION:
         raise ValueError("model has no verified benchmark price")
     if any(type(n) is not int or n < 0 for n in (input_tokens, output_tokens)):
         raise ValueError("token counts must be nonnegative integers")
-    rates = PRICES_PER_MILLION[model]
-    return sum(int(Decimal(str(rate)) * 1000) * count
+    input_rate, output_rate = PRICES_PER_MILLION[model]
+    rates = (Decimal(str(input_rate)) * Decimal("1.25"), Decimal(str(output_rate)))
+    return sum(int(rate * 1000) * count
                for rate, count in zip(rates, (input_tokens, output_tokens), strict=True))
 
 
@@ -160,7 +162,8 @@ class BudgetLedger:
                     "committed_usd": committed / NANO,
                     "remaining_usd": (self.cap_nano - committed) / NANO,
                     "budget_rejections": self.rejected, "halted": self.halted,
-                    "price_basis": "Standard uncached token estimates; not a billing reconciliation",
+                    "price_basis": "Conservative standard estimate: all input at 1.25x default 30-minute "
+                                   "cache-write rate, output at standard rate; not a billing reconciliation",
                     "calls": calls}
 
 
