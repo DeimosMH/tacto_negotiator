@@ -13,3 +13,5 @@ variant.
 | Half step after a supplier stands still | round 2 #3 | identical (0.828) | not run | not merged |
 | One payment term per message (the longest) | case agent P10/P04 | worse: 0.828 -> 0.816 (P05 -0.03, P07 -0.03, P18 -0.07) | not run | not merged |
 | RFQ "auction ratchet" (show an agreement to the other bidders first) | case agent P07/P05 | identical (never fires) | not run: expected +0.01-0.03, inside noise | not merged |
+| Price the 36-month sheet 2.5 % below the others (security for the supplier) | P07 floor gap | worse: 0.828 -> 0.822 | P07, 5 runs per arm, deterministic: 0.723 x5 -> 0.721 x5 (lower ask drew a round-2 final offer at 5.45 on 24 months instead of 5.41 in round 3) | not merged |
+| Cap every sheet below a rival's standing acceptable offer | hosted P05 v17 (0.699) | identical (scripts compare bidders already) | not run alone; regression test from the hosted state | **merged** (67a034e) |

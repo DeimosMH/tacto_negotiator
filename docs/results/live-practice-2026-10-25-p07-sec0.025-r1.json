@@ -1,0 +1,326 @@
+{
+  "source": "hosted_practice",
+  "team_name": "winsortf",
+  "arena_url": "https://arena.tacto.ai",
+  "campaign_prior_committed_usd": 71.51842,
+  "phase": "2026-10-25-p07-sec0.025-r1",
+  "status": "completed",
+  "started_utc": "2026-10-24T23:50:54.603276+00:00",
+  "policy_commit": "67a034ee2880e8c424e554214b657408d2f31168",
+  "models": {
+    "fast": "claude-opus-5-5-fast",
+    "strong": null
+  },
+  "effort": "high",
+  "service_tier": "default",
+  "max_output_tokens": 16000,
+  "config": {
+    "set": "practice",
+    "workers": 4,
+    "decision_seconds": 25,
+    "scoring_authority": "hosted arena"
+  },
+  "practice_before": {
+    "used": 288,
+    "left": 112,
+    "limit": 400,
+    "resets_at": "2026-10-25T15:51:29.187290+00:00"
+  },
+  "matches": [
+    {
+      "variant_id": "routed_claude-opus-5-5-fast_high",
+      "scenario": "Bundle the fastener kit with one distributor",
+      "case_id": "case:P07",
+      "session_id": "98c8a1b253bcb7fe",
+      "deal": true,
+      "valid": true,
+      "score": 0.7210104470283076,
+      "supplier_id": "sup:70610",
+      "terms": {
+        "payment_days": 90,
+        "lead_time_days": 5,
+        "volume_per_year": 30000,
+        "contract_months": 24,
+        "effective_date": "2027-01-01",
+        "index_clause": null,
+        "incoterm": "DAP",
+        "tooling_eur": 0.0,
+        "ppm_commitment": 80,
+        "chargeback_eur_per_complaint": 0.0,
+        "unit_price": 5.45
+      },
+      "cost_eur": 324848.8,
+      "reference_cost_eur": 299241.49,
+      "regret_eur": 25607.31,
+      "opening_cost_eur": 391027.4,
+      "alternative_cost_eur": 379916.0,
+      "cost_breakdown": {
+        "price": 327000.0,
+        "uncovered_need": 0.0,
+        "fallback_risk": 0.0,
+        "payment_terms": -2180.0,
+        "freight": 0.0,
+        "late_delivery": 0.0,
+        "quality": 28.8,
+        "tooling": 0.0,
+        "index_clause": 0.0,
+        "index_risk": 0.0,
+        "relationship": 0.0
+      },
+      "rounds": 3,
+      "end_reason": "accepted",
+      "error": null,
+      "invalid_moves": 0,
+      "thread_timeouts": 0,
+      "model_attempts": 0,
+      "fallbacks": 0,
+      "elapsed_s": 23.4434647809976,
+      "decision_wall_s": 0.04166961499140598,
+      "decisions": [
+        {
+          "case_id": "case:P07",
+          "route": "script",
+          "reason": "enumerated_opening",
+          "elapsed_s": 0.033760563004761934,
+          "budget_s": 40.0,
+          "fallback": false,
+          "decision_wall_s": 0.03377268899930641,
+          "model_attempts": 0,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70610",
+              "term_sheet_id": "offer:70610-0",
+              "unit_price": 5.74,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70610",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 4.45,
+                "payment_days": 30,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 4.34,
+                "payment_days": 30,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 4.43,
+                "payment_days": 14,
+                "contract_months": 24
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70610",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 4.45,
+                "payment_days": 30,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 4.34,
+                "payment_days": 30,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 4.43,
+                "payment_days": 14,
+                "contract_months": 24
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70610",
+            "status": "open",
+            "unit_price": 5.53,
+            "term_sheet_id": "offer:70610-1"
+          },
+          "submission_wall_s": 9.509259832004318
+        },
+        {
+          "case_id": "case:P07",
+          "route": "script",
+          "reason": "bounded_concession",
+          "elapsed_s": 0.007528039990575053,
+          "budget_s": 40.0,
+          "fallback": false,
+          "decision_wall_s": 0.007537234996561892,
+          "model_attempts": 0,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70610",
+              "term_sheet_id": "offer:70610-1",
+              "unit_price": 5.53,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70610",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 4.88,
+                "payment_days": 90,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 4.81,
+                "payment_days": 30,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 4.76,
+                "payment_days": 90,
+                "contract_months": 36
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70610",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 4.88,
+                "payment_days": 90,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 4.81,
+                "payment_days": 30,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 4.76,
+                "payment_days": 90,
+                "contract_months": 36
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70610",
+            "status": "final_offer",
+            "unit_price": 5.45,
+            "term_sheet_id": "offer:70610-2"
+          },
+          "submission_wall_s": 12.944663043992477
+        },
+        {
+          "case_id": "case:P07",
+          "route": "script",
+          "reason": "terminal_offers",
+          "elapsed_s": 0.00035334999847691506,
+          "budget_s": 40.0,
+          "fallback": false,
+          "decision_wall_s": 0.0003596909955376759,
+          "model_attempts": 0,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70610",
+              "term_sheet_id": "offer:70610-2",
+              "unit_price": 5.45,
+              "status": "final_offer"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70610",
+            "action": "accept",
+            "term_sheet_id": "offer:70610-2"
+          },
+          "sent_action": {
+            "supplier_id": "sup:70610",
+            "action": "accept",
+            "term_sheet_id": "offer:70610-2"
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70610",
+            "status": "agreed",
+            "unit_price": 5.45,
+            "term_sheet_id": "offer:70610-2"
+          },
+          "submission_wall_s": 0.18118545699690003
+        }
+      ],
+      "replay_url": "https://arena.tacto.ai/replay/98c8a1b253bcb7fe"
+    }
+  ],
+  "source_sha256": {
+    "src/tacto_negotiator/__init__.py": "30679a26548de3280d29785a2eecf0a5d7d875c24be3d6520964fad546681587",
+    "src/tacto_negotiator/__main__.py": "c3c697883784cbc443a2179843a3c758e19868ff04129329abbbb61d102ae680",
+    "src/tacto_negotiator/agents/__init__.py": "74e0576a9dc983527a99699b9f6a87b743cafb5bd2e74c46918e4511f014325c",
+    "src/tacto_negotiator/agents/completion.py": "ca18a2041f5ae7883d1b8e3e2b3014df65d6ab38cfbe4fb4fa82416a20336d01",
+    "src/tacto_negotiator/agents/facts.py": "edb248e1215a11790549863f94879c5dca714b48c90a3d583ae06ed5dd525ffc",
+    "src/tacto_negotiator/agents/levers.py": "a3552c9a03baf986b33b03258bf82419228bfa58d220f78256a4d55066fcf5d2",
+    "src/tacto_negotiator/agents/llm.py": "385e7fa58b37d4911e5ced58e8abc133cfd62f0dae94ebffa5f0a4db8adb26e1",
+    "src/tacto_negotiator/agents/naive.py": "bf1574b7db0dd330547c1840c192e26a4ba459990788243f15fc522e24853f77",
+    "src/tacto_negotiator/agents/routed.py": "d95b9625a84f7203e4769b6ee28a7020e54dbbe2bb1982d52b6bdf63e73ad314",
+    "src/tacto_negotiator/benchmark.py": "be59f410d3554472762ffb79312c5b8ebed240a185842cdcd6c7705319723fed",
+    "src/tacto_negotiator/cli.py": "0a21174122dde5ee34139840502a9871d5fcea7672dde95574f7471261fbc93c",
+    "src/tacto_negotiator/client.py": "199dfb386434a676b0ffa09389531c8e623df412983558e78195eefdc9e84097",
+    "src/tacto_negotiator/compete.py": "d9901b8fc79f0b8b4f390da35c1db2668bff9bf5528f61da9d3da7fee8de10f9",
+    "src/tacto_negotiator/competition.py": "501d2ca7337cc7b1a585ac1c54e07a62d4af9d6ec4c5c9d3a39df843d637eb6d",
+    "src/tacto_negotiator/cost.py": "40ca4977d066c9d2a71066eed8aa9f527c794a844ce8ef367bbb23739e49409c",
+    "src/tacto_negotiator/data.py": "560ecc1ed6615ab488ca1581cf072793ef22193d54d6de831c4f56f0610faf57",
+    "src/tacto_negotiator/docs.py": "a19112ed1a7bc2c069c71818730453d0b1d5b31e4efc0a7e6573ad8146440c77",
+    "src/tacto_negotiator/evaluation.py": "caa274a0e8d05191d9c73e5283560cd4db6a0db755513b4f561680282c020674",
+    "src/tacto_negotiator/hosted_like.py": "158425190acf3bd33a008cbc2b9c939480ac7624c6367608b8658115747874f8",
+    "src/tacto_negotiator/mcp_server.py": "40fa2f9e09c9f30305763e0ec35dc6c370939297f441546dcbdd2cf6dfa22de5",
+    "src/tacto_negotiator/play.py": "03dd810379fcac5f599beffb93cd11ef34c6686cd048ce7e6905f81cb22d07f6",
+    "src/tacto_negotiator/sim.py": "8375e1c54dbf313d3bdfd2133afe705a07e14f46a5d838e18c6e84c94fe83fe8",
+    "src/tacto_negotiator/web.py": "fbf442296fba6392df35ae993f4cffb8302cf889db606dba981d0664eadb3c39"
+  },
+  "runner_sha256": "60c424b161c9e1683d13bd920246e4cfb31d64ee59e28b6c6e7b770759f875b1",
+  "limitations": [
+    "Practice is not final ranking; final suppliers are unseen.",
+    "Development iteration: practice best scores select repeated attempts; not an unbiased final estimate.",
+    "Supplier threads within RFQs use the committed sequential runner.",
+    "Costs and scores come from the hosted result; durations are measured wall time.",
+    "No wave cap is imposed on practice; seed and wave are not applicable.",
+    "Provider cost is an estimate; failed-call reservations are retained."
+  ],
+  "budget": {
+    "cap_usd": 100.0,
+    "estimated_known_usage_usd": 0.0,
+    "reserved_in_flight_usd": 0.0,
+    "unreconciled_reservations_usd": 0.0,
+    "committed_usd": 0.0,
+    "remaining_usd": 100.0,
+    "budget_rejections": 0,
+    "halted": false,
+    "price_basis": "Conservative standard estimate: all input at 1.25x default 30-minute cache-write rate, output at standard rate; not a billing reconciliation",
+    "calls": []
+  },
+  "aggregate": {
+    "routed_claude-opus-5-5-fast_high": {
+      "matches": 1,
+      "mean_score": 0.7210104470283076,
+      "deals": 1,
+      "errors": 0
+    }
+  },
+  "practice_after": {
+    "used": 289,
+    "left": 111,
+    "limit": 400,
+    "resets_at": "2026-10-25T15:51:29.187290+00:00"
+  },
+  "team_best_after": {
+    "case:P04": 0.8604451426623068,
+    "case:P11": 0.7935118099900735,
+    "case:P10": 0.7175445426956212,
+    "case:P18": 0.7666235165183068,
+    "case:P02": 0.7353581915062543,
+    "case:P03": 0.9520695706585078,
+    "case:P01": 0.9870468977227027,
+    "case:P07": 0.7275038183965274,
+    "case:P05": 0.8443562220967432,
+    "case:P08": 0.8554740501298708
+  },
+  "finished_utc": "2026-10-24T23:51:18.275685+00:00"
+}
