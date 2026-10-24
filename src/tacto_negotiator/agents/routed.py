@@ -346,7 +346,8 @@ class RoutedAgent:
         start = self.clock()
         if not math.isfinite(deadline):
             raise ValueError("deadline must be finite")
-        deadline = min(deadline, start + self.max_decision_seconds)
+        # The model budget may expire long before the thread's own deadline; scripts still fit there.
+        thread_deadline, deadline = deadline, min(deadline, start + self.max_decision_seconds)
         if deadline <= start or (wave_seconds_left is not None and wave_seconds_left <= CLOSE_BEFORE_CAP_S):
             move = closing_move(case, threads)
             self._record(case, "script", "deadline_close", start, deadline)
@@ -389,7 +390,7 @@ class RoutedAgent:
             action = move["message"].get("action", {}).get("type")
             # Accepting an untouched opening after a failed model call scored 0 in hosted P01.
             untouched = action == "accept" and not any(m.get("from") == "buyer" for m in threads[move["supplier_id"]])
-            if (self.clock() < deadline and any(moves_left(case, threads[sid]) > 1 for sid in live_threads(threads))
+            if (self.clock() < thread_deadline - 1 and any(moves_left(case, threads[sid]) > 1 for sid in live_threads(threads))
                     and (untouched or action == "walk_away"
                          and case["buyer"].get("category_goal") not in RELATIONSHIP_GOALS)):
                 repair = self._structured_bargain(case, threads)

@@ -324,9 +324,10 @@ def test_provider_timeout_cancels_io_and_closes_once(arena, monkeypatch):
     started = time.monotonic()
     result = play(table, "case:R1-S02", agent, deadline=time.time() + 480)
     assert time.monotonic() - started < 2
-    assert result["ended"] and cancelled.is_set() and len(requests) == 1
-    moves = [req for req, _ in arena.requests if req.url.path.endswith("/messages")]
-    assert len(moves) == 1 and json.loads(moves[0].content)["message"].get("action")
+    assert result["ended"] and cancelled.is_set() and requests
+    moves = [json.loads(req.content)["message"] for req, _ in arena.requests if req.url.path.endswith("/messages")]
+    # the model budget expired well inside the thread's deadline: counter with a script, close only at the end
+    assert moves[0].get("term_sheets") and not moves[0].get("action") and moves[-1].get("action")
     assert agent.last_decision["fallback"]
 
 
