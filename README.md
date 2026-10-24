@@ -143,3 +143,14 @@ claims and representative medium-semantic qualification remain work. Migration d
 not change those boundaries. [Sunday readiness](docs/FINAL_READINESS.md) prioritizes them.
 
 See [NOTICE.md](NOTICE.md) for source/data attribution and the restored upstream snapshot.
+
+---
+
+
+At 08:00 the Sunday release goes live: new market news, supplier letters and a memo. Some final cases cite it.
+
+Get it: run uv run arena data again. It adds data/release-sunday next to your package, and the kit’s DataPackage merges it automatically.
+
+Own client? GET https://arena.tacto.ai/v1/data → download /v1/data/release-sunday.zip.
+
+The data package itself doesn’t change. Make sure your final agent reads the release before the code freeze at 13:00.
