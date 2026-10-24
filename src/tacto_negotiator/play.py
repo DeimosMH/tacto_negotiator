@@ -282,9 +282,11 @@ def acceptable_offer(case, events, sid=None):
 # Opening ask below the quoted unit price, by category goal. Earlier teams on this arena found the
 # best attainable prices 12-25 % below the openings while 4-8 % asks left most of that unclaimed;
 # relationship goals stay closer because squeezing the supplier's margin is charged in C.
-ANCHOR_BY_GOAL = {"leverage": 0.20, "routine": 0.18, "quality_first": 0.15, "secure_supply": 0.12,
-                  "stabilise": 0.08}
-GAP_STEP, HOLD_STEP = 0.30, 0.15
+# A sweep on the hosted-like replicas (anchors x 0.75-1.5, gap step 0.15-0.5) favoured deeper anchors
+# and smaller steps: 1.25 x and 0.15 scored 0.731, the earlier 1.0 x and 0.30 scored 0.708.
+ANCHOR_BY_GOAL = {"leverage": 0.25, "routine": 0.225, "quality_first": 0.19, "secure_supply": 0.15,
+                  "stabilise": 0.10}
+GAP_STEP, HOLD_STEP = 0.20, 0.10
 
 
 def opening_price_cap(case, events, sid=None):

@@ -47,7 +47,7 @@ def test_legal_supplier_standard_survives_both_offer_builders():
     threads = {sid: [{"from": "supplier", "status": "open", "term_sheets": [
         {"term_sheet_id": "offer:1", "terms": {"unit_price": 20}}], "attachments": [
         {"name": "quote.pdf", "text": "Our standard terms\nPayment terms (days net) 90"}]}]}
-    proposed = {"unit_price": 16, "payment_days": 90}
+    proposed = {"unit_price": 14.99, "payment_days": 90}
     decision = {"supplier_id": sid, "action": "send", "term_sheets": [proposed]}
     for guard in (RoutedAgent(None).validate, LLMAgent(None).guard):
         move = guard(case, threads, decision)

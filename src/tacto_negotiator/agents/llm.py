@@ -190,7 +190,7 @@ class LLMAgent:
             )
             if math.isfinite(limit := ask_limit(case, events, sid)) and moves_left(case, events) > 0:
                 out.append(f"ASK LIMIT: every term sheet you send to {sid} now must have C <= {limit:,.0f} "
-                           "(an ambitious opening, then 30% of the remaining gap per round). Sheets above it are "
+                           "(an ambitious opening, then 20% of the remaining gap per round). Sheets above it are "
                            "rejected. Accepting a standing offer is not limited.")
             if components:
                 health = ("relationship = estimated supplier-health cost: pushing the price below the supplier's "

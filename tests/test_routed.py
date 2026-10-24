@@ -35,7 +35,7 @@ def completion(sid, calls, reply=None, clock=None, delay=0, error=None):
             raise error
         return reply if reply is not None else json.dumps({
             "supplier_id": sid, "action": "send", "body": "Could you improve your price?",
-            "term_sheets": [{"unit_price": 16, "payment_days": 30}]})  # within the leverage anchor
+            "term_sheets": [{"unit_price": 15, "payment_days": 30}]})  # within the leverage anchor
 
     return complete
 
@@ -51,7 +51,7 @@ def test_simple_known_opening_is_a_script_not_an_acceptance(scenario):
     move = agent.decide(case, threads)
     assert calls == [] and not move["message"].get("action")
     offered = move["message"]["term_sheets"][0]["terms"]
-    assert offered == {"unit_price": 16.0, "payment_days": 30}  # 20 % leverage anchor
+    assert offered == {"unit_price": 15.0, "payment_days": 30}  # 25 % leverage anchor
     assert total_cost(case, offered) < total_cost(case, threads[sid][-1]["term_sheets"][0]["terms"])
     assert agent.last_decision["route"] == "script"
     assert agent.last_decision["reason"] == "simple_opening_counter"
