@@ -1,0 +1,3263 @@
+{
+  "source": "hosted_practice",
+  "team_name": "winsortf",
+  "arena_url": "https://arena.tacto.ai",
+  "campaign_prior_committed_usd": 24.53304,
+  "phase": "2026-10-24-opus-high-v2",
+  "status": "completed",
+  "started_utc": "2026-10-24T17:34:52.655092+00:00",
+  "policy_commit": "eace94d29782aa9fb98270218880c17bb56b0fef",
+  "models": {
+    "fast": "claude-opus-5-5",
+    "strong": null
+  },
+  "effort": "high",
+  "service_tier": "default",
+  "max_output_tokens": 16000,
+  "config": {
+    "set": "practice",
+    "workers": 4,
+    "decision_seconds": 25,
+    "scoring_authority": "hosted arena"
+  },
+  "practice_before": {
+    "used": 92,
+    "left": 108,
+    "limit": 200,
+    "resets_at": "2026-10-25T15:51:29.187290+00:00"
+  },
+  "matches": [
+    {
+      "variant_id": "routed_claude-opus-5-5_high",
+      "scenario": "Frame agreement renewal for the 7.5 kW frequency converter",
+      "case_id": "case:P03",
+      "session_id": "86c6962dee090e55",
+      "deal": true,
+      "valid": true,
+      "score": 0.7564645063381092,
+      "supplier_id": "sup:70530",
+      "terms": {
+        "payment_days": 60,
+        "lead_time_days": 49,
+        "volume_per_year": 4580,
+        "contract_months": 24,
+        "effective_date": "2027-01-01",
+        "index_clause": null,
+        "incoterm": "DAP",
+        "tooling_eur": 0.0,
+        "ppm_commitment": 350,
+        "chargeback_eur_per_complaint": 0.0,
+        "unit_price": 435.5
+      },
+      "cost_eur": 3991180.54,
+      "reference_cost_eur": 3909043.1,
+      "regret_eur": 82137.44,
+      "opening_cost_eur": 4246314.02,
+      "alternative_cost_eur": 4332545.92,
+      "cost_breakdown": {
+        "price": 3989180.0,
+        "uncovered_need": 0.0,
+        "fallback_risk": 0.0,
+        "payment_terms": 0.0,
+        "freight": 0.0,
+        "late_delivery": 0.0,
+        "quality": 2000.54,
+        "tooling": 0.0,
+        "index_clause": 0.0,
+        "index_risk": 0.0,
+        "relationship": 0.0
+      },
+      "rounds": 2,
+      "end_reason": "accepted",
+      "error": null,
+      "invalid_moves": 0,
+      "thread_timeouts": 0,
+      "model_attempts": 1,
+      "fallbacks": 0,
+      "elapsed_s": 73.22539341299853,
+      "decision_wall_s": 18.33610220599803,
+      "decisions": [
+        {
+          "case_id": "case:P03",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 18.33590827700391,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 18.33591492800042,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70530",
+              "term_sheet_id": "offer:70530-0",
+              "unit_price": 438.21,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70530",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 430.0,
+                "payment_days": 90,
+                "contract_months": 36,
+                "volume_per_year": 4580
+              },
+              {
+                "unit_price": 433.0,
+                "payment_days": 90,
+                "contract_months": 24,
+                "volume_per_year": 4580
+              },
+              {
+                "unit_price": 435.5,
+                "payment_days": 60,
+                "contract_months": 24,
+                "volume_per_year": 4580
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70530",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 430.0,
+                "payment_days": 90,
+                "contract_months": 36,
+                "volume_per_year": 4580
+              },
+              {
+                "unit_price": 433.0,
+                "payment_days": 90,
+                "contract_months": 24,
+                "volume_per_year": 4580
+              },
+              {
+                "unit_price": 435.5,
+                "payment_days": 60,
+                "contract_months": 24,
+                "volume_per_year": 4580
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70530",
+            "status": "agreed",
+            "unit_price": 435.5,
+            "term_sheet_id": "offer:70530-1"
+          },
+          "submission_wall_s": 53.042138807999436
+        },
+        {
+          "case_id": "case:P03",
+          "route": "script",
+          "reason": "terminal_offers",
+          "elapsed_s": 0.00018182300118496642,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 0.00018727799761109054,
+          "model_attempts": 0,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70530",
+              "term_sheet_id": "offer:70530-1",
+              "unit_price": 435.5,
+              "status": "agreed"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70530",
+            "action": "accept",
+            "term_sheet_id": "offer:70530-1"
+          },
+          "sent_action": {
+            "supplier_id": "sup:70530",
+            "action": "accept",
+            "term_sheet_id": "offer:70530-1"
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70530",
+            "status": "agreed",
+            "unit_price": 435.5,
+            "term_sheet_id": "offer:70530-1"
+          },
+          "submission_wall_s": 0.24887459500314435
+        }
+      ],
+      "replay_url": "https://arena.tacto.ai/replay/86c6962dee090e55"
+    },
+    {
+      "variant_id": "routed_claude-opus-5-5_high",
+      "scenario": "Brandlhuber announces +9.5 % on HN volute casings",
+      "case_id": "case:P01",
+      "session_id": "fff234d99b7c4cc8",
+      "deal": true,
+      "valid": true,
+      "score": 0.9368551624571048,
+      "supplier_id": "sup:70110",
+      "terms": {
+        "payment_days": 30,
+        "lead_time_days": 42,
+        "volume_per_year": 8150,
+        "contract_months": 12,
+        "effective_date": "2027-04-01",
+        "index_clause": null,
+        "incoterm": "FCA",
+        "tooling_eur": 0.0,
+        "ppm_commitment": 900,
+        "chargeback_eur_per_complaint": 0.0,
+        "unit_price": 134.5
+      },
+      "cost_eur": 1100412.76,
+      "reference_cost_eur": 1096815.78,
+      "regret_eur": 3596.98,
+      "opening_cost_eur": 1153779.74,
+      "alternative_cost_eur": 1176178.02,
+      "cost_breakdown": {
+        "price": 1069303.0,
+        "uncovered_need": 0.0,
+        "fallback_risk": 0.0,
+        "payment_terms": 7128.69,
+        "freight": 15485.0,
+        "late_delivery": 0.0,
+        "quality": 1584.36,
+        "tooling": 0.0,
+        "index_clause": 0.0,
+        "index_risk": 0.0,
+        "relationship": 6911.72
+      },
+      "rounds": 3,
+      "end_reason": "accepted",
+      "error": null,
+      "invalid_moves": 0,
+      "thread_timeouts": 0,
+      "model_attempts": 3,
+      "fallbacks": 1,
+      "elapsed_s": 89.8508944379937,
+      "decision_wall_s": 64.1033540169883,
+      "decisions": [
+        {
+          "case_id": "case:P01",
+          "route": "fast",
+          "reason": "TimeoutError",
+          "elapsed_s": 25.02880743300193,
+          "budget_s": 25.0,
+          "fallback": true,
+          "error": "",
+          "decision_wall_s": 25.028816638994613,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70110",
+              "term_sheet_id": "offer:70110-0",
+              "unit_price": 138.55,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70110",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 127.47,
+                "effective_date": "2027-04-01",
+                "payment_days": 90
+              },
+              {
+                "unit_price": 127.47,
+                "effective_date": "2026-11-01",
+                "payment_days": 30
+              },
+              {
+                "unit_price": 127.47,
+                "effective_date": "2027-04-01",
+                "payment_days": 60
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70110",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 127.47,
+                "effective_date": "2027-04-01",
+                "payment_days": 90
+              },
+              {
+                "unit_price": 127.47,
+                "effective_date": "2026-11-01",
+                "payment_days": 30
+              },
+              {
+                "unit_price": 127.47,
+                "effective_date": "2027-04-01",
+                "payment_days": 60
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70110",
+            "status": "open",
+            "unit_price": 135.7,
+            "term_sheet_id": "offer:70110-1"
+          },
+          "submission_wall_s": 0.338406604998454
+        },
+        {
+          "case_id": "case:P01",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 23.826371672999812,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 23.826378155994462,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70110",
+              "term_sheet_id": "offer:70110-1",
+              "unit_price": 135.7,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70110",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 129.6,
+                "effective_date": "2027-04-01",
+                "payment_days": 30
+              },
+              {
+                "unit_price": 131.0,
+                "effective_date": "2027-04-01",
+                "payment_days": 60
+              },
+              {
+                "unit_price": 132.5,
+                "effective_date": "2027-04-01",
+                "payment_days": 90
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70110",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 129.6,
+                "effective_date": "2027-04-01",
+                "payment_days": 30
+              },
+              {
+                "unit_price": 131.0,
+                "effective_date": "2027-04-01",
+                "payment_days": 60
+              },
+              {
+                "unit_price": 132.5,
+                "effective_date": "2027-04-01",
+                "payment_days": 90
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70110",
+            "status": "open",
+            "unit_price": 134.5,
+            "term_sheet_id": "offer:70110-2"
+          },
+          "submission_wall_s": 23.87167707199842
+        },
+        {
+          "case_id": "case:P01",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 15.248152551997919,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 15.24815922199923,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70110",
+              "term_sheet_id": "offer:70110-2",
+              "unit_price": 134.5,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70110",
+            "action": "accept",
+            "term_sheet_id": "offer:70110-2"
+          },
+          "sent_action": {
+            "supplier_id": "sup:70110",
+            "action": "accept",
+            "term_sheet_id": "offer:70110-2"
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70110",
+            "status": "agreed",
+            "unit_price": 134.5,
+            "term_sheet_id": "offer:70110-2"
+          },
+          "submission_wall_s": 0.22817803300131345
+        }
+      ],
+      "replay_url": "https://arena.tacto.ai/replay/fff234d99b7c4cc8"
+    },
+    {
+      "variant_id": "routed_claude-opus-5-5_high",
+      "scenario": "Bundle the fastener kit with one distributor",
+      "case_id": "case:P07",
+      "session_id": "8777d6d68068e902",
+      "deal": true,
+      "valid": true,
+      "score": 0.7168703780351473,
+      "supplier_id": "sup:70610",
+      "terms": {
+        "payment_days": 60,
+        "lead_time_days": 5,
+        "volume_per_year": 30000,
+        "contract_months": 24,
+        "effective_date": "2027-01-01",
+        "index_clause": null,
+        "incoterm": "DAP",
+        "tooling_eur": 0.0,
+        "ppm_commitment": 80,
+        "chargeback_eur_per_complaint": 0.0,
+        "unit_price": 5.42
+      },
+      "cost_eur": 325228.8,
+      "reference_cost_eur": 299241.49,
+      "regret_eur": 25987.31,
+      "opening_cost_eur": 391027.4,
+      "alternative_cost_eur": 379916.0,
+      "cost_breakdown": {
+        "price": 325200.0,
+        "uncovered_need": 0.0,
+        "fallback_risk": 0.0,
+        "payment_terms": 0.0,
+        "freight": 0.0,
+        "late_delivery": 0.0,
+        "quality": 28.8,
+        "tooling": 0.0,
+        "index_clause": 0.0,
+        "index_risk": 0.0,
+        "relationship": 0.0
+      },
+      "rounds": 4,
+      "end_reason": "accepted",
+      "error": null,
+      "invalid_moves": 0,
+      "thread_timeouts": 0,
+      "model_attempts": 0,
+      "fallbacks": 0,
+      "elapsed_s": 1.820174111999222,
+      "decision_wall_s": 0.008635445999971125,
+      "decisions": [
+        {
+          "case_id": "case:P07",
+          "route": "script",
+          "reason": "enumerated_opening",
+          "elapsed_s": 0.0047939650030457415,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 0.004799486996489577,
+          "model_attempts": 0,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70610",
+              "term_sheet_id": "offer:70610-0",
+              "unit_price": 5.74,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70610",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 4.71,
+                "payment_days": 90,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 4.71,
+                "payment_days": 30,
+                "contract_months": 12
+              },
+              {
+                "unit_price": 4.71,
+                "payment_days": 90,
+                "contract_months": 36
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70610",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 4.71,
+                "payment_days": 90,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 4.71,
+                "payment_days": 30,
+                "contract_months": 12
+              },
+              {
+                "unit_price": 4.71,
+                "payment_days": 90,
+                "contract_months": 36
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70610",
+            "status": "open",
+            "unit_price": 5.6,
+            "term_sheet_id": "offer:70610-1"
+          },
+          "submission_wall_s": 0.169809332001023
+        },
+        {
+          "case_id": "case:P07",
+          "route": "script",
+          "reason": "bounded_concession",
+          "elapsed_s": 0.0016748160051065497,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 0.001680419998592697,
+          "model_attempts": 0,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70610",
+              "term_sheet_id": "offer:70610-1",
+              "unit_price": 5.6,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70610",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 4.97,
+                "payment_days": 90,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 4.97,
+                "payment_days": 90,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 4.94,
+                "payment_days": 60,
+                "contract_months": 24
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70610",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 4.97,
+                "payment_days": 90,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 4.97,
+                "payment_days": 90,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 4.94,
+                "payment_days": 60,
+                "contract_months": 24
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70610",
+            "status": "open",
+            "unit_price": 5.49,
+            "term_sheet_id": "offer:70610-2"
+          },
+          "submission_wall_s": 0.17651856299926294
+        },
+        {
+          "case_id": "case:P07",
+          "route": "script",
+          "reason": "bounded_concession",
+          "elapsed_s": 0.0019900159968528897,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 0.0019955020034103654,
+          "model_attempts": 0,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70610",
+              "term_sheet_id": "offer:70610-2",
+              "unit_price": 5.49,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70610",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 5.13,
+                "payment_days": 90,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 5.1,
+                "payment_days": 60,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 5.13,
+                "payment_days": 90,
+                "contract_months": 36
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70610",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 5.13,
+                "payment_days": 90,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 5.1,
+                "payment_days": 60,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 5.13,
+                "payment_days": 90,
+                "contract_months": 36
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70610",
+            "status": "final_offer",
+            "unit_price": 5.42,
+            "term_sheet_id": "offer:70610-3"
+          },
+          "submission_wall_s": 0.2585855299985269
+        },
+        {
+          "case_id": "case:P07",
+          "route": "script",
+          "reason": "terminal_offers",
+          "elapsed_s": 0.00015501199959544465,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 0.00016003700147848576,
+          "model_attempts": 0,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70610",
+              "term_sheet_id": "offer:70610-3",
+              "unit_price": 5.42,
+              "status": "final_offer"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70610",
+            "action": "accept",
+            "term_sheet_id": "offer:70610-3"
+          },
+          "sent_action": {
+            "supplier_id": "sup:70610",
+            "action": "accept",
+            "term_sheet_id": "offer:70610-3"
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70610",
+            "status": "agreed",
+            "unit_price": 5.42,
+            "term_sheet_id": "offer:70610-3"
+          },
+          "submission_wall_s": 0.20993865199852735
+        }
+      ],
+      "replay_url": "https://arena.tacto.ai/replay/8777d6d68068e902"
+    },
+    {
+      "variant_id": "routed_claude-opus-5-5_high",
+      "scenario": "Nordmark passes on copper for the 7.5 kW motor",
+      "case_id": "case:P02",
+      "session_id": "d25ed95890c5bd02",
+      "deal": true,
+      "valid": true,
+      "score": 0.3899169732969767,
+      "supplier_id": "sup:70510",
+      "terms": {
+        "payment_days": 90,
+        "lead_time_days": 35,
+        "volume_per_year": 6110,
+        "contract_months": 12,
+        "effective_date": "2027-01-01",
+        "index_clause": null,
+        "incoterm": "DAP",
+        "tooling_eur": 0.0,
+        "ppm_commitment": 250,
+        "chargeback_eur_per_complaint": 0.0,
+        "unit_price": 372.88
+      },
+      "cost_eur": 2264403.58,
+      "reference_cost_eur": 2235514.05,
+      "regret_eur": 28889.53,
+      "opening_cost_eur": 2282867.49,
+      "alternative_cost_eur": 2604227.78,
+      "cost_breakdown": {
+        "price": 2278296.8,
+        "uncovered_need": 0.0,
+        "fallback_risk": 0.0,
+        "payment_terms": -15188.65,
+        "freight": 0.0,
+        "late_delivery": 0.0,
+        "quality": 1191.45,
+        "tooling": 0.0,
+        "index_clause": 0.0,
+        "index_risk": 0.0,
+        "relationship": 103.97
+      },
+      "rounds": 3,
+      "end_reason": "accepted",
+      "error": null,
+      "invalid_moves": 0,
+      "thread_timeouts": 0,
+      "model_attempts": 3,
+      "fallbacks": 0,
+      "elapsed_s": 93.86061940599757,
+      "decision_wall_s": 36.05713440300315,
+      "decisions": [
+        {
+          "case_id": "case:P02",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 14.892209180005011,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 14.892216873995494,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70510",
+              "term_sheet_id": "offer:70510-0",
+              "unit_price": 370.96,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70510",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 346.0,
+                "payment_days": 90,
+                "index_clause": null
+              },
+              {
+                "unit_price": 343.5,
+                "payment_days": 60,
+                "index_clause": null
+              },
+              {
+                "unit_price": 342.3,
+                "payment_days": 45,
+                "index_clause": null
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70510",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 346.0,
+                "payment_days": 90,
+                "index_clause": null
+              },
+              {
+                "unit_price": 343.5,
+                "payment_days": 60,
+                "index_clause": null
+              },
+              {
+                "unit_price": 342.3,
+                "payment_days": 45,
+                "index_clause": null
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70510",
+            "status": "open",
+            "unit_price": 373.88,
+            "term_sheet_id": "offer:70510-1"
+          },
+          "submission_wall_s": 32.60737887299911
+        },
+        {
+          "case_id": "case:P02",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 12.95491577199573,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 12.95492184500472,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70510",
+              "term_sheet_id": "offer:70510-1",
+              "unit_price": 373.88,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70510",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 354.0,
+                "payment_days": 90,
+                "index_clause": null
+              },
+              {
+                "unit_price": 351.5,
+                "payment_days": 60,
+                "index_clause": null
+              },
+              {
+                "unit_price": 350.3,
+                "payment_days": 45,
+                "index_clause": null
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70510",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 354.0,
+                "payment_days": 90,
+                "index_clause": null
+              },
+              {
+                "unit_price": 351.5,
+                "payment_days": 60,
+                "index_clause": null
+              },
+              {
+                "unit_price": 350.3,
+                "payment_days": 45,
+                "index_clause": null
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70510",
+            "status": "open",
+            "unit_price": 372.88,
+            "term_sheet_id": "offer:70510-2"
+          },
+          "submission_wall_s": 23.32507602700207
+        },
+        {
+          "case_id": "case:P02",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 8.20998958000564,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 8.209995684002934,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70510",
+              "term_sheet_id": "offer:70510-2",
+              "unit_price": 372.88,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70510",
+            "action": "accept",
+            "term_sheet_id": "offer:70510-2"
+          },
+          "sent_action": {
+            "supplier_id": "sup:70510",
+            "action": "accept",
+            "term_sheet_id": "offer:70510-2"
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70510",
+            "status": "agreed",
+            "unit_price": 372.88,
+            "term_sheet_id": "offer:70510-2"
+          },
+          "submission_wall_s": 0.22680024500004947
+        }
+      ],
+      "replay_url": "https://arena.tacto.ai/replay/d25ed95890c5bd02"
+    },
+    {
+      "variant_id": "routed_claude-opus-5-5_high",
+      "scenario": "RFQ: pump shaft for the new HX series",
+      "case_id": "case:P05",
+      "session_id": "5111a7bb9c6190f4",
+      "deal": true,
+      "valid": true,
+      "score": 0.5148513549370384,
+      "supplier_id": "sup:70210",
+      "terms": {
+        "payment_days": 30,
+        "lead_time_days": 35,
+        "volume_per_year": 4200,
+        "contract_months": 24,
+        "effective_date": "2027-01-01",
+        "index_clause": null,
+        "incoterm": "DAP",
+        "tooling_eur": 0.0,
+        "ppm_commitment": 1200,
+        "chargeback_eur_per_complaint": 0.0,
+        "unit_price": 31.0
+      },
+      "cost_eur": 263264.96,
+      "reference_cost_eur": 223424.17,
+      "regret_eur": 39840.79,
+      "opening_cost_eur": 305544.96,
+      "alternative_cost_eur": null,
+      "cost_breakdown": {
+        "price": 260400.0,
+        "uncovered_need": 0.0,
+        "fallback_risk": 0.0,
+        "payment_terms": 1736.0,
+        "freight": 0.0,
+        "late_delivery": 0.0,
+        "quality": 1128.96,
+        "tooling": 0.0,
+        "index_clause": 0.0,
+        "index_risk": 0.0,
+        "relationship": 0.0
+      },
+      "rounds": 3,
+      "end_reason": "accepted",
+      "error": null,
+      "invalid_moves": 0,
+      "thread_timeouts": 0,
+      "model_attempts": 2,
+      "fallbacks": 1,
+      "elapsed_s": 55.88666572399961,
+      "decision_wall_s": 29.84864588000346,
+      "decisions": [
+        {
+          "case_id": "case:P05",
+          "route": "script",
+          "reason": "must_have_repair",
+          "elapsed_s": 0.007664447999559343,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 0.007670364000659902,
+          "model_attempts": 0,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70210",
+              "term_sheet_id": "offer:70210-0",
+              "unit_price": 36.0,
+              "status": "open"
+            },
+            {
+              "supplier_id": "sup:70240",
+              "term_sheet_id": "offer:70240-0",
+              "unit_price": 31.5,
+              "status": "open"
+            },
+            {
+              "supplier_id": "sup:70250",
+              "term_sheet_id": "offer:70250-0",
+              "unit_price": 38.5,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70240",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 25.2,
+                "payment_days": 90,
+                "lead_time_days": 28
+              },
+              {
+                "unit_price": 25.2,
+                "payment_days": 90,
+                "lead_time_days": 35
+              },
+              {
+                "unit_price": 25.2,
+                "payment_days": 90,
+                "lead_time_days": 42
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70240",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 25.2,
+                "payment_days": 90,
+                "lead_time_days": 28
+              },
+              {
+                "unit_price": 25.2,
+                "payment_days": 90,
+                "lead_time_days": 35
+              },
+              {
+                "unit_price": 25.2,
+                "payment_days": 90,
+                "lead_time_days": 42
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70240",
+            "status": "open",
+            "unit_price": 33.5,
+            "term_sheet_id": "offer:70240-1"
+          },
+          "submission_wall_s": 0.2548878550005611
+        },
+        {
+          "case_id": "case:P05",
+          "route": "fast",
+          "reason": "semantic_decision",
+          "elapsed_s": 15.904626909999934,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 15.904641013003129,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70210",
+              "term_sheet_id": "offer:70210-0",
+              "unit_price": 36.0,
+              "status": "open"
+            },
+            {
+              "supplier_id": "sup:70240",
+              "term_sheet_id": "offer:70240-1",
+              "unit_price": 33.5,
+              "status": "open"
+            },
+            {
+              "supplier_id": "sup:70250",
+              "term_sheet_id": "offer:70250-0",
+              "unit_price": 38.5,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70210",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 28.5,
+                "payment_days": 90,
+                "lead_time_days": 28
+              },
+              {
+                "unit_price": 28.9,
+                "payment_days": 60,
+                "lead_time_days": 28
+              },
+              {
+                "unit_price": 29.0,
+                "payment_days": 90,
+                "lead_time_days": 35
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70210",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 28.5,
+                "payment_days": 90,
+                "lead_time_days": 28
+              },
+              {
+                "unit_price": 28.9,
+                "payment_days": 60,
+                "lead_time_days": 28
+              },
+              {
+                "unit_price": 29.0,
+                "payment_days": 90,
+                "lead_time_days": 35
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70210",
+            "status": "open",
+            "unit_price": 31.0,
+            "term_sheet_id": "offer:70210-1"
+          },
+          "submission_wall_s": 23.926926606000052
+        },
+        {
+          "case_id": "case:P05",
+          "route": "fast",
+          "reason": "TimeoutError",
+          "elapsed_s": 13.93632695699489,
+          "budget_s": 13.917536154993286,
+          "fallback": true,
+          "error": "",
+          "decision_wall_s": 13.93633450299967,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70210",
+              "term_sheet_id": "offer:70210-1",
+              "unit_price": 31.0,
+              "status": "open"
+            },
+            {
+              "supplier_id": "sup:70240",
+              "term_sheet_id": "offer:70240-1",
+              "unit_price": 33.5,
+              "status": "open"
+            },
+            {
+              "supplier_id": "sup:70250",
+              "term_sheet_id": "offer:70250-0",
+              "unit_price": 38.5,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70210",
+            "action": "accept",
+            "term_sheet_id": "offer:70210-1"
+          },
+          "deadline_override": true,
+          "sent_action": {
+            "supplier_id": "sup:70210",
+            "action": "accept",
+            "term_sheet_id": "offer:70210-1"
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70210",
+            "status": "agreed",
+            "unit_price": 31.0,
+            "term_sheet_id": "offer:70210-1"
+          },
+          "submission_wall_s": 0.34735255499981577
+        }
+      ],
+      "replay_url": "https://arena.tacto.ai/replay/5111a7bb9c6190f4"
+    },
+    {
+      "variant_id": "routed_claude-opus-5-5_high",
+      "scenario": "Renewal of the ball bearing 6306 agreement",
+      "case_id": "case:P04",
+      "session_id": "7590eb9230960973",
+      "deal": true,
+      "valid": true,
+      "score": 0.8604451426623068,
+      "supplier_id": "sup:70620",
+      "terms": {
+        "payment_days": 90,
+        "lead_time_days": 7,
+        "volume_per_year": 20000,
+        "contract_months": 36,
+        "effective_date": "2027-01-01",
+        "index_clause": null,
+        "incoterm": "DAP",
+        "tooling_eur": 0.0,
+        "ppm_commitment": 150,
+        "chargeback_eur_per_complaint": 0.0,
+        "unit_price": 4.94
+      },
+      "cost_eur": 196852.67,
+      "reference_cost_eur": 196529.32,
+      "regret_eur": 323.35,
+      "opening_cost_eur": 198846.33,
+      "alternative_cost_eur": 203169.0,
+      "cost_breakdown": {
+        "price": 197600.0,
+        "uncovered_need": 0.0,
+        "fallback_risk": 0.0,
+        "payment_terms": -1317.33,
+        "freight": 0.0,
+        "late_delivery": 0.0,
+        "quality": 570.0,
+        "tooling": 0.0,
+        "index_clause": 0.0,
+        "index_risk": 0.0,
+        "relationship": 0.0
+      },
+      "rounds": 4,
+      "end_reason": "accepted",
+      "error": null,
+      "invalid_moves": 0,
+      "thread_timeouts": 0,
+      "model_attempts": 3,
+      "fallbacks": 0,
+      "elapsed_s": 131.4859793420037,
+      "decision_wall_s": 49.296267326004454,
+      "decisions": [
+        {
+          "case_id": "case:P04",
+          "route": "fast",
+          "reason": "semantic_decision",
+          "elapsed_s": 16.370766639003705,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 16.370774633003748,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70620",
+              "term_sheet_id": "offer:70620-0",
+              "unit_price": 4.96,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70620",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 4.3,
+                "payment_days": 60,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 4.34,
+                "payment_days": 60,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 4.38,
+                "payment_days": 90,
+                "contract_months": 24
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70620",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 4.3,
+                "payment_days": 60,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 4.34,
+                "payment_days": 60,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 4.38,
+                "payment_days": 90,
+                "contract_months": 24
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70620",
+            "status": "open",
+            "unit_price": 4.94,
+            "term_sheet_id": "offer:70620-1"
+          },
+          "submission_wall_s": 31.970439929005806
+        },
+        {
+          "case_id": "case:P04",
+          "route": "fast",
+          "reason": "semantic_decision",
+          "elapsed_s": 15.464330941998924,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 15.464337142999284,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70620",
+              "term_sheet_id": "offer:70620-1",
+              "unit_price": 4.94,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70620",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 4.5,
+                "payment_days": 90,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 4.5,
+                "payment_days": 90,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 4.47,
+                "payment_days": 60,
+                "contract_months": 24
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70620",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 4.5,
+                "payment_days": 90,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 4.5,
+                "payment_days": 90,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 4.47,
+                "payment_days": 60,
+                "contract_months": 24
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70620",
+            "status": "open",
+            "unit_price": 4.94,
+            "term_sheet_id": "offer:70620-2"
+          },
+          "submission_wall_s": 21.97238131800259
+        },
+        {
+          "case_id": "case:P04",
+          "route": "fast",
+          "reason": "semantic_decision",
+          "elapsed_s": 17.46098109099694,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 17.460987509002734,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70620",
+              "term_sheet_id": "offer:70620-2",
+              "unit_price": 4.94,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70620",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 4.6,
+                "payment_days": 90,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 4.58,
+                "payment_days": 90,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 4.56,
+                "payment_days": 60,
+                "contract_months": 36
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70620",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 4.6,
+                "payment_days": 90,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 4.58,
+                "payment_days": 90,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 4.56,
+                "payment_days": 60,
+                "contract_months": 36
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70620",
+            "status": "final_offer",
+            "unit_price": 4.94,
+            "term_sheet_id": "offer:70620-3"
+          },
+          "submission_wall_s": 26.210256713995477
+        },
+        {
+          "case_id": "case:P04",
+          "route": "script",
+          "reason": "terminal_offers",
+          "elapsed_s": 0.00016268499894067645,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 0.000168040998687502,
+          "model_attempts": 0,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70620",
+              "term_sheet_id": "offer:70620-3",
+              "unit_price": 4.94,
+              "status": "final_offer"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70620",
+            "action": "accept",
+            "term_sheet_id": "offer:70620-3"
+          },
+          "sent_action": {
+            "supplier_id": "sup:70620",
+            "action": "accept",
+            "term_sheet_id": "offer:70620-3"
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70620",
+            "status": "agreed",
+            "unit_price": 4.94,
+            "term_sheet_id": "offer:70620-3"
+          },
+          "submission_wall_s": 0.19807267999567557
+        }
+      ],
+      "replay_url": "https://arena.tacto.ai/replay/7590eb9230960973"
+    },
+    {
+      "variant_id": "routed_claude-opus-5-5_high",
+      "scenario": "Ravensteiner cuts the seal allocation",
+      "case_id": "case:P10",
+      "session_id": "e971e8991a5ece2e",
+      "deal": true,
+      "valid": true,
+      "score": 0.6707108356081908,
+      "supplier_id": "sup:70410",
+      "terms": {
+        "payment_days": 30,
+        "lead_time_days": 56,
+        "volume_per_year": 23400,
+        "contract_months": 36,
+        "effective_date": "2027-01-01",
+        "index_clause": null,
+        "incoterm": "DAP",
+        "tooling_eur": 0.0,
+        "ppm_commitment": 300,
+        "chargeback_eur_per_complaint": 0.0,
+        "unit_price": 31.6
+      },
+      "cost_eur": 1527674.4,
+      "reference_cost_eur": 1328926.89,
+      "regret_eur": 198747.51,
+      "opening_cost_eur": 1932492.18,
+      "alternative_cost_eur": null,
+      "cost_breakdown": {
+        "price": 1478880.0,
+        "uncovered_need": 0.0,
+        "fallback_risk": 0.0,
+        "payment_terms": 9859.2,
+        "freight": 0.0,
+        "late_delivery": 33600.0,
+        "quality": 5335.2,
+        "tooling": 0.0,
+        "index_clause": 0.0,
+        "index_risk": 0.0,
+        "relationship": 0.0
+      },
+      "rounds": 3,
+      "end_reason": "accepted",
+      "error": null,
+      "invalid_moves": 0,
+      "thread_timeouts": 0,
+      "model_attempts": 2,
+      "fallbacks": 0,
+      "elapsed_s": 100.02292354300153,
+      "decision_wall_s": 29.48200152500067,
+      "decisions": [
+        {
+          "case_id": "case:P10",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 14.45045803800167,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 14.450464174995432,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70410",
+              "term_sheet_id": "offer:70410-0",
+              "unit_price": 32.2,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70410",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 28.9,
+                "volume_per_year": 23400,
+                "contract_months": 36,
+                "lead_time_days": 42
+              },
+              {
+                "unit_price": 29.4,
+                "volume_per_year": 23400,
+                "contract_months": 24,
+                "lead_time_days": 42
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70410",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 28.9,
+                "volume_per_year": 23400,
+                "contract_months": 36,
+                "lead_time_days": 42
+              },
+              {
+                "unit_price": 29.4,
+                "volume_per_year": 23400,
+                "contract_months": 24,
+                "lead_time_days": 42
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70410",
+            "status": "open",
+            "unit_price": 33.8,
+            "term_sheet_id": "offer:70410-1"
+          },
+          "submission_wall_s": 44.78694307799742
+        },
+        {
+          "case_id": "case:P10",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 15.031381335000333,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 15.03140326400171,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70410",
+              "term_sheet_id": "offer:70410-1",
+              "unit_price": 33.8,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70410",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 29.9,
+                "volume_per_year": 23400,
+                "contract_months": 36,
+                "lead_time_days": 42
+              },
+              {
+                "unit_price": 30.2,
+                "volume_per_year": 23400,
+                "contract_months": 24,
+                "lead_time_days": 42
+              },
+              {
+                "unit_price": 29.4,
+                "volume_per_year": 23400,
+                "contract_months": 36,
+                "lead_time_days": 56
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70410",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 29.9,
+                "volume_per_year": 23400,
+                "contract_months": 36,
+                "lead_time_days": 42
+              },
+              {
+                "unit_price": 30.2,
+                "volume_per_year": 23400,
+                "contract_months": 24,
+                "lead_time_days": 42
+              },
+              {
+                "unit_price": 29.4,
+                "volume_per_year": 23400,
+                "contract_months": 36,
+                "lead_time_days": 56
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70410",
+            "status": "final_offer",
+            "unit_price": 31.6,
+            "term_sheet_id": "offer:70410-2"
+          },
+          "submission_wall_s": 24.440472567999677
+        },
+        {
+          "case_id": "case:P10",
+          "route": "script",
+          "reason": "terminal_offers",
+          "elapsed_s": 0.0001289430001634173,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 0.00013408600352704525,
+          "model_attempts": 0,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70410",
+              "term_sheet_id": "offer:70410-2",
+              "unit_price": 31.6,
+              "status": "final_offer"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70410",
+            "action": "accept",
+            "term_sheet_id": "offer:70410-2"
+          },
+          "sent_action": {
+            "supplier_id": "sup:70410",
+            "action": "accept",
+            "term_sheet_id": "offer:70410-2"
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70410",
+            "status": "agreed",
+            "unit_price": 31.6,
+            "term_sheet_id": "offer:70410-2"
+          },
+          "submission_wall_s": 0.24443214100028854
+        }
+      ],
+      "replay_url": "https://arena.tacto.ai/replay/e971e8991a5ece2e"
+    },
+    {
+      "variant_id": "routed_claude-opus-5-5_high",
+      "scenario": "Alloy surcharge and base price for 1.4404 bar",
+      "case_id": "case:P08",
+      "session_id": "9865e2f7060db22b",
+      "deal": true,
+      "valid": true,
+      "score": 0.5163181367592004,
+      "supplier_id": "sup:70710",
+      "terms": {
+        "payment_days": 90,
+        "lead_time_days": 10,
+        "volume_per_year": 94800,
+        "contract_months": 36,
+        "effective_date": "2027-01-01",
+        "index_clause": {
+          "series": "AS-14404",
+          "material_share": 0.45,
+          "deadband_pct": 5.0,
+          "base_month": "2026-08"
+        },
+        "incoterm": "DAP",
+        "tooling_eur": 0.0,
+        "ppm_commitment": 50,
+        "chargeback_eur_per_complaint": 0.0,
+        "unit_price": 5.5
+      },
+      "cost_eur": 1045233.2,
+      "reference_cost_eur": 960309.33,
+      "regret_eur": 84923.87,
+      "opening_cost_eur": 1135887.28,
+      "alternative_cost_eur": 1157019.84,
+      "cost_breakdown": {
+        "price": 1042800.0,
+        "uncovered_need": 0.0,
+        "fallback_risk": 0.0,
+        "payment_terms": -6952.0,
+        "freight": 0.0,
+        "late_delivery": 0.0,
+        "quality": 0.0,
+        "tooling": 0.0,
+        "index_clause": 4692.6,
+        "index_risk": 4692.6,
+        "relationship": 0.0
+      },
+      "rounds": 4,
+      "end_reason": "accepted",
+      "error": null,
+      "invalid_moves": 0,
+      "thread_timeouts": 0,
+      "model_attempts": 3,
+      "fallbacks": 0,
+      "elapsed_s": 163.14699982399907,
+      "decision_wall_s": 53.60172749899357,
+      "decisions": [
+        {
+          "case_id": "case:P08",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 17.047921967001457,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 17.04792791699583,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70710",
+              "term_sheet_id": "offer:70710-0",
+              "unit_price": 6.05,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70710",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 5.22,
+                "index_clause": null,
+                "payment_days": 90,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 5.28,
+                "index_clause": null,
+                "payment_days": 60,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 5.32,
+                "index_clause": null,
+                "payment_days": 90,
+                "contract_months": 24
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70710",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 5.22,
+                "index_clause": null,
+                "payment_days": 90,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 5.28,
+                "index_clause": null,
+                "payment_days": 60,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 5.32,
+                "index_clause": null,
+                "payment_days": 90,
+                "contract_months": 24
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70710",
+            "status": "open",
+            "unit_price": 5.43,
+            "term_sheet_id": "offer:70710-1"
+          },
+          "submission_wall_s": 32.86146182999801
+        },
+        {
+          "case_id": "case:P08",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 17.052745749999303,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 17.05275290300051,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70710",
+              "term_sheet_id": "offer:70710-1",
+              "unit_price": 5.43,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70710",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 5.27,
+                "index_clause": null,
+                "payment_days": 90,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 5.28,
+                "index_clause": {
+                  "series": "AS-14404",
+                  "material_share": 0.45,
+                  "deadband_pct": 5,
+                  "base_month": "2026-08"
+                },
+                "payment_days": 90,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 5.33,
+                "index_clause": null,
+                "payment_days": 90,
+                "contract_months": 24
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70710",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 5.27,
+                "index_clause": null,
+                "payment_days": 90,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 5.28,
+                "index_clause": {
+                  "series": "AS-14404",
+                  "material_share": 0.45,
+                  "deadband_pct": 5,
+                  "base_month": "2026-08"
+                },
+                "payment_days": 90,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 5.33,
+                "index_clause": null,
+                "payment_days": 90,
+                "contract_months": 24
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70710",
+            "status": "open",
+            "unit_price": 5.5,
+            "term_sheet_id": "offer:70710-2"
+          },
+          "submission_wall_s": 43.05320302499604
+        },
+        {
+          "case_id": "case:P08",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 19.500854295001773,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 19.500860740998178,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70710",
+              "term_sheet_id": "offer:70710-2",
+              "unit_price": 5.5,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70710",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 5.3,
+                "index_clause": {
+                  "series": "AS-14404",
+                  "material_share": 0.45,
+                  "deadband_pct": 5,
+                  "base_month": "2026-08"
+                },
+                "payment_days": 90,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 5.35,
+                "index_clause": null,
+                "payment_days": 90,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 5.34,
+                "index_clause": null,
+                "payment_days": 90,
+                "contract_months": 36
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70710",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 5.3,
+                "index_clause": {
+                  "series": "AS-14404",
+                  "material_share": 0.45,
+                  "deadband_pct": 5,
+                  "base_month": "2026-08"
+                },
+                "payment_days": 90,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 5.35,
+                "index_clause": null,
+                "payment_days": 90,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 5.34,
+                "index_clause": null,
+                "payment_days": 90,
+                "contract_months": 36
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70710",
+            "status": "final_offer",
+            "unit_price": 5.5,
+            "term_sheet_id": "offer:70710-3"
+          },
+          "submission_wall_s": 32.25330094099627
+        },
+        {
+          "case_id": "case:P08",
+          "route": "script",
+          "reason": "terminal_offers",
+          "elapsed_s": 0.00018062099843518808,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 0.0001859379990492016,
+          "model_attempts": 0,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70710",
+              "term_sheet_id": "offer:70710-3",
+              "unit_price": 5.5,
+              "status": "final_offer"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70710",
+            "action": "accept",
+            "term_sheet_id": "offer:70710-3"
+          },
+          "sent_action": {
+            "supplier_id": "sup:70710",
+            "action": "accept",
+            "term_sheet_id": "offer:70710-3"
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70710",
+            "status": "agreed",
+            "unit_price": 5.5,
+            "term_sheet_id": "offer:70710-3"
+          },
+          "submission_wall_s": 0.22275518799870042
+        }
+      ],
+      "replay_url": "https://arena.tacto.ai/replay/9865e2f7060db22b"
+    },
+    {
+      "variant_id": "routed_claude-opus-5-5_high",
+      "scenario": "Alloy surcharge and base price for 1.4404 bar (Werdenfels)",
+      "case_id": "case:P18",
+      "session_id": "4528113ad0cfa824",
+      "deal": true,
+      "valid": true,
+      "score": 0.4014490231648455,
+      "supplier_id": "sup:70740",
+      "terms": {
+        "payment_days": 90,
+        "lead_time_days": 14,
+        "volume_per_year": 23700,
+        "contract_months": 36,
+        "effective_date": "2027-01-01",
+        "index_clause": {
+          "series": "AS-14404",
+          "material_share": 0.45,
+          "deadband_pct": 5.0,
+          "base_month": "2026-08"
+        },
+        "incoterm": "DAP",
+        "tooling_eur": 0.0,
+        "ppm_commitment": 70,
+        "chargeback_eur_per_complaint": 0.0,
+        "unit_price": 5.6
+      },
+      "cost_eur": 266059.36,
+      "reference_cost_eur": 222651.27,
+      "regret_eur": 43408.09,
+      "opening_cost_eur": 295173.23,
+      "alternative_cost_eur": 301087.96,
+      "cost_breakdown": {
+        "price": 265440.0,
+        "uncovered_need": 0.0,
+        "fallback_risk": 0.0,
+        "payment_terms": -1769.6,
+        "freight": 0.0,
+        "late_delivery": 0.0,
+        "quality": 0.0,
+        "tooling": 0.0,
+        "index_clause": 1194.48,
+        "index_risk": 1194.48,
+        "relationship": 0.0
+      },
+      "rounds": 4,
+      "end_reason": "accepted",
+      "error": null,
+      "invalid_moves": 0,
+      "thread_timeouts": 0,
+      "model_attempts": 3,
+      "fallbacks": 0,
+      "elapsed_s": 137.0503997449996,
+      "decision_wall_s": 43.957992993004154,
+      "decisions": [
+        {
+          "case_id": "case:P18",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 14.509487169998465,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 14.509493433004536,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70740",
+              "term_sheet_id": "offer:70740-0",
+              "unit_price": 6.1,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70740",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 5.55,
+                "index_clause": null,
+                "payment_days": 60,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 5.6,
+                "index_clause": null,
+                "payment_days": 90,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 5.5,
+                "index_clause": {
+                  "series": "AS-14404",
+                  "material_share": 0.45,
+                  "deadband_pct": 5,
+                  "base_month": "2026-08"
+                },
+                "payment_days": 60,
+                "contract_months": 24
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70740",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 5.55,
+                "index_clause": null,
+                "payment_days": 60,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 5.6,
+                "index_clause": null,
+                "payment_days": 90,
+                "contract_months": 24
+              },
+              {
+                "unit_price": 5.5,
+                "index_clause": {
+                  "series": "AS-14404",
+                  "material_share": 0.45,
+                  "deadband_pct": 5,
+                  "base_month": "2026-08"
+                },
+                "payment_days": 60,
+                "contract_months": 24
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70740",
+            "status": "open",
+            "unit_price": 5.7,
+            "term_sheet_id": "offer:70740-1"
+          },
+          "submission_wall_s": 32.81208651799534
+        },
+        {
+          "case_id": "case:P18",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 16.110687715001404,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 16.11069489899819,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70740",
+              "term_sheet_id": "offer:70740-1",
+              "unit_price": 5.7,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70740",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 5.6,
+                "index_clause": null,
+                "payment_days": 60,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 5.64,
+                "index_clause": null,
+                "payment_days": 90,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 5.58,
+                "index_clause": {
+                  "series": "AS-14404",
+                  "material_share": 0.45,
+                  "deadband_pct": 5,
+                  "base_month": "2026-08"
+                },
+                "payment_days": 90,
+                "contract_months": 36
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70740",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 5.6,
+                "index_clause": null,
+                "payment_days": 60,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 5.64,
+                "index_clause": null,
+                "payment_days": 90,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 5.58,
+                "index_clause": {
+                  "series": "AS-14404",
+                  "material_share": 0.45,
+                  "deadband_pct": 5,
+                  "base_month": "2026-08"
+                },
+                "payment_days": 90,
+                "contract_months": 36
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70740",
+            "status": "open",
+            "unit_price": 5.6,
+            "term_sheet_id": "offer:70740-2"
+          },
+          "submission_wall_s": 27.59916065500147
+        },
+        {
+          "case_id": "case:P18",
+          "route": "fast",
+          "reason": "strong_unconfigured",
+          "elapsed_s": 13.337604116997682,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 13.337611864000792,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70740",
+              "term_sheet_id": "offer:70740-2",
+              "unit_price": 5.6,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70740",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 5.55,
+                "index_clause": null,
+                "payment_days": 90,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 5.6,
+                "index_clause": null,
+                "payment_days": 90,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 5.52,
+                "index_clause": {
+                  "series": "AS-14404",
+                  "material_share": 0.45,
+                  "deadband_pct": 5,
+                  "base_month": "2026-08"
+                },
+                "payment_days": 90,
+                "contract_months": 36
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70740",
+            "action": "send",
+            "term_sheets": [
+              {
+                "unit_price": 5.55,
+                "index_clause": null,
+                "payment_days": 90,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 5.6,
+                "index_clause": null,
+                "payment_days": 90,
+                "contract_months": 36
+              },
+              {
+                "unit_price": 5.52,
+                "index_clause": {
+                  "series": "AS-14404",
+                  "material_share": 0.45,
+                  "deadband_pct": 5,
+                  "base_month": "2026-08"
+                },
+                "payment_days": 90,
+                "contract_months": 36
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70740",
+            "status": "final_offer",
+            "unit_price": 5.6,
+            "term_sheet_id": "offer:70740-3"
+          },
+          "submission_wall_s": 31.332510027001263
+        },
+        {
+          "case_id": "case:P18",
+          "route": "script",
+          "reason": "terminal_offers",
+          "elapsed_s": 0.00018732500029727817,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 0.00019279700063634664,
+          "model_attempts": 0,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70740",
+              "term_sheet_id": "offer:70740-3",
+              "unit_price": 5.6,
+              "status": "final_offer"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70740",
+            "action": "accept",
+            "term_sheet_id": "offer:70740-3"
+          },
+          "sent_action": {
+            "supplier_id": "sup:70740",
+            "action": "accept",
+            "term_sheet_id": "offer:70740-3"
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70740",
+            "status": "agreed",
+            "unit_price": 5.6,
+            "term_sheet_id": "offer:70740-3"
+          },
+          "submission_wall_s": 0.3243103839995456
+        }
+      ],
+      "replay_url": "https://arena.tacto.ai/replay/4528113ad0cfa824"
+    },
+    {
+      "variant_id": "routed_claude-opus-5-5_high",
+      "scenario": "Kalwisz: bearing brackets in red",
+      "case_id": "case:P11",
+      "session_id": "5eb50981a94d3c1b",
+      "deal": true,
+      "valid": true,
+      "score": 0.5359758379385007,
+      "supplier_id": "sup:70140",
+      "terms": {
+        "payment_days": 60,
+        "lead_time_days": 56,
+        "volume_per_year": 15900,
+        "contract_months": 12,
+        "effective_date": "2027-01-01",
+        "index_clause": null,
+        "incoterm": "FCA",
+        "tooling_eur": 0.0,
+        "ppm_commitment": 1500,
+        "chargeback_eur_per_complaint": 0.0,
+        "unit_price": 46.0
+      },
+      "cost_eur": 766618.5,
+      "reference_cost_eur": 722500.02,
+      "regret_eur": 44118.48,
+      "opening_cost_eur": 817578.0,
+      "alternative_cost_eur": 894383.19,
+      "cost_breakdown": {
+        "price": 731400.0,
+        "uncovered_need": 0.0,
+        "fallback_risk": 0.0,
+        "payment_terms": 0.0,
+        "freight": 24486.0,
+        "late_delivery": 0.0,
+        "quality": 10732.5,
+        "tooling": 0.0,
+        "index_clause": 0.0,
+        "index_risk": 0.0,
+        "relationship": 0.0
+      },
+      "rounds": 6,
+      "end_reason": "accepted",
+      "error": null,
+      "invalid_moves": 0,
+      "thread_timeouts": 0,
+      "model_attempts": 4,
+      "fallbacks": 0,
+      "elapsed_s": 202.24888346900116,
+      "decision_wall_s": 71.85491535599431,
+      "decisions": [
+        {
+          "case_id": "case:P11",
+          "route": "script",
+          "reason": "must_have_repair",
+          "elapsed_s": 0.002647156004968565,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 0.0026529739989200607,
+          "model_attempts": 0,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70140",
+              "term_sheet_id": "offer:70140-0",
+              "unit_price": 47.0,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70140",
+            "action": "send",
+            "term_sheets": [
+              {
+                "ppm_commitment": 300,
+                "chargeback_eur_per_complaint": 500,
+                "unit_price": 39.95
+              },
+              {
+                "ppm_commitment": 800,
+                "chargeback_eur_per_complaint": 500,
+                "unit_price": 39.95
+              },
+              {
+                "ppm_commitment": 1500,
+                "chargeback_eur_per_complaint": 500,
+                "unit_price": 39.95
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70140",
+            "action": "send",
+            "term_sheets": [
+              {
+                "ppm_commitment": 300,
+                "chargeback_eur_per_complaint": 500,
+                "unit_price": 39.95
+              },
+              {
+                "ppm_commitment": 800,
+                "chargeback_eur_per_complaint": 500,
+                "unit_price": 39.95
+              },
+              {
+                "ppm_commitment": 1500,
+                "chargeback_eur_per_complaint": 500,
+                "unit_price": 39.95
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70140",
+            "status": "open",
+            "unit_price": 50.0,
+            "term_sheet_id": "offer:70140-1"
+          },
+          "submission_wall_s": 0.2211811340021086
+        },
+        {
+          "case_id": "case:P11",
+          "route": "fast",
+          "reason": "semantic_decision",
+          "elapsed_s": 15.011995000000752,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 15.012002107003354,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70140",
+              "term_sheet_id": "offer:70140-1",
+              "unit_price": 50.0,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70140",
+            "action": "send",
+            "term_sheets": [
+              {
+                "ppm_commitment": 1500,
+                "chargeback_eur_per_complaint": 500,
+                "unit_price": 42.95
+              },
+              {
+                "ppm_commitment": 1500,
+                "chargeback_eur_per_complaint": 300,
+                "unit_price": 42.7
+              },
+              {
+                "ppm_commitment": 1500,
+                "chargeback_eur_per_complaint": 150,
+                "unit_price": 42.5
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70140",
+            "action": "send",
+            "term_sheets": [
+              {
+                "ppm_commitment": 1500,
+                "chargeback_eur_per_complaint": 500,
+                "unit_price": 42.95
+              },
+              {
+                "ppm_commitment": 1500,
+                "chargeback_eur_per_complaint": 300,
+                "unit_price": 42.7
+              },
+              {
+                "ppm_commitment": 1500,
+                "chargeback_eur_per_complaint": 150,
+                "unit_price": 42.5
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70140",
+            "status": "open",
+            "unit_price": 47.5,
+            "term_sheet_id": "offer:70140-2"
+          },
+          "submission_wall_s": 33.78652906500065
+        },
+        {
+          "case_id": "case:P11",
+          "route": "fast",
+          "reason": "semantic_decision",
+          "elapsed_s": 18.781106146001548,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 18.78111263900064,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70140",
+              "term_sheet_id": "offer:70140-2",
+              "unit_price": 47.5,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70140",
+            "action": "send",
+            "term_sheets": [
+              {
+                "ppm_commitment": 1500,
+                "chargeback_eur_per_complaint": 500,
+                "unit_price": 44.4
+              },
+              {
+                "ppm_commitment": 1500,
+                "chargeback_eur_per_complaint": 300,
+                "unit_price": 44.2
+              },
+              {
+                "ppm_commitment": 1500,
+                "chargeback_eur_per_complaint": 150,
+                "unit_price": 43.95
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70140",
+            "action": "send",
+            "term_sheets": [
+              {
+                "ppm_commitment": 1500,
+                "chargeback_eur_per_complaint": 500,
+                "unit_price": 44.4
+              },
+              {
+                "ppm_commitment": 1500,
+                "chargeback_eur_per_complaint": 300,
+                "unit_price": 44.2
+              },
+              {
+                "ppm_commitment": 1500,
+                "chargeback_eur_per_complaint": 150,
+                "unit_price": 43.95
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70140",
+            "status": "open",
+            "unit_price": 47.0,
+            "term_sheet_id": "offer:70140-3"
+          },
+          "submission_wall_s": 25.468359043996315
+        },
+        {
+          "case_id": "case:P11",
+          "route": "fast",
+          "reason": "semantic_decision",
+          "elapsed_s": 23.13859586399485,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 23.138604004998342,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70140",
+              "term_sheet_id": "offer:70140-3",
+              "unit_price": 47.0,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70140",
+            "action": "send",
+            "term_sheets": [
+              {
+                "ppm_commitment": 1500,
+                "chargeback_eur_per_complaint": 150,
+                "unit_price": 44.85
+              },
+              {
+                "ppm_commitment": 1500,
+                "chargeback_eur_per_complaint": 0,
+                "unit_price": 44.6
+              },
+              {
+                "ppm_commitment": 800,
+                "chargeback_eur_per_complaint": 150,
+                "unit_price": 45.05
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70140",
+            "action": "send",
+            "term_sheets": [
+              {
+                "ppm_commitment": 1500,
+                "chargeback_eur_per_complaint": 150,
+                "unit_price": 44.85
+              },
+              {
+                "ppm_commitment": 1500,
+                "chargeback_eur_per_complaint": 0,
+                "unit_price": 44.6
+              },
+              {
+                "ppm_commitment": 800,
+                "chargeback_eur_per_complaint": 150,
+                "unit_price": 45.05
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70140",
+            "status": "open",
+            "unit_price": 46.0,
+            "term_sheet_id": "offer:70140-4"
+          },
+          "submission_wall_s": 39.82247783999628
+        },
+        {
+          "case_id": "case:P11",
+          "route": "fast",
+          "reason": "semantic_decision",
+          "elapsed_s": 14.920379891002085,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 14.920386785997835,
+          "model_attempts": 1,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70140",
+              "term_sheet_id": "offer:70140-4",
+              "unit_price": 46.0,
+              "status": "open"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70140",
+            "action": "send",
+            "term_sheets": [
+              {
+                "ppm_commitment": 1500,
+                "chargeback_eur_per_complaint": 0,
+                "unit_price": 45.0
+              },
+              {
+                "ppm_commitment": 800,
+                "chargeback_eur_per_complaint": 0,
+                "unit_price": 45.3
+              },
+              {
+                "ppm_commitment": 1500,
+                "chargeback_eur_per_complaint": 500,
+                "unit_price": 45.65
+              }
+            ]
+          },
+          "sent_action": {
+            "supplier_id": "sup:70140",
+            "action": "send",
+            "term_sheets": [
+              {
+                "ppm_commitment": 1500,
+                "chargeback_eur_per_complaint": 0,
+                "unit_price": 45.0
+              },
+              {
+                "ppm_commitment": 800,
+                "chargeback_eur_per_complaint": 0,
+                "unit_price": 45.3
+              },
+              {
+                "ppm_commitment": 1500,
+                "chargeback_eur_per_complaint": 500,
+                "unit_price": 45.65
+              }
+            ]
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70140",
+            "status": "final_offer",
+            "unit_price": 46.0,
+            "term_sheet_id": "offer:70140-5"
+          },
+          "submission_wall_s": 29.149872490001144
+        },
+        {
+          "case_id": "case:P11",
+          "route": "script",
+          "reason": "terminal_offers",
+          "elapsed_s": 0.00015170400001807138,
+          "budget_s": 25.0,
+          "fallback": false,
+          "decision_wall_s": 0.0001568449952173978,
+          "model_attempts": 0,
+          "standing_prices": [
+            {
+              "supplier_id": "sup:70140",
+              "term_sheet_id": "offer:70140-5",
+              "unit_price": 46.0,
+              "status": "final_offer"
+            }
+          ],
+          "proposed_action": {
+            "supplier_id": "sup:70140",
+            "action": "accept",
+            "term_sheet_id": "offer:70140-5"
+          },
+          "sent_action": {
+            "supplier_id": "sup:70140",
+            "action": "accept",
+            "term_sheet_id": "offer:70140-5"
+          },
+          "supplier_reply": {
+            "supplier_id": "sup:70140",
+            "status": "agreed",
+            "unit_price": 46.0,
+            "term_sheet_id": "offer:70140-5"
+          },
+          "submission_wall_s": 0.2382841130020097
+        }
+      ],
+      "replay_url": "https://arena.tacto.ai/replay/5eb50981a94d3c1b"
+    }
+  ],
+  "source_sha256": {
+    "src/tacto_negotiator/__init__.py": "30679a26548de3280d29785a2eecf0a5d7d875c24be3d6520964fad546681587",
+    "src/tacto_negotiator/__main__.py": "c3c697883784cbc443a2179843a3c758e19868ff04129329abbbb61d102ae680",
+    "src/tacto_negotiator/agents/__init__.py": "74e0576a9dc983527a99699b9f6a87b743cafb5bd2e74c46918e4511f014325c",
+    "src/tacto_negotiator/agents/completion.py": "9f6e22e3a386fdc42ec97fad54e8a23f978410b61fbff4dc551fc41de2c4d57e",
+    "src/tacto_negotiator/agents/llm.py": "932c5edd1acab3ecbd17319cb88b769cd622d6030ec0578cb7e7075bec867414",
+    "src/tacto_negotiator/agents/naive.py": "bf1574b7db0dd330547c1840c192e26a4ba459990788243f15fc522e24853f77",
+    "src/tacto_negotiator/agents/routed.py": "3f8ff6d07e062a6c64015c573ecb4cb2196a399c033b4532bc6681b12d46f846",
+    "src/tacto_negotiator/benchmark.py": "515335cfc524ed6702eb8409afc96723fbfac63d4aad93482bfac6f383dfcee3",
+    "src/tacto_negotiator/cli.py": "0a21174122dde5ee34139840502a9871d5fcea7672dde95574f7471261fbc93c",
+    "src/tacto_negotiator/client.py": "199dfb386434a676b0ffa09389531c8e623df412983558e78195eefdc9e84097",
+    "src/tacto_negotiator/compete.py": "14599f06e5dc63c41912d497656b4ffeeb292e33c3ce73e3031db7540d5fa84b",
+    "src/tacto_negotiator/competition.py": "d08a2f4b4bf6ef711fa91dd905e732790f5a029fe34967b191f1ea73e860e1f0",
+    "src/tacto_negotiator/cost.py": "445d46ebf2b3254c25bab131477a9a96b26666bd1e4b0d3a4e1e866cc3fa32f2",
+    "src/tacto_negotiator/data.py": "7915cd98e11436429697994d82874c74606dc95ae547e053c25af37f45a9f681",
+    "src/tacto_negotiator/docs.py": "981a48de10182642d3b866af1e3c4a08c3eb611eca26bb68c153efc532fbf8f9",
+    "src/tacto_negotiator/evaluation.py": "0f4bfca37b61900f3a590209375ddffaa62ec9da503924cde234ea06c784d84a",
+    "src/tacto_negotiator/mcp_server.py": "40fa2f9e09c9f30305763e0ec35dc6c370939297f441546dcbdd2cf6dfa22de5",
+    "src/tacto_negotiator/play.py": "64e4a92fc11d731133a784dc9429fea53e0b25c9d9b6187fffd4529e38f009c5",
+    "src/tacto_negotiator/sim.py": "8375e1c54dbf313d3bdfd2133afe705a07e14f46a5d838e18c6e84c94fe83fe8",
+    "src/tacto_negotiator/web.py": "fbf442296fba6392df35ae993f4cffb8302cf889db606dba981d0664eadb3c39"
+  },
+  "runner_sha256": "60c424b161c9e1683d13bd920246e4cfb31d64ee59e28b6c6e7b770759f875b1",
+  "limitations": [
+    "Practice is not final ranking; final suppliers are unseen.",
+    "Development iteration: practice best scores select repeated attempts; not an unbiased final estimate.",
+    "Supplier threads within RFQs use the committed sequential runner.",
+    "Costs and scores come from the hosted result; durations are measured wall time.",
+    "No wave cap is imposed on practice; seed and wave are not applicable.",
+    "Provider cost is an estimate; failed-call reservations are retained."
+  ],
+  "budget": {
+    "cap_usd": 100.0,
+    "estimated_known_usage_usd": 1.64656,
+    "reserved_in_flight_usd": 0.0,
+    "unreconciled_reservations_usd": 0.90126,
+    "committed_usd": 2.54782,
+    "remaining_usd": 97.45218,
+    "budget_rejections": 0,
+    "halted": false,
+    "price_basis": "Conservative standard estimate: all input at 1.25x default 30-minute cache-write rate, output at standard rate; not a billing reconciliation",
+    "calls": [
+      {
+        "call_id": 0,
+        "model": "claude-opus-5-5",
+        "status": "timeout",
+        "input_bound": 18747,
+        "output_bound": 16000,
+        "usage": null,
+        "latency_s": 25.00469,
+        "error_class": "TimeoutError",
+        "reserved_usd": 0.413735,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 1,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 17481,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 7197,
+          "output_tokens": 1690,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 18.281292,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.407405,
+        "estimated_cost_usd": 0.069785
+      },
+      {
+        "call_id": 2,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 17437,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 7236,
+          "output_tokens": 1324,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 14.842885,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.407185,
+        "estimated_cost_usd": 0.06266
+      },
+      {
+        "call_id": 3,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 17857,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 7284,
+          "output_tokens": 1453,
+          "cached_input_tokens": 0
+        },
+        "latency_s": 16.307773,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.409285,
+        "estimated_cost_usd": 0.06548
+      },
+      {
+        "call_id": 4,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 20426,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 8422,
+          "output_tokens": 2253,
+          "cached_input_tokens": 1496
+        },
+        "latency_s": 23.82533,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.42213,
+        "estimated_cost_usd": 0.08717
+      },
+      {
+        "call_id": 5,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 19852,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 8249,
+          "output_tokens": 1122,
+          "cached_input_tokens": 1496
+        },
+        "latency_s": 12.953833,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.41926,
+        "estimated_cost_usd": 0.063685
+      },
+      {
+        "call_id": 6,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 20128,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 8216,
+          "output_tokens": 1503,
+          "cached_input_tokens": 1496
+        },
+        "latency_s": 15.46333,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.42064,
+        "estimated_cost_usd": 0.07114
+      },
+      {
+        "call_id": 7,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 22455,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 9254,
+          "output_tokens": 1375,
+          "cached_input_tokens": 1496
+        },
+        "latency_s": 15.24723,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.432275,
+        "estimated_cost_usd": 0.07377
+      },
+      {
+        "call_id": 8,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 30050,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 13369,
+          "output_tokens": 1429,
+          "cached_input_tokens": 1496
+        },
+        "latency_s": 15.877996,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.47025,
+        "estimated_cost_usd": 0.095425
+      },
+      {
+        "call_id": 9,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 22113,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 9328,
+          "output_tokens": 641,
+          "cached_input_tokens": 1496
+        },
+        "latency_s": 8.209084,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.430565,
+        "estimated_cost_usd": 0.05946
+      },
+      {
+        "call_id": 10,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 22013,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 8931,
+          "output_tokens": 1590,
+          "cached_input_tokens": 1496
+        },
+        "latency_s": 17.45973,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.430065,
+        "estimated_cost_usd": 0.076455
+      },
+      {
+        "call_id": 11,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 17590,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 7253,
+          "output_tokens": 1570,
+          "cached_input_tokens": 1496
+        },
+        "latency_s": 17.026558,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.40795,
+        "estimated_cost_usd": 0.067665
+      },
+      {
+        "call_id": 12,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 15846,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 6363,
+          "output_tokens": 1372,
+          "cached_input_tokens": 1496
+        },
+        "latency_s": 14.433545,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.39923,
+        "estimated_cost_usd": 0.059255
+      },
+      {
+        "call_id": 13,
+        "model": "claude-opus-5-5",
+        "status": "timeout",
+        "input_bound": 33505,
+        "output_bound": 16000,
+        "usage": null,
+        "latency_s": 13.934535,
+        "error_class": "TimeoutError",
+        "reserved_usd": 0.487525,
+        "estimated_cost_usd": null
+      },
+      {
+        "call_id": 14,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 19523,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 8202,
+          "output_tokens": 1509,
+          "cached_input_tokens": 1496
+        },
+        "latency_s": 14.990522,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.417615,
+        "estimated_cost_usd": 0.07119
+      },
+      {
+        "call_id": 15,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 19267,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 7982,
+          "output_tokens": 1311,
+          "cached_input_tokens": 1496
+        },
+        "latency_s": 14.48854,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.416335,
+        "estimated_cost_usd": 0.06613
+      },
+      {
+        "call_id": 16,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 22259,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 9676,
+          "output_tokens": 1667,
+          "cached_input_tokens": 1496
+        },
+        "latency_s": 17.0515,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.431295,
+        "estimated_cost_usd": 0.08172
+      },
+      {
+        "call_id": 17,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 19294,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 8152,
+          "output_tokens": 1427,
+          "cached_input_tokens": 1496
+        },
+        "latency_s": 15.030318,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.41647,
+        "estimated_cost_usd": 0.0693
+      },
+      {
+        "call_id": 18,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 22891,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 9920,
+          "output_tokens": 1664,
+          "cached_input_tokens": 1496
+        },
+        "latency_s": 18.779822,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.434455,
+        "estimated_cost_usd": 0.08288
+      },
+      {
+        "call_id": 19,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 21725,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 9078,
+          "output_tokens": 1492,
+          "cached_input_tokens": 1496
+        },
+        "latency_s": 16.109572,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.428625,
+        "estimated_cost_usd": 0.07523
+      },
+      {
+        "call_id": 20,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 24744,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 10729,
+          "output_tokens": 1800,
+          "cached_input_tokens": 1496
+        },
+        "latency_s": 19.499377,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.44372,
+        "estimated_cost_usd": 0.089645
+      },
+      {
+        "call_id": 21,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 25652,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 11185,
+          "output_tokens": 1200,
+          "cached_input_tokens": 1496
+        },
+        "latency_s": 13.335735,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.44826,
+        "estimated_cost_usd": 0.079925
+      },
+      {
+        "call_id": 22,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 25084,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 11041,
+          "output_tokens": 2065,
+          "cached_input_tokens": 1496
+        },
+        "latency_s": 23.136905,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.44542,
+        "estimated_cost_usd": 0.096505
+      },
+      {
+        "call_id": 23,
+        "model": "claude-opus-5-5",
+        "status": "completed",
+        "input_bound": 24550,
+        "output_bound": 16000,
+        "usage": {
+          "input_tokens": 10713,
+          "output_tokens": 1426,
+          "cached_input_tokens": 1496
+        },
+        "latency_s": 14.91897,
+        "error_class": null,
+        "provider_status": "completed",
+        "reserved_usd": 0.44275,
+        "estimated_cost_usd": 0.082085
+      }
+    ]
+  },
+  "aggregate": {
+    "routed_claude-opus-5-5_high": {
+      "matches": 10,
+      "mean_score": 0.6299857351197421,
+      "deals": 10,
+      "errors": 0
+    }
+  },
+  "practice_after": {
+    "used": 102,
+    "left": 98,
+    "limit": 200,
+    "resets_at": "2026-10-25T15:51:29.187290+00:00"
+  },
+  "team_best_after": {
+    "case:P03": 0.9033812935903286,
+    "case:P01": 0.9368551624571048,
+    "case:P07": 0.7168703780351473,
+    "case:P02": 0.4525774685007025,
+    "case:P04": 0.8604451426623068,
+    "case:P05": 0.5663364904307426,
+    "case:P08": 0.5163181367592004,
+    "case:P11": 0.5886536504035952,
+    "case:P18": 0.4014490231648455,
+    "case:P10": 0.6707108356081908
+  },
+  "finished_utc": "2026-10-24T17:40:24.227353+00:00"
+}
