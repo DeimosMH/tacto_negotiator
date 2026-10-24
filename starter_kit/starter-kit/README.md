@@ -152,6 +152,11 @@ Own client: point it at the same URL. It checks the `403` wait (60 s), the wave 
 per case, `seconds_left` and the cap (4 minutes, a 30-second break, then wave 2); `--waves 2` stops
 the runner after the rehearsal's two waves (the final has five, the default).
 
+For five eight-minute waves, add `--rehearsal-waves 5 --rehearsal-cap 480` to the
+simulator command and use `--waves 5` on the runner. The two-wave defaults remain unchanged.
+The repository's [Sunday readiness guide](../../docs/FINAL_READINESS.md) provides
+credential-free local commands, failure simulations and implementation priorities.
+
 ## Your own agent
 
 An agent is any object with `decide(case, threads) -> {"supplier_id": …, "message": {…}}`.

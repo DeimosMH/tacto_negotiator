@@ -1,0 +1,184 @@
+// Local UI checks with Node 22+ and an installed Chrome; no npm dependencies or remote services.
+import assert from "node:assert/strict";
+import {spawn} from "node:child_process";
+import {existsSync} from "node:fs";
+import {mkdtemp, rm, writeFile} from "node:fs/promises";
+import {tmpdir} from "node:os";
+import {join} from "node:path";
+import {fileURLToPath, pathToFileURL} from "node:url";
+
+const chrome = process.env.CHROME || ["/opt/google/chrome/chrome", "/usr/bin/chromium", "/usr/bin/chromium-browser", "/usr/bin/google-chrome"].find(existsSync);
+assert.ok(chrome, "Set CHROME to an installed Chrome/Chromium executable.");
+const profile = await mkdtemp(join(tmpdir(), "tacto-atlas-browser-"));
+const browser = spawn(chrome, ["--headless=new", "--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage", "--disable-background-networking", "--disable-component-update", "--disable-sync", "--disable-extensions", "--no-first-run", "--no-default-browser-check", "--host-resolver-rules=MAP * ~NOTFOUND", "--remote-debugging-port=0", `--user-data-dir=${profile}`, "about:blank"], {env: {PATH: "/usr/bin:/bin", LANG: "C.UTF-8"}, stdio: ["ignore", "ignore", "pipe"]});
+let socket, next = 0, session, stderr = "";
+const pending = new Map(), exceptions = [], requests = [];
+
+function command(method, params = {}, scoped = true) {
+  const id = ++next;
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => { pending.delete(id); reject(new Error(`Timeout: ${method}`)); }, 10000);
+    pending.set(id, {resolve, reject, timeout});
+    socket.send(JSON.stringify({id, method, params, ...(scoped && session ? {sessionId: session} : {})}));
+  });
+}
+
+async function evaluate(expression) {
+  const result = await command("Runtime.evaluate", {expression, returnByValue: true, awaitPromise: true});
+  if (result.exceptionDetails) throw new Error(result.exceptionDetails.exception?.description || result.exceptionDetails.text);
+  return result.result.value;
+}
+
+async function until(expression) {
+  for (let i = 0; i < 100; i++) {
+    if (await evaluate(expression)) return;
+    await new Promise(resolve => setTimeout(resolve, 30));
+  }
+  throw new Error(`Condition failed: ${expression}`);
+}
+
+async function select(id) {
+  await evaluate(`location.hash = '#file=' + encodeURIComponent(${JSON.stringify(id)})`);
+  await until(`document.querySelector('#inspector .file-path')?.textContent.includes(${JSON.stringify(id)})`);
+}
+
+try {
+  const endpoint = await new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`Chrome did not start: ${stderr.slice(-1500)}`)), 15000);
+    browser.once("error", error => { clearTimeout(timer); reject(error); });
+    browser.once("exit", code => { clearTimeout(timer); reject(new Error(`Chrome exited ${code}: ${stderr.slice(-1500)}`)); });
+    browser.stderr.on("data", data => {
+      stderr += data.toString();
+      const match = stderr.match(/DevTools listening on (ws:\/\/\S+)/);
+      if (match) { clearTimeout(timer); resolve(match[1]); }
+    });
+  });
+  socket = new WebSocket(endpoint);
+  await new Promise((resolve, reject) => { socket.addEventListener("open", resolve, {once: true}); socket.addEventListener("error", reject, {once: true}); });
+  socket.addEventListener("message", event => {
+    const message = JSON.parse(event.data);
+    if (message.id && pending.has(message.id)) {
+      const entry = pending.get(message.id); pending.delete(message.id); clearTimeout(entry.timeout);
+      if (message.error) entry.reject(new Error(JSON.stringify(message.error)));
+      else entry.resolve(message.result);
+    }
+    if (message.method === "Runtime.exceptionThrown") exceptions.push(message.params.exceptionDetails);
+    if (message.method === "Network.requestWillBeSent") requests.push(message.params.request.url);
+  });
+  const target = await command("Target.createTarget", {url: "about:blank"}, false);
+  session = (await command("Target.attachToTarget", {targetId: target.targetId, flatten: true}, false)).sessionId;
+  await command("Runtime.enable");
+  await command("Page.enable");
+  await command("Network.enable");
+  await command("Network.setBlockedURLs", {urls: ["http://*", "https://*"]});
+  await command("Emulation.setDeviceMetricsOverride", {width: 1440, height: 1080, deviceScaleFactor: 1, mobile: false});
+  const url = pathToFileURL(fileURLToPath(new URL("index.html", import.meta.url))).href;
+  await command("Page.navigate", {url});
+  await until("document.querySelectorAll('.map-node').length > 10");
+  assert.equal(await evaluate("document.querySelectorAll('[data-file]').length"), await evaluate("window.ATLAS.stats.files"));
+  assert.equal(await evaluate("document.querySelector('#graph-title').textContent"), "The whole project");
+  assert.equal(await evaluate("document.querySelectorAll('.map-cluster').length"), 7);
+  await evaluate("document.querySelector('#collapse-all').click()");
+  assert.equal(await evaluate("document.querySelectorAll('#tree details[open]').length"), 0);
+  await evaluate("document.querySelector('#expand-all').click()");
+  assert.equal(await evaluate("document.querySelectorAll('#tree details[open]').length"), await evaluate("document.querySelectorAll('#tree details').length"));
+
+  await evaluate("document.querySelector('#search').value = 'ArenaClient'; document.querySelector('#search').dispatchEvent(new Event('input'))");
+  assert.ok(await evaluate("document.querySelectorAll('[data-file]').length < window.ATLAS.stats.files"));
+  const client = "starter_kit/starter-kit/arena_kit/client.py";
+  await evaluate(`document.querySelector('[data-file="${client}"]').click()`);
+  await until("document.querySelector('#inspector h2')?.textContent === 'client.py'");
+  assert.ok(await evaluate("document.querySelector('#inspector').textContent.includes('Stored attributes:')"));
+  assert.ok(await evaluate("document.querySelector('[data-node=\"system:arena\"]') !== null"));
+  assert.ok(await evaluate("document.querySelector('#relationships').textContent.includes('INCOMING') && document.querySelector('#relationships').textContent.includes('OUTGOING')"));
+  await evaluate("document.querySelector('#full-explanations').click()");
+  assert.ok(await evaluate("document.querySelector('.tree-explanation .symbol-list') !== null"));
+  assert.ok(await evaluate("document.querySelector('.tree-explanation .fields') !== null"));
+
+  const beforeZoom = await evaluate("document.querySelector('#graph').getAttribute('viewBox')");
+  await evaluate("document.querySelector('#zoom-in').click()");
+  assert.notEqual(await evaluate("document.querySelector('#graph').getAttribute('viewBox')"), beforeZoom);
+  await evaluate("document.querySelector('#fit').click()");
+  assert.equal(await evaluate("document.querySelector('#graph').getAttribute('viewBox')"), beforeZoom);
+  const box = await evaluate("(() => {const r = document.querySelector('#graph').getBoundingClientRect(); return {x:r.x+8,y:r.y+8}})()");
+  await command("Input.dispatchMouseEvent", {type: "mousePressed", x: box.x, y: box.y, button: "left", clickCount: 1});
+  await command("Input.dispatchMouseEvent", {type: "mouseMoved", x: box.x + 45, y: box.y + 30, button: "left", buttons: 1});
+  await command("Input.dispatchMouseEvent", {type: "mouseReleased", x: box.x + 45, y: box.y + 30, button: "left", clickCount: 1});
+  assert.notEqual(await evaluate("document.querySelector('#graph').getAttribute('viewBox')"), beforeZoom);
+
+  await evaluate("document.querySelector('[data-node=\"system:arena\"]').focus()");
+  await command("Input.dispatchKeyEvent", {type: "keyDown", key: "Enter", code: "Enter", windowsVirtualKeyCode: 13});
+  await until("document.querySelector('#inspector h2')?.textContent === 'Hosted arena'");
+  await evaluate("history.back()");
+  await until("document.querySelector('#inspector h2')?.textContent === 'client.py'");
+
+  await select("starter_kit/data/data/invoices.csv");
+  assert.ok(await evaluate("document.querySelector('#inspector').textContent.includes('paid_date')"));
+  assert.ok(await evaluate("document.querySelector('#relationships').textContent.includes('declared foreign key')"));
+  await select("starter_kit/data/correspondence/20260911-70110-P01.md");
+  assert.ok(await evaluate("document.querySelector('#inspector').textContent.includes('doc:20260911-70110-P01')"));
+  await select("proposal:guard");
+  assert.ok(await evaluate("document.querySelector('#inspector').textContent.includes('no implementation file exists')"));
+
+  await evaluate("location.hash = 'home'");
+  await until("document.querySelector('#graph-title').textContent === 'The whole project'");
+  await evaluate("document.querySelector('#show-proposed').click()");
+  assert.equal(await evaluate("document.querySelectorAll('.map-node.proposal').length"), 0);
+  await evaluate("document.querySelector('#show-proposed').click()");
+  await evaluate("document.querySelector('.map-node').dispatchEvent(new MouseEvent('click'))");
+  await until("location.hash.startsWith('#group=')");
+  assert.ok(await evaluate("document.querySelector('#inspector').textContent.includes('LOGICAL SUBGROUP')"));
+  await evaluate("document.querySelector('#reset-map').click()");
+  await until("location.hash === '#home'");
+  await evaluate("document.querySelector('#map-mode').value = 'all'; document.querySelector('#map-mode').dispatchEvent(new Event('change'))");
+  assert.equal(await evaluate("document.querySelectorAll('.map-node').length"), await evaluate("window.ATLAS.nodes.length"));
+
+  await evaluate("document.querySelector('[data-tab=\"TUTORIAL.md\"]').click()");
+  await until("document.querySelector('#guide h1')?.textContent === 'Your first negotiation, step by step'");
+  assert.equal(await evaluate("document.querySelector('[data-tab=\"TUTORIAL.md\"]').getAttribute('aria-current')"), "page");
+  assert.ok(await evaluate("document.querySelector('#guide').textContent.includes('class TutorialBuyer(NaiveAgent):')"));
+  assert.ok(await evaluate("document.querySelector('#guide').textContent.includes('Step 8 — Modify the atlas itself')"));
+  assert.ok(await evaluate("document.querySelector('#guide ol[start=\"4\"]') !== null"), "Steps must keep their numbering after code examples");
+  await evaluate("document.querySelector('[data-tab=\"FINAL_READINESS.md\"]').click()");
+  await until("document.querySelector('#guide h1')?.textContent === 'Sunday: finish five eight-minute waves reliably'");
+  assert.ok(await evaluate("document.querySelector('#guide').textContent.includes('150 unique final sessions')"));
+  await evaluate("document.querySelector('#guide a[href=\"#guide=MODEL_SELECTION.md\"]').click()");
+  await until("document.querySelector('#guide h1')?.textContent === 'Choose a model for the final'");
+  assert.ok(await evaluate("document.querySelector('#guide').textContent.includes('LLM_EFFORT currently has no effect')"));
+  await evaluate("document.querySelector('[data-tab=\"IMPLEMENTATION.md\"]').click()");
+  await until("!document.querySelector('#guide').hidden");
+  await until("document.querySelector('#guide').textContent.includes('One guard for every action')");
+  assert.ok(await evaluate("document.querySelector('#guide').textContent.includes('One guard for every action')"));
+  assert.ok(await evaluate("document.querySelectorAll('#guide table').length > 0"));
+  assert.ok(await evaluate("!document.querySelector('#guide').innerHTML.includes('<script')"));
+  await command("Page.reload");
+  await until("document.querySelector('#full-explanations')?.checked === true && document.querySelector('#guide h1')");
+
+  await command("Emulation.setDeviceMetricsOverride", {width: 390, height: 844, deviceScaleFactor: 1, mobile: true});
+  await evaluate("location.hash = 'home'; document.querySelector('#search').value=''; document.querySelector('#search').dispatchEvent(new Event('input')); document.querySelector('#full-explanations').click(); document.querySelector('#collapse-all').click()");
+  await until("document.querySelector('#graph-title').textContent === 'The whole project'");
+  assert.ok(await evaluate("document.documentElement.scrollWidth <= innerWidth"), "Mobile page must not overflow horizontally");
+  await evaluate("document.querySelector('#search').value='no-match-xyz'; document.querySelector('#search').dispatchEvent(new Event('input'))");
+  assert.ok(await evaluate("document.querySelector('#tree').textContent.includes('No matching files')"));
+  await evaluate("document.querySelector('#search').value=''; document.querySelector('#search').dispatchEvent(new Event('input'))");
+
+  // Verify untrusted source text is rendered, never executed by the Markdown subset.
+  assert.ok(await evaluate("markdown('<img src=x onerror=alert(1)> [bad](javascript:alert)', 'docs/README.md').includes('&lt;img')"));
+  assert.ok(await evaluate("!markdown('[bad](javascript:alert)', 'docs/README.md').includes('href=')"));
+  assert.equal(exceptions.length, 0, JSON.stringify(exceptions));
+  assert.ok(requests.every(request => !/^https?:/.test(request)), "The page must not request remote assets");
+  if (process.env.ATLAS_SCREENSHOT) {
+    await command("Emulation.setDeviceMetricsOverride", {width: 1440, height: 1080, deviceScaleFactor: 1, mobile: false});
+    await evaluate("document.querySelector('#expand-all').click(); scrollTo(0,0)");
+    const screenshot = await command("Page.captureScreenshot", {format: "png"});
+    await writeFile(process.env.ATLAS_SCREENSHOT, Buffer.from(screenshot.data, "base64"));
+  }
+  console.log("Browser checks passed: tree, search, file details, schemas, graph neighborhoods/groups, all nodes, pan/zoom, keyboard, history, guides, saved settings, mobile and no remote requests.");
+} finally {
+  if (socket?.readyState === WebSocket.OPEN) {
+    try { await command("Browser.close", {}, false); } catch { /* Browser may close the socket before its reply. */ }
+    socket.close();
+  }
+  browser.kill();
+  await rm(profile, {recursive: true, force: true, maxRetries: 3, retryDelay: 100});
+}

@@ -159,6 +159,10 @@ def play(table, case_id, agent, deadline=None):
             decision = agent.decide(case, threads)
         if (took := time.monotonic() - t0) > MOVE_LIMIT_S * 0.75:
             log.warning("decision took %.1fs - the limit is %ss per message", took, MOVE_LIMIT_S)
+        # The decision itself may consume the closing reserve; the host may also extend the cap.
+        cap = deadline() if callable(deadline) else deadline
+        if cap and time.time() > cap - max(CLOSE_BEFORE_CAP_S, slowest + ROUND_MARGIN_S):
+            decision = closing_move(case, threads)
         sid, msg = decision["supplier_id"], decision["message"]
         try:
             if msg.get("action"):

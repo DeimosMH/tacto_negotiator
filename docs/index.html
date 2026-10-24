@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; object-src 'none'">
+  <meta name="description" content="An offline, interactive guide to the Tacto negotiation starter kit, its data and a proposed buyer agent.">
+  <title>Tacto · Project atlas</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="data.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="topbar">
+    <a class="brand" href="#home" aria-label="Tacto project atlas home"><span class="brand-mark">t.</span><span>tacto <span class="brand-divider">/</span> <strong>project atlas</strong></span></a>
+    <span class="local-badge"><span class="status-dot"></span> LOCAL · OFFLINE READY</span>
+  </header>
+  <div class="layout">
+    <aside class="sidebar" aria-label="Project file explorer">
+      <div class="sidebar-head"><span class="eyebrow">EXPLORER</span><span id="file-count" class="muted"></span></div>
+      <label class="search-label" for="search">Find a file, class or concept</label>
+      <div class="search-wrap"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Search the project…" autocomplete="off"><kbd>/</kbd></div>
+      <div class="tree-tools"><button id="expand-all" type="button">Expand all</button><button id="collapse-all" type="button">Collapse all</button></div>
+      <label class="setting"><input id="full-explanations" type="checkbox"> Full explanations in tree</label>
+      <p id="search-status" class="muted" aria-live="polite"></p>
+      <nav id="tree" aria-label="Files and directories"></nav>
+      <p class="sidebar-foot">Public source only.<br>Credentials and installed environments are excluded.</p>
+    </aside>
+    <main id="main" tabindex="-1">
+      <nav class="page-tabs" aria-label="Documentation views">
+        <a href="#guide=TUTORIAL.md" data-tab="TUTORIAL.md">Start here</a>
+        <a href="#home" data-tab="home">Project map</a>
+        <a href="#guide=FINAL_READINESS.md" data-tab="FINAL_READINESS.md">Sunday final</a>
+        <a href="#guide=IMPLEMENTATION.md" data-tab="IMPLEMENTATION.md">Implementation</a>
+        <a href="#guide=DATA_GUIDE.md" data-tab="DATA_GUIDE.md">Data guide</a>
+        <a href="#guide=LOCAL_TESTING.md" data-tab="LOCAL_TESTING.md">Local checks</a>
+      </nav>
+      <div id="page-heading"></div>
+      <div id="stats" class="stats"></div>
+      <div id="workspace">
+        <section class="graph-card" aria-labelledby="graph-title">
+          <div class="graph-header"><div><span class="eyebrow">DEPENDENCY MAP</span><h2 id="graph-title">The whole project</h2></div><span id="graph-count" class="muted"></span></div>
+          <div class="graph-toolbar">
+            <label>View <select id="map-mode"><option value="groups">Groups & subgroups</option><option value="all">All files & entities</option></select></label>
+            <label class="setting"><input id="show-proposed" type="checkbox" checked> Proposed agent</label>
+            <div class="zoom-tools"><button id="zoom-out" type="button" aria-label="Zoom out">−</button><button id="fit" type="button">Fit</button><button id="zoom-in" type="button" aria-label="Zoom in">+</button></div>
+          </div>
+          <div id="graph-surface"><svg id="graph" role="group" aria-labelledby="map-title map-description" viewBox="0 0 1000 620"><title id="map-title">Grouped project dependencies</title><desc id="map-description">Select a node to inspect it. Drag the background to pan. Use the zoom controls. The relationship list below provides the same connections in text.</desc></svg></div>
+          <div class="graph-footer"><span>Click to explore · drag to pan · Ctrl + scroll to zoom</span><button id="reset-map" type="button">Whole project ↗</button></div>
+          <div id="legend" class="legend"></div>
+          <details class="relationship-details"><summary id="relationships-title">Connections in this view</summary><div id="relationships"></div></details>
+        </section>
+        <section id="inspector" aria-label="Selected file explanation" aria-live="polite"></section>
+      </div>
+      <article id="guide" class="prose" hidden></article>
+      <footer class="page-footer"><span>Source-grounded explanations. Proposed components are labelled.</span><a href="#guide=README.md">About this atlas & sources ↗</a></footer>
+    </main>
+  </div>
+  <noscript><p>This interactive atlas needs JavaScript. Read docs/IMPLEMENTATION.md, DATA_GUIDE.md and LOCAL_TESTING.md for the same design notes.</p></noscript>
+</body>
+</html>
