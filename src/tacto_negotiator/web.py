@@ -11,7 +11,8 @@ MAX_REPORT_BYTES = 32 * 1024 * 1024
 MATCH_FIELDS = ("variant_id", "scenario", "seed", "wave", "case_id", "deal", "valid", "supplier_id",
                 "finished_before_cap", "score", "cost_eur", "reference_cost_eur", "regret_eur", "end_reason",
                 "error", "invalid_moves", "thread_timeouts", "model_attempts", "fallbacks", "decision_wall_s",
-                "supplier_delay_s", "virtual_elapsed_s")
+                "supplier_delay_s", "virtual_elapsed_s", "elapsed_s", "session_id", "replay_url", "rounds",
+                "opening_cost_eur", "alternative_cost_eur")
 DECISION_FIELDS = ("route", "reason", "decision_wall_s", "budget_s", "model_attempts", "forced_close",
                    "elapsed_over_budget", "fallback", "deadline_override", "error", "submission_error",
                    "wave_seconds_left", "thread_seconds_left")
@@ -47,16 +48,21 @@ def public_report(data):
         raise ValueError("Expected a competition report with a matches array")
     if len(data["matches"]) > 50_000:
         raise ValueError("Report exceeds 50,000 matches")
-    result = select(data, ("phase", "status", "started_utc", "finished_utc", "limitations",
+    result = select(data, ("source", "team_name", "phase", "status", "started_utc", "finished_utc", "limitations",
                            "excluded_from_comparison", "exclusion_reason", "policy_commit"))
+    result["models"] = select(data.get("models"), ("fast", "strong"))
     result["config"] = select(data.get("config"), ("scoring_version", "seeds", "waves", "wave_seconds", "workers",
-                                                   "holdout", "decision_seconds", "scenarios"))
+                                                   "holdout", "decision_seconds", "scenarios", "set",
+                                                   "scoring_authority"))
     result["matches"] = []
     for match in data["matches"]:
         if not isinstance(match, dict) or not isinstance(match.get("decisions", []), list):
             raise ValueError("Invalid match record")
         row = select(match, MATCH_FIELDS)
         row["terms"] = terms(match.get("terms"))
+        row["cost_breakdown"] = select(match.get("cost_breakdown"), (
+            "price", "uncovered_need", "fallback_risk", "payment_terms", "freight", "late_delivery",
+            "quality", "tooling", "index_clause", "index_risk", "relationship"))
         row["decisions"] = []
         for decision in match.get("decisions", []):
             step = select(decision, DECISION_FIELDS)

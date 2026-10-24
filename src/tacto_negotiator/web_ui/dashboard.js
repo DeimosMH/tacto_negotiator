@@ -10,6 +10,8 @@ const euro = (value) => numeric(value) ? `€${number(value, 2)}` : "Unknown";
 const seconds = (value) => numeric(value) ? `${number(value, value < 1 ? 3 : 2)}s` : "Not recorded";
 const mean = (values) => { const known = values.filter(numeric); return known.length ? known.reduce((a,b) => a+b, 0) / known.length : null; };
 const sum = (values) => values.filter(numeric).reduce((a,b) => a+b, 0);
+const elapsed = (row) => row.elapsed_s ?? row.virtual_elapsed_s;
+const caseContext = (row) => report?.source === "hosted_practice" ? `Practice · ${number(row.rounds)} rounds` : `wave ${row.wave ?? "?"} · seed ${row.seed ?? "?"}`;
 const outcomes = {deal:"Valid deal", walk:"Valid walk-away", invalid:"Invalid outcome", error:"Run error", unknown:"Unknown"};
 const outcome = (row) => row.error ? "error" : row.valid === false ? "invalid" : row.valid === true ? (row.deal === true ? "deal" : row.deal === false ? "walk" : "unknown") : "unknown";
 const reasons = {
@@ -31,7 +33,7 @@ const reasons = {
   strong_unconfigured:"The stronger tier is not configured. The router uses the available faster tier.",
   agent_policy:"This baseline agent supplied the action; it did not record a more specific routing reason.",
 };
-let report = null, rows = [], filtered = [], currentName = "", importedName = "", selected = null, stepIndex = 0, page = 0, loadId = 0;
+let report = null, rows = [], filtered = [], currentName = new URLSearchParams(location.search).get("report") || "", importedName = "", selected = null, stepIndex = 0, page = 0, loadId = 0;
 const PAGE_SIZE = 30;
 
 function status(message, error = false) { $("status").textContent = message; $("status").classList.toggle("error", error); }
@@ -58,12 +60,15 @@ function setReport(data, name, preserve = false) {
   options("scenario", rows.map((r) => r.scenario ?? "Unknown"), "All scenarios", preserve);
   options("wave", rows.map((r) => r.wave ?? "Unknown"), "All waves", preserve);
   const config = report.config || {};
+  const hosted = report.source === "hosted_practice";
+  $("wave").disabled = hosted;
   const notices = [];
-  if (!numeric(config.scoring_version) || config.scoring_version < 2) notices.push("Historical evaluator: these scores predate scoring version 2. Read them as recorded; do not rank them against current runs.");
+  if (hosted) notices.push("Hosted practice results. Practice is not the final ranking: the final uses unseen suppliers. Scores come from the arena; elapsed time is real wall time.");
+  else if (!numeric(config.scoring_version) || config.scoring_version < 2) notices.push("Historical evaluator: these scores predate scoring version 2. Read them as recorded; do not rank them against current runs.");
   if (report.excluded_from_comparison) notices.push(`Excluded from comparison: ${report.exclusion_reason || "diagnostic pilot"}.`);
   if (report.status && report.status !== "completed") notices.push(`Report status: ${label(report.status)}. Results may be incomplete.`);
   $("notice").hidden = !notices.length; $("notice").textContent = notices.join(" ");
-  const metadata = [["Scoring", config.scoring_version ? `v${config.scoring_version}` : "historical"], ["Waves", config.waves], ["Wave cap", numeric(config.wave_seconds) ? `${config.wave_seconds}s` : "not recorded"], ["Workers", config.workers], ["Cohort", config.holdout ? "holdout" : "standard"], ["Saved", report.finished_utc || report.started_utc || "not recorded"]];
+  const metadata = hosted ? [["Scoring", "hosted arena"], ["Team", report.team_name], ["Set", "practice"], ["Model", report.models?.fast], ["Workers", config.workers], ["Saved", report.finished_utc || report.started_utc]] : [["Scoring", config.scoring_version ? `v${config.scoring_version}` : "historical"], ["Waves", config.waves], ["Wave cap", numeric(config.wave_seconds) ? `${config.wave_seconds}s` : "not recorded"], ["Workers", config.workers], ["Cohort", config.holdout ? "holdout" : "standard"], ["Saved", report.finished_utc || report.started_utc || "not recorded"]];
   $("run-meta").innerHTML = metadata.filter(([,v]) => v !== undefined).map(([k,v]) => `<span>${esc(k)} <strong>${esc(v)}</strong></span>`).join("");
   status(`${name} · ${number(rows.length)} matches${name === importedName ? " · opened in this browser only" : " · saved local report"}`);
   page = 0; render();
@@ -117,7 +122,7 @@ function render() {
     `${r.case_id ?? ""} ${r.seed ?? ""}`.toLowerCase().includes($("search").value.trim().toLowerCase()));
   const sort = $("sort").value;
   filtered.sort((a,b) => sort === "case" ? String(a.case_id).localeCompare(String(b.case_id)) :
-    sort === "time" ? (b.virtual_elapsed_s ?? -Infinity)-(a.virtual_elapsed_s ?? -Infinity) :
+    sort === "time" ? (elapsed(b) ?? -Infinity)-(elapsed(a) ?? -Infinity) :
     sort === "score-desc" ? (b.score ?? -Infinity)-(a.score ?? -Infinity) : (a.score ?? Infinity)-(b.score ?? Infinity));
   const decisions = filtered.flatMap((r) => list(r.decisions));
   const known = filtered.filter((r) => typeof r.valid === "boolean");
@@ -142,7 +147,7 @@ function render() {
 function renderTable() {
   const visible = filtered.slice(page * PAGE_SIZE, (page+1) * PAGE_SIZE);
   $("match-count").textContent = `(${number(filtered.length)})`;
-  $("matches").innerHTML = visible.map((r) => `<tr class="${r._id === selected ? "selected" : ""}"><td><button class="case-button" data-case="${r._id}" aria-pressed="${r._id === selected}"><strong>${esc(label(r.scenario))}</strong><span>${esc(label(r.variant_id))} · wave ${esc(r.wave ?? "?")} · seed ${esc(r.seed ?? "?")}</span><span>${esc(r.case_id)}</span></button></td><td><span class="pill ${outcome(r)}">${outcomes[outcome(r)]}</span></td><td>${number(r.score,1)}</td><td>${seconds(r.virtual_elapsed_s)}</td></tr>`).join("") || '<tr><td colspan="4" class="empty">No matches. Try resetting the filters.</td></tr>';
+  $("matches").innerHTML = visible.map((r) => `<tr class="${r._id === selected ? "selected" : ""}"><td><button class="case-button" data-case="${r._id}" aria-pressed="${r._id === selected}"><strong>${esc(label(r.scenario))}</strong><span>${esc(label(r.variant_id))} · ${esc(caseContext(r))}</span><span>${esc(r.case_id)}</span></button></td><td><span class="pill ${outcome(r)}">${outcomes[outcome(r)]}</span></td><td>${number(r.score,1)}</td><td>${seconds(elapsed(r))}</td></tr>`).join("") || '<tr><td colspan="4" class="empty">No matches. Try resetting the filters.</td></tr>';
   $("page").textContent = filtered.length ? `${page*PAGE_SIZE+1}–${Math.min((page+1)*PAGE_SIZE,filtered.length)} of ${number(filtered.length)}` : "0 matches";
   $("previous").disabled = page === 0; $("next").disabled = (page+1)*PAGE_SIZE >= filtered.length;
 }
@@ -153,6 +158,15 @@ function actionText(action) {
 }
 function facts(data) {
   return Object.entries(data || {}).map(([key,value]) => `<tr><td>${esc(label(key))}</td><td>${esc(typeof value === "object" ? JSON.stringify(value) : value)}</td></tr>`).join("");
+}
+function replayLink(value) {
+  try {
+    const url = new URL(value);
+    if (url.origin === "https://arena.tacto.ai" && !url.username && !url.password && /^\/replay\/[\w-]+\/?$/.test(url.pathname)) {
+      return `<a href="${esc(url.href)}" target="_blank" rel="noopener noreferrer">Open hosted replay ↗</a>`;
+    }
+  } catch { /* Missing or untrusted replay URLs are not links. */ }
+  return "";
 }
 function priceChart(decisions) {
   const points = [];
@@ -177,11 +191,11 @@ function renderDetail() {
   const decisions = list(row.decisions); stepIndex = Math.min(stepIndex, Math.max(0,decisions.length-1));
   const d = decisions[stepIndex];
   const historical = decisions.length && !decisions.some((step) => list(step.standing_prices).length);
-  $("detail").innerHTML = `<div class="panel-title"><p class="eyebrow">SELECTED MATCH</p><span class="pill ${outcome(row)}">${outcomes[outcome(row)]}</span></div><h2>${esc(label(row.scenario))}</h2><p class="subhead">${esc(label(row.variant_id))} · ${esc(row.case_id)} · wave ${esc(row.wave ?? "?")} · seed ${esc(row.seed ?? "?")}</p>
+  $("detail").innerHTML = `<div class="panel-title"><p class="eyebrow">SELECTED MATCH</p><span class="pill ${outcome(row)}">${outcomes[outcome(row)]}</span></div><h2>${esc(label(row.scenario))}</h2><p class="subhead">${esc(label(row.variant_id))} · ${esc(row.case_id)} · ${esc(caseContext(row))}<br>${replayLink(row.replay_url)}</p>
     <div class="detail-metrics"><div><span>Score / 100</span><strong>${number(row.score,1)}</strong></div><div><span>Total cost</span><strong>${euro(row.cost_eur)}</strong></div><div><span>Feasible reference</span><strong>${euro(row.reference_cost_eur)}</strong></div></div>
-    <p class="hint">End: ${esc(label(row.end_reason))}${row.supplier_id ? ` · supplier ${esc(row.supplier_id)}` : ""}. Elapsed ${seconds(row.virtual_elapsed_s)}; supplier delay ${seconds(row.supplier_delay_s)}. ${number(row.thread_timeouts)} thread timeouts; ${number(row.invalid_moves)} invalid moves.</p>
+    <p class="hint">End: ${esc(label(row.end_reason))}${row.supplier_id ? ` · supplier ${esc(row.supplier_id)}` : ""}. ${report.source === "hosted_practice" ? "Wall time" : "Elapsed"} ${seconds(elapsed(row))}; supplier delay ${seconds(row.supplier_delay_s)}. ${number(row.thread_timeouts)} thread timeouts; ${number(row.invalid_moves)} invalid moves.</p>
     ${row.error ? `<p class="event-alert">Run error: ${esc(row.error)}</p>` : ""}
-    <details><summary>Final terms & cost context</summary><p class="hint">Cost above the evaluator’s feasible reference: ${euro(row.regret_eur)}. Full cost includes more than unit price; it is not a sum of the plotted prices.</p>${Object.keys(row.terms || {}).length ? `<table class="facts"><tbody>${facts(row.terms)}</tbody></table>` : '<p class="hint">No final terms recorded.</p>'}</details>
+    <details><summary>Final terms & cost context</summary><p class="hint">Cost above the evaluator’s reference: ${euro(row.regret_eur)}. Full cost includes more than unit price; it is not a sum of the plotted prices.</p>${Object.keys(row.terms || {}).length ? `<table class="facts"><tbody>${facts(row.terms)}</tbody></table>` : '<p class="hint">No final terms recorded.</p>'}${Object.keys(row.cost_breakdown || {}).length ? `<h3>Cost components · EUR</h3><table class="facts"><tbody>${facts(row.cost_breakdown)}</tbody></table>` : ""}</details>
     <section><h3>Price movement</h3>${priceChart(decisions)}${historical ? '<p class="hint">This older report has no standing-quote snapshots. Only recorded actions/replies can be shown.</p>' : ""}</section>
     <section><div class="panel-title"><h3>Decision timeline</h3><span>${decisions.length} steps</span></div><p class="hint">Select a step to see its action and recorded reason.</p><div class="steps">${decisions.map((step,i) => `<button class="step" data-step="${i}" aria-pressed="${i===stepIndex}">${i+1}<span>${esc(step.route || "unknown")}</span></button>`).join("")}</div>
     ${d ? stepDetail(d) : '<p class="empty">This report did not record a decision timeline.</p>'}</section>`;

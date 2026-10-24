@@ -58,6 +58,24 @@ def test_legacy_empty_and_unicode_reports(dashboard):
     assert client.get("/api/reports/empty%20%C5%BC.json").json()["matches"] == []
 
 
+def test_hosted_practice_metadata_costs_and_wall_time_are_preserved(dashboard):
+    root, client = dashboard
+    report = {"source": "hosted_practice", "team_name": "winsortf", "models": {"fast": "configured-model",
+              "api_key": "private"}, "config": {"set": "practice", "scoring_authority": "hosted arena"},
+              "matches": [{"case_id": "case:P01", "session_id": "session-1", "rounds": 4, "elapsed_s": 90.5,
+                           "replay_url": "https://arena.tacto.ai/replay/session-1",
+                           "cost_breakdown": {"price": 100, "fallback_risk": 5, "prompt": "private"}}]}
+    (root / "hosted.json").write_text(json.dumps(report))
+    response = client.get("/api/reports/hosted.json")
+    data = response.json()
+    assert data["source"] == "hosted_practice" and data["team_name"] == "winsortf"
+    assert data["config"]["scoring_authority"] == "hosted arena"
+    assert data["matches"][0]["elapsed_s"] == 90.5
+    assert data["matches"][0]["replay_url"].endswith("/replay/session-1")
+    assert data["matches"][0]["cost_breakdown"] == {"price": 100, "fallback_risk": 5}
+    assert "private" not in response.text
+
+
 def test_routes_cannot_read_credentials_traverse_or_follow_symlinks(dashboard):
     root, client = dashboard
     (root / ".env").write_text("FAKE_TEST_KEY=not-a-real-credential")

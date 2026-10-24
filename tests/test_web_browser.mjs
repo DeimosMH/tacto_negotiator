@@ -17,6 +17,7 @@ const step = {route:"script", reason:"bounded_concession", decision_wall_s:.003,
 const current = {status:"completed",config:{scoring_version:2,waves:5,wave_seconds:480,workers:8},matches:Array.from({length:35},(_,i) => ({variant_id:i%2 ? "close" : "scripts", scenario:i%2 ? "simple_price" : "rfq", seed:i, wave:i%5+1, case_id:`case-${i}`, valid:i!==0, deal:i!==0, cost_eur:i===0 ? null : 1200, reference_cost_eur:1000, regret_eur:i===0 ? null : 200, score:i===0 ? 0 : .8, terms:i===0 ? {} : {unit_price:11,payment_days:60}, model_attempts:0, virtual_elapsed_s:20+i, supplier_delay_s:20, thread_timeouts:0, invalid_moves:0, end_reason:i===0 ? "no_deal" : "agreement", decisions:[step,{...step,reason:"deadline_close",deadline_override:true,sent_action:{supplier_id:"sup:A",action:"walk_away"},supplier_reply:{status:"walked_away"}}]}))};
 await writeFile(join(reports,"current.json"),JSON.stringify(current));
 await writeFile(join(reports,"historical.json"),JSON.stringify({excluded_from_comparison:true,matches:[{case_id:"old-case",variant_id:"old",scenario:"legacy",valid:true,deal:true,cost_eur:10,score:.7,decisions:[{route:"fast",reason:"semantic_decision",sent_action:action}]}]}));
+await writeFile(join(reports,"hosted.json"),JSON.stringify({source:"hosted_practice",team_name:"winsortf",status:"completed",models:{fast:"configured-model"},config:{set:"practice",workers:4},matches:[{...current.matches[1],wave:undefined,seed:undefined,elapsed_s:90.5,rounds:4,replay_url:"https://arena.tacto.ai/replay/session-1",cost_breakdown:{price:100,fallback_risk:5}}]}));
 const malicious = '<img src=x onerror="window.injected=true">';
 const imported = join(temp,"imported.json"), invalid = join(temp,"invalid.json");
 await writeFile(imported,JSON.stringify({matches:[{case_id:malicious,scenario:malicious,variant_id:malicious,terms:{unit_price:malicious},decisions:[{reason:malicious,route:malicious}]}]}));
@@ -108,6 +109,14 @@ try {
   await until("document.querySelector('#status')?.textContent.includes('historical.json ·')");
   assert.ok(await evaluate("document.querySelector('#notice').textContent.includes('Historical evaluator') && document.querySelector('#notice').textContent.includes('Excluded')"));
   assert.ok(await evaluate("document.querySelector('#detail').textContent.includes('no standing-quote snapshots')"));
+  await select("report","hosted.json");
+  await until("document.querySelector('#status')?.textContent.includes('hosted.json ·')");
+  assert.ok(await evaluate("document.querySelector('#notice').textContent.includes('Hosted practice') && !document.querySelector('#notice').textContent.includes('Historical evaluator')"));
+  assert.ok(await evaluate("document.querySelector('#run-meta').textContent.includes('winsortf') && document.querySelector('#wave').disabled"));
+  assert.ok(await evaluate("document.querySelector('#detail').textContent.includes('Wall time 90.5s') && !document.querySelector('#detail').textContent.includes('seed')"));
+  assert.equal(await evaluate("document.querySelector('#detail a').href"),"https://arena.tacto.ai/replay/session-1");
+  assert.ok(await evaluate("document.querySelector('#detail').textContent.includes('fallback risk')"));
+  assert.equal(await evaluate("replayLink('javascript:alert(1)') + replayLink('https://attacker.example/replay/a') + replayLink('https://arena.tacto.ai@attacker.example/replay/a')"),"");
   await upload(imported);
   await until("document.querySelector('#status')?.textContent.includes('opened in this browser only')");
   assert.ok(await evaluate("document.querySelector('#detail').textContent.includes('<img')"));
