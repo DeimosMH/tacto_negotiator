@@ -21,6 +21,7 @@ import httpx
 from ..cost import complete_offer, cost_breakdown, decision_cost, must_haves_ok, total_cost
 from ..docs import standard_terms
 from ..play import acceptable_offer, ask_limit, closing_move, latest, live_threads, moves_left, price_within, standing
+from .levers import FLOOR_QUESTION, floor_question_due, floor_reached, order_path_sentence
 from .naive import NaiveAgent
 
 log = logging.getLogger("arena")
@@ -46,8 +47,15 @@ Reply with ONE JSON object and nothing else:
   the recorded percentage change; for market indices cite both endpoints and the computed change.
   Only the case's quoted alternatives or a current rival offer are valid competitive quote claims.
 - Evidence that moves suppliers (observed on this arena): cite an index only where it FELL - a rising
-  index confirms the supplier's case. Purchase-order price history does not move suppliers; skip it.
-  Verified claims work best in the first message. Bluffs, urgency and ultimatums do not help.
+  index confirms the supplier's case. A flat purchase-order history does not move suppliers; skip it.
+  Only when ORDER PATH is given (our orders with this supplier rose >= 3 % in twelve months), lead the
+  first message with that sentence as written - the path from the old price to today's, with its po:
+  IDs: the rise is already in our price. Verified claims work best in the first message. Bluffs,
+  urgency and ultimatums do not help. Never name an acceptable price or "the current level" in the
+  opening: it anchors the supplier's floor upward.
+- When FLOOR QUESTION is given (the supplier holds and is not final), ask once, with your term sheets:
+  "What is the lowest price at which you can sign these terms today?". If its answer names a floor
+  equal to its standing price, do not probe below it.
 - Cite a should-cost (cost:) only where it is clearly below the supplier's price; above it, it
   supports the supplier. Meeting notes, letters and contracts (doc:, ctr:) are context the arena
   does not check - use their content, but put checkable IDs (idx, fc, sc, quote, offer, cost) in claims.
@@ -222,6 +230,12 @@ class LLMAgent:
                                 if math.isfinite(decision_cost(case, sheet["terms"], std, sid))]
                 if alternatives:
                     out.append("SUPPLIER ALTERNATIVES: " + json.dumps(alternatives))
+            if path := order_path_sentence(self.package, case, threads, sid):
+                out.append(f"ORDER PATH (checked; lead this first message with it as written): {path}")
+            if floor_question_due(case, threads, sid):
+                out.append(f'FLOOR QUESTION: {sid} holds; ask in this e-mail: "{FLOOR_QUESTION}"')
+            if floor_reached(events):
+                out.append(f"FLOOR NAMED: {sid} named a floor equal to its standing price; do not probe below it.")
             for m in events[-6:]:
                 head = {k: m.get(k) for k in ("status", "term_sheets", "missing_fields", "claim_results") if m.get(k)}
                 out.append(f"--- {m.get('from')}: {json.dumps(head)}\n{m.get('body', '')[:800]}")

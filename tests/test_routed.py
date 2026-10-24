@@ -5,8 +5,10 @@ import json
 
 import pytest
 
+from tacto_negotiator.agents.levers import near_close_sheet
 from tacto_negotiator.agents.routed import RoutedAgent
 from tacto_negotiator.cost import total_cost
+from tacto_negotiator.play import closing_move
 from tacto_negotiator.sim import load_cases
 
 
@@ -354,7 +356,24 @@ def test_a_stalled_supplier_lets_the_model_accept_an_open_offer(scenario):
                           "term_sheets": [{"term_sheet_id": f"offer:{len(threads[sid])}",
                                            "terms": {"unit_price": price, "payment_days": 30}}]}]
     agent = RoutedAgent(completion(sid, [], json.dumps({"supplier_id": sid, "action": "accept"})))
+    near = agent.decide(case, threads)  # one near-close ask 0.75 % below the open offer, on its terms
+    assert agent.last_decision["reason"] == "near_close"
+    assert near["message"]["term_sheets"][0]["terms"]["unit_price"] == 18.86
+    threads[sid] += [{"from": "buyer", **near["message"]},
+                     {"from": "supplier", "status": "open", "body": "We hold.", "term_sheets": [
+                         {"term_sheet_id": "offer:held", "terms": {"unit_price": 19, "payment_days": 30}}]}]
     assert agent.decide(case, threads)["message"]["action"]["type"] == "accept"
+
+
+def test_a_final_offer_is_never_answered_with_a_near_close(scenario):
+    case, threads, sid = scenario
+    threads[sid] += [{"from": "buyer", "body": "Our package.", "term_sheets": [
+                         {"terms": {"unit_price": 16, "payment_days": 30}}]},
+                     {"from": "supplier", "status": "final_offer", "body": "Final.", "term_sheets": [
+                         {"term_sheet_id": "offer:final", "terms": {"unit_price": 19, "payment_days": 30}}]}]
+    assert near_close_sheet(case, threads[sid], sid) is None
+    move = RoutedAgent(None)._before_accept(case, threads, "x", closing_move(case, threads))[1]
+    assert move["message"]["action"]["type"] == "accept"
 
 
 def _final_with_alternative(threads, sid, alternative):

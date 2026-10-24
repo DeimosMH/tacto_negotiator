@@ -91,6 +91,22 @@ class ClaimChecker:
             if notices[0].get("days") is None:
                 return "unmodeled"
             expected = {"days": notices[0]["days"]}
+        elif kind == "price_history":  # 2-8 orders of one case part, checked against the order prices
+            if (not 2 <= len(rows) <= 8 or not all(ref.startswith("po:") for ref in refs)
+                    or len({row.get("part") for row in rows}) != 1 or rows[0].get("part") not in parts
+                    or any(row.get("supplier") != supplier for row in rows)):
+                return "irrelevant"
+            prices = asserted.get("prices")
+            if prices is None:
+                return "verified"  # without a figure the data's own values are taken
+            if not isinstance(prices, list) or len(prices) != len(rows):
+                return "contradicted"
+            for actual, row in zip(prices, rows, strict=True):
+                expected_value = row.get("unit_price")
+                if (type(actual) not in (int, float) or type(expected_value) not in (int, float)
+                        or abs(actual - expected_value) > max(.01, abs(expected_value) * .005) + 1e-9):
+                    return "contradicted"
+            return "verified"
         elif kind in {"supplier_news", "news"}:
             return "verified" if all(row.get("supplier") == supplier for row in rows) else "irrelevant"
         else:

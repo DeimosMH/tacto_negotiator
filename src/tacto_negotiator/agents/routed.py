@@ -37,6 +37,14 @@ from ..play import (
     price_within,
     standing,
 )
+from .levers import (
+    FLOOR_QUESTION,
+    NEAR_CLOSE_TEXT,
+    floor_question_due,
+    floor_reached,
+    near_close_sheet,
+    order_path_sentence,
+)
 from .llm import ID_RE, SYSTEM, LLMAgent, parse
 
 log = logging.getLogger("arena")
@@ -367,6 +375,19 @@ class RoutedAgent:
         ours = min(decision_cost(case, s.get("terms", s), std, sid) for s in sent[-1]["term_sheets"])
         return accepted[1] > ours * 1.005
 
+    def _before_accept(self, case, threads, reason, move):
+        """(reason, move): an accept of an OPEN offer becomes one near-close ask `NEAR_CLOSE_SHARE` below it
+        on its own terms, once per supplier (`levers.near_close_sheet`); a final offer or an agreement is
+        accepted as it stands."""
+        sid = move.get("supplier_id")
+        if move.get("message", {}).get("action", {}).get("type") != "accept" or sid not in threads:
+            return reason, move
+        if sid in self.unavailable or (sheet := near_close_sheet(case, threads[sid], sid)) is None:
+            return reason, move
+        near = self.validate(case, threads, {"supplier_id": sid, "action": "send", "body": NEAR_CLOSE_TEXT,
+                                             "term_sheets": [sheet]}, reprice=False)
+        return ("near_close", near) if near else (reason, move)
+
     def _limit_counter(self, case, threads, sid):
         """One sheet on the supplier's standing terms at our current ask limit (never below the
         health floor): the fallback counter when no enumerated package applies."""
@@ -668,7 +689,8 @@ class RoutedAgent:
                 small_gap = current_cost <= previous_cost * 1.002
                 if tried and (small_gap or moves_left(case, threads[sid]) <= 1):
                     if self.validate(case, threads, {"supplier_id": sid, "action": "accept"}):
-                        return "small_cost_gap" if small_gap else "round_reserve", closing_move(case, threads)
+                        reason = "small_cost_gap" if small_gap else "round_reserve"
+                        return self._before_accept(case, threads, reason, closing_move(case, threads))
             anchor = ANCHOR_BY_GOAL.get(case["buyer"].get("category_goal"), 0.15)
             cap = math.inf if sent else max(round(current["unit_price"] * (1 - anchor), 2),
                                             opening_price_cap(case, threads[sid], sid))
@@ -708,11 +730,13 @@ class RoutedAgent:
                     if terms not in chosen:
                         chosen.append(terms)
             rival, forecast = self._rival_evidence(case, threads, sid), self._forecast_evidence(case, threads)
-            falls = self._index_evidence(case, threads, 3 - bool(rival) - bool(forecast))
+            path = order_path_sentence(self.context.package, case, threads, sid)  # round 1 only
+            falls = self._index_evidence(case, threads, 3 - bool(rival) - bool(forecast) - bool(path))
+            question = FLOOR_QUESTION if sent and floor_question_due(case, threads, sid) else ""
             move = self.validate(case, threads, {"supplier_id": sid, "action": "send",
                 "body": " ".join(part for part in (
-                    "Please consider these complete packages for the stated requirement.",
-                    forecast, falls, rival) if part),
+                    path, "Please consider these complete packages for the stated requirement.",
+                    forecast, falls, rival, question) if part),
                 "term_sheets": chosen})
             if move:
                 reason = "bounded_concession" if sent else "enumerated_opening"
@@ -783,6 +807,16 @@ class RoutedAgent:
                      "body": f"Please confirm these terms: {', '.join(missing)}. Please provide a complete term sheet."}
                 if move := self.validate(case, threads, d):
                     return "missing_quote_terms", move
+        for sid in live:
+            # It named a floor at its standing price (no probing below it), or it answered our near-close
+            # ask: accept its open offer if it is our best close (a first named floor gets one near-close).
+            events = threads[sid]
+            answered = any(NEAR_CLOSE_TEXT in (m.get("body") or "") for m in events if m.get("from") == "buyer")
+            if latest(events).get("status") == "open" and (answered or floor_reached(events)):
+                close = closing_move(case, threads)
+                if close["supplier_id"] == sid and close["message"].get("action", {}).get("type") == "accept":
+                    return self._before_accept(case, threads, "near_close_answered" if answered else "named_floor",
+                                               close)
         if self._semantic_blocker(case, threads):
             return None
         if (len(live) == 1 and set(case["negotiable"]) <= {"unit_price", "payment_days"}
@@ -793,8 +827,9 @@ class RoutedAgent:
             if not missing and not any(m.get("from") == "buyer" for m in threads[sid]):
                 anchor = ANCHOR_BY_GOAL.get(case["buyer"].get("category_goal"), 0.15)
                 proposal = {**std, **terms, "unit_price": round(terms["unit_price"] * (1 - anchor), 2)}
-                body = " ".join(part for part in ("Thank you. Please consider this price proposal.",
-                                                  self._index_evidence(case, threads, 3)) if part)
+                path = order_path_sentence(self.context.package, case, threads, sid)
+                body = " ".join(part for part in (path, "Thank you. Please consider this price proposal.",
+                                                  self._index_evidence(case, threads, 3 - bool(path))) if part)
                 d = {"supplier_id": sid, "action": "send", "body": body,
                      "term_sheets": [complete_offer(case, proposal, std)]}
                 move = self.validate(case, threads, d)
@@ -868,6 +903,7 @@ class RoutedAgent:
             if move["message"].get("action", {}).get("type") == "accept" and self._premature(
                     case, threads, move["supplier_id"]):
                 raise ValueError("model accepted an open offer above our last ask")
+            reason, move = self._before_accept(case, threads, reason, move)
             self._record(case, route, reason, start, deadline)
             return move
         except Exception as error:
@@ -886,6 +922,8 @@ class RoutedAgent:
                     move = repair[1]
                 elif open_offer and (counter := self._limit_counter(case, threads, move["supplier_id"])):
                     move = counter
+            if self.clock() < thread_deadline - 1:
+                move = self._before_accept(case, threads, "fallback", move)[1]
             self._record(case, route, type(error).__name__, start, deadline, fallback=True)
             self.last_decision["error"] = str(error)[:300]
             return move
