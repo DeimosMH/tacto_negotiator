@@ -12,6 +12,7 @@ def test_dossier_reads_related_correspondence_and_release_without_unrelated_supp
         "doc:note": {"supplier": "sup:A", "date": "2026-07-01", "body": "Material hedged through March."},
         "doc:unrelated": {"supplier": "sup:B", "body": "Unrelated terms."},
         "quote:1": {"part": "part:A", "supplier": "sup:B", "unit_price": 10, "price_unit": 100},
+        "quote:unrelated": {"part": "part:A", "unit_price": 1},
         "idx:METAL@2025-09": {"series": "METAL", "month": "2025-09", "value": 100},
         "idx:METAL@2026-09": {"series": "METAL", "month": "2026-09", "value": 110},
     }
@@ -21,9 +22,11 @@ def test_dossier_reads_related_correspondence_and_release_without_unrelated_supp
     (release / "facts.json").write_text(json.dumps({"news:new": {
         "supplier": "sup:A", "date": "2026-10-25", "body": "New capacity."}}))
     package = DataPackage(tmp_path)
-    case = {"suppliers": ["sup:A"], "parts": ["part:A"], "buyer": {"index_paths": {"METAL": .05}}}
+    case = {"suppliers": ["sup:A"], "parts": ["part:A"], "refs": ["quote:1"],
+            "buyer": {"index_paths": {"METAL": .05}}}
     dossier = package.negotiation_facts(case)
     assert "doc:unrelated" not in dossier
+    assert "quote:unrelated" not in dossier
     assert dossier["doc:note"]["text"] == "Material hedged through March."
     assert dossier["news:new"]["text"] == "New capacity."
     assert dossier["quote:1"]["price_unit"] == 100
@@ -59,3 +62,15 @@ def test_prompt_prices_payment_tradeoffs_and_supplier_alternatives():
     assert f'"cost_eur": {total_cost(case, {**terms, "payment_days": 60})}' in prompt
     assert f'"cost_eur": {total_cost(case, alternative)}' in prompt
     assert '"term_sheet_id": "offer:alternative"' in prompt
+
+
+def test_script_cites_latest_positive_forecast_once_without_model():
+    agent = RoutedAgent(None)
+    case = {"parts": ["part:A", "part:B"], "facts": {
+        "fc:A@2025-01": {"part": "part:A", "change_pct": 40},
+        "fc:A@2026-01": {"part": "part:A", "change_pct": 12.5},
+        "fc:B@2026-01": {"part": "part:B", "change_pct": -10}}}
+    body = agent._forecast_evidence(case, {})
+    assert "12.5%" in body and "fc:A@2026-01" in body
+    assert "2025" not in body and "part:B" not in body
+    assert not agent._forecast_evidence(case, {"sup:A": [{"from": "buyer", "body": body}]})

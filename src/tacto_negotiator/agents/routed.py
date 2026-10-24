@@ -122,7 +122,7 @@ class RoutedAgent:
     def _semantic_blocker(self, case, threads):
         if self.context.case_id == case["case_id"]:
             return True  # Preserve the model's negotiation context after a semantic exchange.
-        if case["buyer"].get("category_goal", "routine") not in {"routine", "leverage"}:
+        if case["buyer"].get("category_goal", "routine") not in {"routine", "leverage", "quality_first"}:
             return True
         for sid in live_threads(threads):
             reply = latest(threads[sid])
@@ -165,6 +165,22 @@ class RoutedAgent:
             if must_haves_ok(case, proposal):
                 rows.append((cost, proposal))
         return sorted(rows, key=lambda row: total_cost(case, {**row[1], "unit_price": reference_price}))
+
+    def _forecast_evidence(self, case, threads):
+        facts = {**getattr(self.context.package, "facts", {}), **case.get("facts", {})}
+        cited = {ref for events in threads.values() for message in events if message.get("from") == "buyer"
+                 for ref in ID_RE.findall(message.get("body", ""))}
+        arguments = []
+        for part in case["parts"]:
+            refs = sorted(ref for ref, fact in facts.items() if ref.startswith("fc:") and fact.get("part") == part)
+            if not refs:
+                continue
+            ref = refs[-1]
+            change = facts[ref].get("change_pct")
+            if ref not in cited and type(change) in (int, float) and math.isfinite(change) and change > 0:
+                arguments.append(f"The forecast for {part} increased by {change:g}% ({ref}); "
+                                 "please reflect this additional business in your price.")
+        return " ".join(arguments[:3])
 
     def _structured_bargain(self, case, threads):
         """Use public quotes/options only; do not estimate a hidden floor or train on simulator rules."""
@@ -236,7 +252,7 @@ class RoutedAgent:
                     return None
                 previous_cost = min(total_cost(case, sheet) for sheet in prior)
                 target_cost = min(current_cost, (previous_cost + current_cost) / 2)
-                small_gap = current_cost <= previous_cost * 1.01
+                small_gap = current_cost <= previous_cost * 1.002
                 if tried and (small_gap or moves_left(case, threads[sid]) <= 1):
                     if self.validate(case, threads, {"supplier_id": sid, "action": "accept"}):
                         return "small_cost_gap" if small_gap else "round_reserve", closing_move(case, threads)
@@ -257,7 +273,8 @@ class RoutedAgent:
                 if terms not in chosen:
                     chosen.append(terms)
             move = self.validate(case, threads, {"supplier_id": sid, "action": "send",
-                "body": "Please consider these complete packages for the stated requirement.", "term_sheets": chosen})
+                "body": ("Please consider these complete packages for the stated requirement. "
+                         + self._forecast_evidence(case, threads)).strip(), "term_sheets": chosen})
             if move:
                 reason = "bounded_concession" if sent else "enumerated_opening"
                 if not must_haves_ok(case, current, record["std"]):
@@ -347,5 +364,11 @@ class RoutedAgent:
         except Exception as error:
             # Providers enforce cancellation; this also discards late results from injected completions.
             move = closing_move(case, threads)
+            if (self.clock() < deadline and case["buyer"].get("category_goal") not in RELATIONSHIP_GOALS
+                    and move["message"].get("action", {}).get("type") == "walk_away"
+                    and any(moves_left(case, threads[sid]) > 1 for sid in live_threads(threads))):
+                repair = self._structured_bargain(case, threads)
+                if repair and repair[0] == "must_have_repair":
+                    move = repair[1]
             self._record(case, route, type(error).__name__, start, deadline, fallback=True)
             return move

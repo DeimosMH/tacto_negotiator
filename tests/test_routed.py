@@ -207,6 +207,20 @@ def test_failure_falls_back_without_trying_a_second_provider(scenario, failure):
     assert agent.last_decision["route"] == "strong" and agent.last_decision["fallback"]
 
 
+def test_invalid_model_can_repair_a_must_have_instead_of_abandoning_the_case(scenario):
+    case, threads, sid = scenario
+    case["buyer"]["category_goal"] = "quality_first"
+    case["buyer"]["must_haves"] = [{"field": "payment_days", "op": ">=", "value": 60}]
+    case["term_options"] = {"payment_days": [14, 30, 60]}
+    threads[sid][-1]["body"] = "Please explain the new requirement."
+    calls = []
+    agent = RoutedAgent(completion(sid, calls, "invalid JSON"))
+    move = agent.decide(case, threads)
+    assert len(calls) == 1 and agent.last_decision["fallback"]
+    assert not move["message"].get("action")
+    assert all(s["terms"]["payment_days"] == 60 for s in move["message"]["term_sheets"])
+
+
 def test_invalid_supplier_standard_cannot_bypass_term_bounds(scenario):
     case, threads, sid = scenario
     threads[sid][-1]["term_sheets"][0]["terms"].pop("payment_days")

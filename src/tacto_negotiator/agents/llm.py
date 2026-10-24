@@ -18,7 +18,7 @@ import re
 
 import httpx
 
-from ..cost import complete_offer, cost_breakdown, total_cost
+from ..cost import complete_offer, cost_breakdown, must_haves_ok, total_cost
 from ..docs import standard_terms
 from ..play import acceptable_offer, closing_move, latest, live_threads, moves_left, standing
 from .naive import NaiveAgent
@@ -39,8 +39,12 @@ Reply with ONE JSON object and nothing else:
 {"supplier_id": "...", "action": "walk_away"}   (ends the case without a deal)
 
 - term_sheets: 0-3 alternative packages over the negotiable fields. Only term sheets bind.
+  Every proposed package must satisfy the must-haves and use only the listed term_options.
 - Arguments need data: cite the ID from FACTS and its figure in the same sentence, one argument
   per sentence. The supplier checks the figure; a wrong one or an unknown ID costs trust.
+  At most three claims per message. Use new IDs, not previously checked ones. For forecasts cite
+  the recorded percentage change; for market indices cite both endpoints and the computed change.
+  Only the case's quoted alternatives or a current rival offer are valid competitive quote claims.
 - The supplier's team reads your e-mail as a person would. Ask questions (a cost breakdown, the
   earliest lead time, cheaper variants). Never reveal urgency, a budget or a missing alternative.
   Stay polite and factual.
@@ -148,6 +152,10 @@ class LLMAgent:
 
     def render(self, case, threads):
         out = [self.brief]
+        cited = sorted({ref for events in threads.values() for message in events if message.get("from") == "buyer"
+                        for ref in ID_RE.findall(message.get("body", ""))})
+        if cited:
+            out.append("ALREADY CITED (avoid duplicate claims): " + ", ".join(cited))
         alt = case["buyer"].get("alternative") or {}
         if alt.get("kind") not in (None, "none") and alt.get("terms", {}).get("unit_price"):
             out.append(f"\nYour alternative without a deal: C = {total_cost(case, alt['terms']):,.0f}")
@@ -174,6 +182,7 @@ class LLMAgent:
                         if math.isfinite(variant_cost):
                             comparisons.append({"field": field, "value": value,
                                                 "cost_eur": variant_cost,
+                                                "must_haves_ok": must_haves_ok(case, {**terms, field: value}, std),
                                                 "delta_eur": round(variant_cost - current_cost, 2)})
                 out.append("TERM TRADEOFFS (one field changed, other terms and price held fixed; "
                            "not supplier commitments; health excluded): " + json.dumps(comparisons))

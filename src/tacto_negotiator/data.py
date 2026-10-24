@@ -101,9 +101,11 @@ class DataPackage:
         """A bounded dossier from supplied evidence, including the Sunday overlay."""
         suppliers, parts = set(case["suppliers"]), set(case["parts"])
         selected = {}
+        quotes = set(case.get("refs", [])) | {(case["buyer"].get("alternative") or {}).get("ref")}
         for prefix, limit in (("doc:", 24), ("news:", 8), ("cost:", 8), ("quote:", 12), ("fc:", 6)):
             rows = [(ref, fact) for ref, fact in self.facts.items() if ref.startswith(prefix) and (
-                fact.get("supplier") in suppliers if prefix in ("doc:", "news:") else fact.get("part") in parts)]
+                fact.get("supplier") in suppliers if prefix in ("doc:", "news:") else fact.get("part") in parts)
+                and (prefix != "quote:" or ref in quotes)]
             rows.sort(key=lambda item: (item[1].get("date", ""), item[0]), reverse=True)
             for ref, fact in rows[:limit]:
                 selected[ref] = dict(fact)
