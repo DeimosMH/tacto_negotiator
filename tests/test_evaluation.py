@@ -119,3 +119,33 @@ def test_opening_offers_the_suppliers_lead_time_at_equal_cost():
         assert slow[0]["unit_price"] < min(t["unit_price"] for t in fast)
         std = known_offer(case, threads[sid])[2]
         assert decision_cost(case, slow[0], std, sid) <= min(decision_cost(case, t, std, sid) for t in fast) * 1.03
+
+
+def test_an_equal_cost_sheet_at_an_implausible_price_is_not_sent():
+    from tacto_negotiator.agents.routed import RoutedAgent
+    from tacto_negotiator.cost import total_cost
+
+    feedback = json.loads((ROOT / "tests/fixtures/practice_feedback.json").read_text())
+    case = dict(feedback["cases"]["case:P18"])
+    sid = case["suppliers"][0]
+    opening = {"from": "sales@70740", "status": "open", "body": "Our quote.",
+               "term_sheets": [{"term_sheet_id": "offer:0", "terms": {
+                   "unit_price": 6.1, "payment_days": 30, "index_clause": None, "contract_months": 12}}],
+               "attachments": [{"name": "quote.pdf", "text": "Our standard terms\nPayment terms (days net) 30"}]}
+    ours = {"from": "buyer", "body": "Our package.", "term_sheets": [{"terms": {
+        "unit_price": 4.57, "payment_days": 90, "index_clause": None, "contract_months": 24}}]}
+    counter = {**opening, "term_sheets": [{"term_sheet_id": "offer:1", "terms": {
+        "unit_price": 5.4, "payment_days": 90, "index_clause": None, "contract_months": 24}}]}
+    threads = {sid: [opening, ours, counter]}
+    long = {"unit_price": 4.75, "payment_days": 90, "index_clause": None, "contract_months": 24}
+    short = {**long, "contract_months": 12}  # hosted P18 v8: equal cost only because demand goes uncovered
+    low, high = 0.5, 4.75
+    for _ in range(40):
+        mid = (low + high) / 2
+        fits = total_cost(case, {**short, "unit_price": mid}) <= total_cost(case, long)
+        low, high = (mid, high) if fits else (low, mid)
+    short["unit_price"] = round(low, 2)
+    move = RoutedAgent(None).validate(case, threads, {"supplier_id": sid, "action": "send", "body": "Packages.",
+                                                      "term_sheets": [long, short]})
+    prices = [s["terms"]["unit_price"] for s in move["message"]["term_sheets"]]
+    assert short["unit_price"] < 0.9 * long["unit_price"] and min(prices) >= 0.9 * max(prices)

@@ -137,6 +137,10 @@ class RoutedAgent:
                 clean = [t for t in clean if decision_cost(case, t, std, sid) <= cheapest * 1.003 + 0.01]
                 if reprice:  # a mirrored supplier package goes back alone
                     clean += self._toward_sheets(case, events, sid, clean, 3 - len(clean), limit)
+                # Equal cost to us is not credibility to the supplier: hosted P18 v8 got a 2.78 sheet (a 12-month
+                # term priced against uncovered demand) next to 4.57 and countered 6.00 instead of 5.40.
+                top = max(t["unit_price"] for t in clean)
+                clean = [t for t in clean if t["unit_price"] >= 0.9 * top] or clean[:1]
             move = {"supplier_id": sid, "message": {
                 "subject": subject, "body": body, "term_sheets": [{"terms": t} for t in clean]}}
             return move if len(json.dumps({"message": move["message"]}).encode()) <= 64_000 else None
