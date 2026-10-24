@@ -175,12 +175,17 @@ class AnthropicCompletionClient(CompletionClient):
     """
 
     def __init__(self, model, api_key, *, effort="low", max_output_tokens=16000, semaphore=None,
-                 service_tier=None, base_url=None):
+                 service_tier=None, base_url=None, speed=None):
         if not isinstance(api_key, str) or not api_key.strip():
             raise ValueError("set ANTHROPIC_API_KEY for an Anthropic model")
+        if speed not in (None, "fast"):
+            raise ValueError("speed is 'fast' or unset")
         super().__init__(model, api_key, effort=effort, max_output_tokens=max_output_tokens,
                          semaphore=semaphore, service_tier=service_tier)
         self.url, self.headers, self.api_key = ANTHROPIC_URL, {}, api_key
+        # Fast mode: the same model and effort at ~2.3x output speed (204 vs 90 tok/s measured); latency is
+        # almost all output tokens (hosted v16: r = 0.99, ~11 s per 1k tokens), so decisions take ~half the time.
+        self.speed = speed
 
     async def _request(self, system, user, deadline, observer=None):
         import anthropic
@@ -188,15 +193,23 @@ class AnthropicCompletionClient(CompletionClient):
         async with asyncio.timeout(_remaining(deadline)):
             async with anthropic.AsyncAnthropic(api_key=self.api_key, max_retries=0,
                                                 timeout=_remaining(deadline)) as client:
-                message = await client.beta.messages.create(
+                request = dict(
                     model=self.model,
                     max_tokens=self.max_output_tokens,
                     system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
                     messages=[{"role": "user", "content": user}],
                     output_config={"effort": self.effort},
-                    betas=["server-side-fallback-2026-07-01"],
                     fallbacks="default",
                 )
+                message = None
+                if self.speed == "fast":
+                    try:
+                        message = await client.beta.messages.create(
+                            speed="fast", betas=["server-side-fallback-2026-07-01", "fast-mode-2026-02-01"], **request)
+                    except anthropic.RateLimitError:  # fast mode has its own rate limit: standard speed instead
+                        message = None
+                if message is None:
+                    message = await client.beta.messages.create(betas=["server-side-fallback-2026-07-01"], **request)
                 if observer is not None:
                     observer(anthropic_metadata(message))
                 if message.stop_reason != "end_turn":
@@ -229,6 +242,8 @@ def routed_completions_from_env():
             "base_url": os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1"),
             "semaphore": threading.BoundedSemaphore(maximum),
         }
+    if provider == "anthropic" and os.environ.get("LLM_SPEED"):
+        shared["speed"] = os.environ["LLM_SPEED"]
     fast = client(os.environ.get("LLM_MODEL", default_model), effort=os.environ.get("LLM_EFFORT", "low"), **shared)
     strong_model = os.environ.get("LLM_STRONG_MODEL", "").strip()
     strong = (client(strong_model, effort=os.environ.get("LLM_STRONG_EFFORT", "medium"), **shared)
