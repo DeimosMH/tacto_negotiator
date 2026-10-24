@@ -111,13 +111,20 @@ class RoutedAgent:
                     return None
                 if complete not in clean:
                     clean.append(complete)
-            limit = ask_limit(case, events, sid)  # the shared concession schedule binds scripts and models
-            if any(decision_cost(case, t, std, sid) > limit * 1.005 + 0.01 for t in clean):
-                return None
-            if clean and not any(e.get("from") == "buyer" and e.get("term_sheets") for e in events):
-                cap = opening_price_cap(case, events, sid)  # per package: its own health floor may be higher
-                if any(t["unit_price"] > max(cap, cheapest_price(case, t, std, sid) or 0) + 0.02 for t in clean):
-                    return None
+            # The shared concession schedule binds scripts and models: a sheet above the ask limit (or an
+            # opening above the anchored price) is repriced to it, keeping the chosen terms. Rejecting
+            # them sent 8 of 10 hosted v4 openings to the fallback.
+            limit = ask_limit(case, events, sid)
+            opening = not any(e.get("from") == "buyer" and e.get("term_sheets") for e in events)
+            cap = opening_price_cap(case, events, sid) if opening else math.inf
+            conformed = []
+            for t in clean:
+                ceiling = max(cap, cheapest_price(case, t, std, sid) or 0) if opening else math.inf
+                if decision_cost(case, t, std, sid) > limit * 1.005 + 0.01 or t["unit_price"] > ceiling + 0.02:
+                    t = {**t, "unit_price": self._price_within(case, t, std, sid, limit, ceiling)}
+                if t not in conformed:
+                    conformed.append(t)
+            clean = conformed
             if clean:  # the supplier picks the sheet dearest for us (hosted P03): keep equal-cost sheets only
                 cheapest = min(decision_cost(case, t, std, sid) for t in clean)
                 clean = [t for t in clean if decision_cost(case, t, std, sid) <= cheapest * 1.003 + 0.01]
@@ -177,6 +184,25 @@ class RoutedAgent:
         return move
 
     @staticmethod
+    def _price_within(case, sheet, std, sid, limit, cap=math.inf):
+        """The highest price for these terms with C <= limit and price <= cap, never below the health
+        floor. C rises with price above that floor (below it the margin penalty grows), so search there;
+        a search from half the price stalled hosted P02 at the floor for four rounds."""
+        floor = cheapest_price(case, sheet, std, sid) or 0.0
+        low, high = max(floor, sheet["unit_price"] * 0.5), min(sheet["unit_price"], cap)
+        if high <= low:
+            return round(max(floor, high), 2)
+        if decision_cost(case, {**sheet, "unit_price": low}, std, sid) > limit:
+            return round(low, 2)  # the limit is below what these terms can cost: ask at the floor
+        for _ in range(40):
+            middle = (low + high) / 2
+            if decision_cost(case, {**sheet, "unit_price": middle}, std, sid) <= limit:
+                low = middle
+            else:
+                high = middle
+        return max(math.floor(low * 100) / 100, round(floor, 2))
+
+    @staticmethod
     def _premature(case, threads, sid):
         """An open offer, with moves left, still above our last ask (both top teams accepted only final
         offers and agreements; hosted P01/P02 accepted open offers 3 % above our ask in round 2)."""
@@ -201,14 +227,7 @@ class RoutedAgent:
             return None
         resolved = {**std, **case.get("fixed_terms", {}), **terms}
         sheet = {f: resolved[f] for f in case["negotiable"]}
-        low, high = sheet["unit_price"] * 0.5, sheet["unit_price"]
-        for _ in range(40):  # the highest price whose C stays within the limit
-            middle = (low + high) / 2
-            if decision_cost(case, {**sheet, "unit_price": middle}, std, sid) <= limit:
-                low = middle
-            else:
-                high = middle
-        price = max(math.floor(low * 100) / 100, cheapest_price(case, sheet, std, sid) or 0)
+        price = self._price_within(case, sheet, std, sid, limit)
         if price >= sheet["unit_price"]:
             return None
         return self.validate(case, threads, {"supplier_id": sid, "action": "send",

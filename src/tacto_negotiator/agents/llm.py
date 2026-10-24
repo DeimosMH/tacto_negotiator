@@ -51,6 +51,8 @@ Reply with ONE JSON object and nothing else:
 - Cite a should-cost (cost:) only where it is clearly below the supplier's price; above it, it
   supports the supplier. Meeting notes, letters and contracts (doc:, ctr:) are context the arena
   does not check - use their content, but put checkable IDs (idx, fc, sc, quote, offer, cost) in claims.
+- Do not write prices or other term values in the body: the attached term sheets carry them, and code
+  may adjust a sheet to the concession schedule. Figures belong only to cited claims.
 - When the supplier asks about volume or commitment, answer with the exact figures of your term
   sheets (pieces per year, contract months). A vague answer has lost bidders.
 - The supplier's team reads your e-mail as a person would. Ask questions (the earliest lead time,

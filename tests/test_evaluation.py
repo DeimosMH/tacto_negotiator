@@ -46,3 +46,18 @@ def test_supplier_estimates_reproduce_hosted_health_charges():
         assert abs(health - result["cost_breakdown"].get("relationship", 0)) < 400, session["session_id"]
         checked += 1
     assert checked >= 8
+
+
+def test_counter_price_moves_above_the_health_floor_when_the_limit_allows():
+    from tacto_negotiator.agents.routed import RoutedAgent
+    from tacto_negotiator.cost import cheapest_price, decision_cost
+
+    feedback = json.loads((ROOT / "tests/fixtures/practice_feedback.json").read_text())
+    case = dict(feedback["cases"]["case:P02"])
+    case["_supplier_estimates"] = DataPackage(ROOT / "data").supplier_estimates(case)
+    sid, std = "sup:70510", {"ppm_commitment": 250, "chargeback_eur_per_complaint": 0.0}
+    sheet = {"unit_price": 373.88, "payment_days": 90, "index_clause": None}
+    floor = cheapest_price(case, sheet, std, sid)
+    limit = decision_cost(case, {**sheet, "unit_price": floor + 4}, std, sid)  # hosted P02 repeated the floor
+    price = RoutedAgent._price_within(case, sheet, std, sid, limit)
+    assert floor + 3.9 <= price <= floor + 4.01 and decision_cost(case, {**sheet, "unit_price": price}, std, sid) <= limit

@@ -5,6 +5,7 @@ import csv
 import json
 import os
 import sqlite3
+import threading
 from functools import cached_property
 from pathlib import Path
 
@@ -30,6 +31,9 @@ class DataPackage:
         if not dbs and not facts:
             raise FileNotFoundError(f"no facts.json or .sqlite under {self.root}")
         self.db = None
+        # Parallel cases share one package: one connection used from several threads interleaves
+        # cursors (a KeyError in a 10-worker replica run), so every database access holds this lock.
+        self._lock = threading.RLock()
         if dbs:
             self.db = sqlite3.connect(f"file:{dbs[0]}?mode=ro", uri=True, check_same_thread=False)
             self.db.row_factory = sqlite3.Row
@@ -39,34 +43,37 @@ class DataPackage:
         """{table: {"columns": [...], "rows": n}}"""
         if self.db is None:
             return {}
-        names = [r[0] for r in self.db.execute("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name")]
-        return {
-            t: {
-                "columns": [f"{c[1]} {c[2]}".strip() for c in self.db.execute(f'PRAGMA table_info("{t}")')],
-                "rows": self.db.execute(f'SELECT count(*) FROM "{t}"').fetchone()[0],
+        with self._lock:
+            names = [r[0] for r in self.db.execute("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name")]
+            return {
+                t: {
+                    "columns": [f"{c[1]} {c[2]}".strip() for c in self.db.execute(f'PRAGMA table_info("{t}")')],
+                    "rows": self.db.execute(f'SELECT count(*) FROM "{t}"').fetchone()[0],
+                }
+                for t in names
             }
-            for t in names
-        }
 
     def query(self, sql, params=(), limit=MAX_ROWS):
         if self.db is None:
             raise ValueError("this package has no SQLite file")
         if sql.lstrip().split(None, 1)[0].lower() not in {"select", "with"}:
             raise ValueError("read-only: SELECT or WITH statements only")
-        cur = self.db.execute(sql, params)
-        return [dict(r) for r in cur.fetchmany(limit)]
+        with self._lock:
+            cur = self.db.execute(sql, params)
+            return [dict(r) for r in cur.fetchmany(limit)]
 
     @cached_property
     def _ids(self):
         # A table's citable ID sits in its `id` column, else in its first column.
         index = {}
-        for t, meta in self.tables().items():
-            cols = [c.split()[0] for c in meta["columns"]]
-            key = "id" if "id" in cols else cols[0]
-            for row in self.db.execute(f'SELECT * FROM "{t}"'):
-                value = row[key]
-                if isinstance(value, str) and ":" in value:
-                    index[value] = {"table": t, **dict(row)}
+        with self._lock:
+            for t, meta in self.tables().items():
+                cols = [c.split()[0] for c in meta["columns"]]
+                key = "id" if "id" in cols else cols[0]
+                for row in self.db.execute(f'SELECT * FROM "{t}"'):
+                    value = row[key]
+                    if isinstance(value, str) and ":" in value:
+                        index[value] = {"table": t, **dict(row)}
         for path in sorted(self.release.glob("data/*.csv")) if self.release else []:  # not in the SQLite
             with path.open(encoding="utf-8", newline="") as f:
                 for row in csv.DictReader(f):
