@@ -74,6 +74,15 @@ try {
   await command("Emulation.setDeviceMetricsOverride", {width: 1440, height: 1080, deviceScaleFactor: 1, mobile: false});
   const url = pathToFileURL(fileURLToPath(new URL("index.html", import.meta.url))).href;
   await command("Page.navigate", {url});
+  await until("document.querySelector('#guide h1')?.textContent === 'Your first run, from start to finish'");
+  assert.equal(await evaluate("document.querySelector('[data-tab=\"BEGINNER_GUIDE.md\"]').getAttribute('aria-current')"), "page");
+  assert.ok(await evaluate("document.querySelector('#guide').textContent.includes('30 matches')"));
+  await evaluate("document.querySelector('#guide-toc a:nth-of-type(4)').click()");
+  await until("document.activeElement.id === 'section-4'");
+  assert.ok(await evaluate("location.hash.endsWith('&section=section-4')"));
+  await command("Page.reload");
+  await until("document.activeElement.id === 'section-4'");
+  await evaluate("location.hash = 'home'");
   await until("document.querySelectorAll('.map-node').length > 10");
   assert.equal(await evaluate("document.querySelectorAll('[data-file]').length"), await evaluate("window.ATLAS.stats.files"));
   assert.equal(await evaluate("document.querySelector('#graph-title').textContent"), "Project source map");
@@ -170,6 +179,19 @@ try {
   await until("document.querySelector('#full-explanations')?.checked === true && document.querySelector('#guide h1')");
 
   await command("Emulation.setDeviceMetricsOverride", {width: 390, height: 844, deviceScaleFactor: 1, mobile: true});
+  assert.equal(await evaluate("getComputedStyle(document.querySelector('#sidebar')).display"), "none");
+  await evaluate("document.querySelector('#nav-toggle').click()");
+  assert.equal(await evaluate("document.querySelector('#nav-toggle').getAttribute('aria-expanded')"), "true");
+  await evaluate("document.querySelector('[data-tab=\"BEGINNER_GUIDE.md\"]').click()");
+  await until("document.querySelector('#guide h1')?.textContent === 'Your first run, from start to finish'");
+  assert.equal(await evaluate("document.querySelector('#nav-toggle').getAttribute('aria-expanded')"), "false");
+  await evaluate("document.querySelector('#nav-toggle').click(); document.querySelector('[data-tab=\"BEGINNER_GUIDE.md\"]').click()");
+  assert.equal(await evaluate("document.querySelector('#nav-toggle').getAttribute('aria-expanded')"), "false", "Selecting the current guide also closes the menu");
+  assert.ok(await evaluate("document.documentElement.scrollWidth <= innerWidth"), "Beginner guide fits mobile");
+  await command("Input.dispatchKeyEvent", {type: "keyDown", key: "/", code: "Slash", windowsVirtualKeyCode: 191});
+  assert.equal(await evaluate("document.activeElement.id"), "search");
+  await command("Input.dispatchKeyEvent", {type: "keyDown", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27});
+  assert.equal(await evaluate("document.activeElement.id"), "nav-toggle");
   await evaluate("location.hash = 'home'; document.querySelector('#search').value=''; document.querySelector('#search').dispatchEvent(new Event('input')); document.querySelector('#full-explanations').click(); document.querySelector('#collapse-all').click()");
   await until("document.querySelector('#graph-title').textContent === 'Project source map'");
   assert.ok(await evaluate("document.documentElement.scrollWidth <= innerWidth"), "Mobile page must not overflow horizontally");
@@ -187,6 +209,11 @@ try {
     await evaluate("document.querySelector('#expand-all').click(); scrollTo(0,0)");
     const screenshot = await command("Page.captureScreenshot", {format: "png"});
     await writeFile(process.env.ATLAS_SCREENSHOT, Buffer.from(screenshot.data, "base64"));
+    await evaluate("location.hash = 'guide=BEGINNER_GUIDE.md'");
+    await until("document.querySelector('#guide h1')?.textContent === 'Your first run, from start to finish'");
+    await writeFile(process.env.ATLAS_SCREENSHOT.replace(/\.png$/, "-guide.png"), Buffer.from((await command("Page.captureScreenshot", {format:"png"})).data, "base64"));
+    await command("Emulation.setDeviceMetricsOverride", {width:390, height:844, deviceScaleFactor:1, mobile:true});
+    await writeFile(process.env.ATLAS_SCREENSHOT.replace(/\.png$/, "-mobile.png"), Buffer.from((await command("Page.captureScreenshot", {format:"png"})).data, "base64"));
   }
   console.log("Browser checks passed: tree, search, file details, schemas, graph neighborhoods/groups, source-focused overview, pan/zoom, keyboard, history, guides, saved settings, mobile and no remote requests.");
 } finally {

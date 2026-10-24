@@ -12,15 +12,15 @@
 <body>
   <a class="skip" href="#workspace">Skip to matches</a>
   <header>
-    <div class="brand"><span class="brand-mark" aria-hidden="true">t.</span><div><strong>Tacto</strong><span>Negotiation observatory</span></div></div>
-    <span class="local-badge"><i aria-hidden="true"></i> Local · read only</span>
+    <a class="brand" href="/" aria-label="Tacto Run Explorer home"><span class="brand-mark" aria-hidden="true">t.</span><div><strong>tacto <span>/</span> Run explorer</strong></div></a>
+    <div class="header-actions"><button id="help" class="header-help" type="button">Reading guide</button><span class="local-badge"><i aria-hidden="true"></i> Local · read only</span></div>
   </header>
   <main>
     <section class="intro">
-      <div><p class="eyebrow">FROM OUTCOME TO DECISION</p><h1>Run explorer</h1><p class="muted">See what happened. Follow the decisions that got it there.</p></div>
+      <div><h1>Negotiation results</h1><p class="muted">Compare outcomes. Open a match. Follow the decisions.</p><a class="mobile-jump" href="#workspace">Explore matches ↓</a></div>
       <div class="run-controls">
         <label>Saved run<select id="report" aria-label="Saved run"><option>Loading reports…</option></select></label>
-        <div class="button-row"><button id="refresh" type="button">↻ Refresh</button><label class="button">Open JSON<input id="import" type="file" accept=".json,application/json"></label></div>
+        <div class="button-row"><button id="refresh" type="button">↻ Refresh</button><label class="button">Open JSON<input id="import" type="file" aria-label="Open JSON report" accept=".json,application/json"></label></div>
       </div>
     </section>
     <p id="status" role="status" aria-live="polite">Loading local reports…</p>
@@ -35,21 +35,24 @@
       <button id="reset" class="quiet" type="button">Reset</button>
     </section>
     <section id="metrics" class="metrics" aria-label="Filtered results"></section>
+    <div class="section-heading"><h2>Run overview</h2><a href="#workspace">Explore matches ↓</a></div>
     <section class="charts" aria-label="Interactive charts">
       <article class="panel"><div class="panel-title"><h2>Score by strategy</h2><span>Mean / 100</span></div><p class="hint">Select a bar to filter matches.</p><div id="scores"></div></article>
       <article class="panel"><div class="panel-title"><h2>Outcomes</h2><span>Matches</span></div><p class="hint">Validity includes allowed walk-aways.</p><div id="outcomes"></div></article>
       <article class="panel"><div class="panel-title"><h2>Decision routes</h2><span>Steps</span></div><p class="hint">Recorded route, including failed attempts.</p><div id="routes"></div><p id="route-note" class="hint"></p></article>
     </section>
-    <section id="workspace" class="workspace" aria-label="Matches and decision details">
+    <div class="section-heading investigation-heading"><div><h2>Match investigation</h2><p id="filter-summary" class="hint" role="status"></p></div><a href="#detail">Selected match ↓</a></div>
+    <section id="workspace" class="workspace" aria-label="Matches and decision details" tabindex="-1">
       <article class="panel match-panel">
         <div class="panel-title"><h2>Matches <span id="match-count"></span></h2><label class="sort">Sort by<select id="sort"><option value="score">Lowest score first</option><option value="score-desc">Highest score first</option><option value="time">Longest elapsed first</option><option value="case">Case ID</option></select></label></div>
         <p class="hint">Select a match to inspect its negotiation.</p>
-        <div class="table-scroll"><table><thead><tr><th>Case / strategy</th><th>Outcome</th><th>Score</th><th>Elapsed</th></tr></thead><tbody id="matches"></tbody></table></div>
+        <div class="table-scroll"><table><thead><tr><th scope="col">Case / strategy</th><th scope="col">Outcome</th><th scope="col">Score</th><th scope="col">Elapsed</th></tr></thead><tbody id="matches"></tbody></table></div>
         <div class="pagination"><button id="previous" type="button">← Previous</button><span id="page"></span><button id="next" type="button">Next →</button></div>
       </article>
       <aside id="detail" class="panel detail" aria-label="Selected match" tabindex="-1"><p class="empty">Select a match to explore its decisions.</p></aside>
     </section>
-    <details class="panel reading-guide"><summary>How to read this dashboard</summary><div>
+    <details id="reading-guide" class="panel reading-guide"><summary>How to read this dashboard</summary><div>
+      <ol class="guide-steps"><li><strong>Choose a saved run</strong><span>Start with dashboard-demo.json. Filters apply to every summary and chart.</span></li><li><strong>Find a match</strong><span>Compare the score and validity, then select a case to investigate.</span></li><li><strong>Follow a decision</strong><span>Pick a timeline step for the action, its recorded reason and timing.</span></li></ol>
       <p><strong>Start with the score, then check validity.</strong> Scores compare total cost against the evaluator’s reference. A low price alone does not make a package good: payment, freight, tooling and constraints also matter. Null costs mean unknown or unavailable, never zero.</p>
       <p><strong>Follow a match from left to right.</strong> Filter a run, select a case, then pick a step in its timeline. “Why” translates the recorded controller reason. It is not a model’s private reasoning. Proposed and submitted actions differ when the runner overrides a late decision.</p>
       <p><strong>Keep timing and model use separate.</strong> Elapsed time is the simulated negotiation clock, including supplier delay; decision time is measured locally. Model attempts can include unavailable callbacks or validation failures. They are not a billable API-call count. Wave labels are repeated trials, not a shared live leaderboard.</p>

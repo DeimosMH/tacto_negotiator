@@ -37,6 +37,11 @@ let report = null, rows = [], filtered = [], currentName = new URLSearchParams(l
 const PAGE_SIZE = 30;
 
 function status(message, error = false) { $("status").textContent = message; $("status").classList.toggle("error", error); }
+function savedAt(value) {
+  if (typeof value !== "string" || !value) return "not recorded";
+  const date = new Date(value);
+  return Number.isFinite(date.getTime()) ? `${date.toLocaleString("en-GB", {day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit", second:"2-digit", timeZone:"UTC"})} UTC` : value;
+}
 async function json(url) { const response = await fetch(url); if (!response.ok) throw new Error(`Cannot open saved data (HTTP ${response.status}).`); return response.json(); }
 function validate(data) {
   if (!data || !Array.isArray(data.matches) || data.matches.length > 50000) throw new Error("Choose a competition JSON report with a matches array (up to 50,000 matches).");
@@ -69,7 +74,7 @@ function setReport(data, name, preserve = false) {
   if (report.status && report.status !== "completed") notices.push(`Report status: ${label(report.status)}. Results may be incomplete.`);
   $("notice").hidden = !notices.length; $("notice").textContent = notices.join(" ");
   const metadata = hosted ? [["Scoring", "hosted arena"], ["Team", report.team_name], ["Set", "practice"], ["Model", report.models?.fast], ["Workers", config.workers], ["Saved", report.finished_utc || report.started_utc]] : [["Scoring", config.scoring_version ? `v${config.scoring_version}` : "historical"], ["Waves", config.waves], ["Wave cap", numeric(config.wave_seconds) ? `${config.wave_seconds}s` : "not recorded"], ["Workers", config.workers], ["Cohort", config.holdout ? "holdout" : "standard"], ["Saved", report.finished_utc || report.started_utc || "not recorded"]];
-  $("run-meta").innerHTML = metadata.filter(([,v]) => v !== undefined).map(([k,v]) => `<span>${esc(k)} <strong>${esc(v)}</strong></span>`).join("");
+  $("run-meta").innerHTML = metadata.filter(([,v]) => v !== undefined).map(([k,v]) => `<span>${esc(k)} <strong ${k === "Saved" ? `title="${esc(v)}"` : ""}>${esc(k === "Saved" ? savedAt(v) : v)}</strong></span>`).join("");
   status(`${name} · ${number(rows.length)} matches${name === importedName ? " · opened in this browser only" : " · saved local report"}`);
   page = 0; render();
 }
@@ -121,6 +126,9 @@ function render() {
     (!$("outcome").value || outcome(r) === $("outcome").value) &&
     `${r.case_id ?? ""} ${r.seed ?? ""}`.toLowerCase().includes($("search").value.trim().toLowerCase()));
   const sort = $("sort").value;
+  const hasFilters = ["strategy", "scenario", "wave", "outcome", "search"].some((id) => $(id).value.trim());
+  $("reset").disabled = !hasFilters;
+  $("filter-summary").textContent = `${number(filtered.length)} of ${number(rows.length)} matches${hasFilters ? " · filters applied" : " · all results"}`;
   filtered.sort((a,b) => sort === "case" ? String(a.case_id).localeCompare(String(b.case_id)) :
     sort === "time" ? (elapsed(b) ?? -Infinity)-(elapsed(a) ?? -Infinity) :
     sort === "score-desc" ? (b.score ?? -Infinity)-(a.score ?? -Infinity) : (a.score ?? Infinity)-(b.score ?? Infinity));
@@ -147,7 +155,7 @@ function render() {
 function renderTable() {
   const visible = filtered.slice(page * PAGE_SIZE, (page+1) * PAGE_SIZE);
   $("match-count").textContent = `(${number(filtered.length)})`;
-  $("matches").innerHTML = visible.map((r) => `<tr class="${r._id === selected ? "selected" : ""}"><td><button class="case-button" data-case="${r._id}" aria-pressed="${r._id === selected}"><strong>${esc(label(r.scenario))}</strong><span>${esc(label(r.variant_id))} · ${esc(caseContext(r))}</span><span>${esc(r.case_id)}</span></button></td><td><span class="pill ${outcome(r)}">${outcomes[outcome(r)]}</span></td><td>${number(r.score,1)}</td><td>${seconds(elapsed(r))}</td></tr>`).join("") || '<tr><td colspan="4" class="empty">No matches. Try resetting the filters.</td></tr>';
+  $("matches").innerHTML = visible.map((r) => `<tr class="${r._id === selected ? "selected" : ""}"><td><button class="case-button" data-case="${r._id}" aria-pressed="${r._id === selected}"><strong>${esc(label(r.scenario))}</strong><span>${esc(label(r.variant_id))} · ${esc(caseContext(r))}</span><span>${esc(r.case_id)}</span></button></td><td><span class="pill ${outcome(r)}">${outcomes[outcome(r)]}</span></td><td class="score-cell">${number(r.score,1)}</td><td>${seconds(elapsed(r))}</td></tr>`).join("") || `<tr><td colspan="4" class="empty"><strong>No matches to show.</strong><br>${rows.length ? 'Try another filter or <button class="text-button" data-clear-filters>reset all filters</button>.' : 'Choose a saved run or use Open JSON to explore a report.'}</td></tr>`;
   $("page").textContent = filtered.length ? `${page*PAGE_SIZE+1}–${Math.min((page+1)*PAGE_SIZE,filtered.length)} of ${number(filtered.length)}` : "0 matches";
   $("previous").disabled = page === 0; $("next").disabled = (page+1)*PAGE_SIZE >= filtered.length;
 }
@@ -191,7 +199,7 @@ function renderDetail() {
   const decisions = list(row.decisions); stepIndex = Math.min(stepIndex, Math.max(0,decisions.length-1));
   const d = decisions[stepIndex];
   const historical = decisions.length && !decisions.some((step) => list(step.standing_prices).length);
-  $("detail").innerHTML = `<div class="panel-title"><p class="eyebrow">SELECTED MATCH</p><span class="pill ${outcome(row)}">${outcomes[outcome(row)]}</span></div><h2>${esc(label(row.scenario))}</h2><p class="subhead">${esc(label(row.variant_id))} · ${esc(row.case_id)} · ${esc(caseContext(row))}<br>${replayLink(row.replay_url)}</p>
+  $("detail").innerHTML = `<a class="back-to-matches" href="#workspace">← Back to matches</a><div class="panel-title"><p class="eyebrow">SELECTED MATCH</p><span class="pill ${outcome(row)}">${outcomes[outcome(row)]}</span></div><h2>${esc(label(row.scenario))}</h2><p class="subhead">${esc(label(row.variant_id))} · ${esc(row.case_id)} · ${esc(caseContext(row))}<br>${replayLink(row.replay_url)}</p>
     <div class="detail-metrics"><div><span>Score / 100</span><strong>${number(row.score,1)}</strong></div><div><span>Total cost</span><strong>${euro(row.cost_eur)}</strong></div><div><span>Feasible reference</span><strong>${euro(row.reference_cost_eur)}</strong></div></div>
     <p class="hint">End: ${esc(label(row.end_reason))}${row.supplier_id ? ` · supplier ${esc(row.supplier_id)}` : ""}. ${report.source === "hosted_practice" ? "Wall time" : "Elapsed"} ${seconds(elapsed(row))}; supplier delay ${seconds(row.supplier_delay_s)}. ${number(row.thread_timeouts)} thread timeouts; ${number(row.invalid_moves)} invalid moves.</p>
     ${row.error ? `<p class="event-alert">Run error: ${esc(row.error)}</p>` : ""}
@@ -216,6 +224,11 @@ function stepDetail(d) {
 }
 
 $("refresh").addEventListener("click", refresh);
+$("help").addEventListener("click", () => {
+  $("reading-guide").open = true;
+  $("reading-guide").scrollIntoView({block:"start"});
+  $("reading-guide").querySelector("summary").focus({preventScroll:true});
+});
 $("report").addEventListener("change", () => { if ($("report").value !== importedName) loadReport($("report").value); });
 $("import").addEventListener("change", async (event) => {
   const file = event.target.files[0]; if (!file) return;
@@ -241,6 +254,7 @@ document.querySelector(".charts").addEventListener("click", (event) => {
   page = 0; render();
 });
 $("matches").addEventListener("click", (event) => {
+  if (event.target.closest("[data-clear-filters]")) { $("reset").click(); $("search").focus({preventScroll:true}); return; }
   const button = event.target.closest("button[data-case]"); if (!button) return;
   selected = Number(button.dataset.case); stepIndex = 0; renderTable(); renderDetail();
   // Preserve keyboard position when replacing the selected table row.

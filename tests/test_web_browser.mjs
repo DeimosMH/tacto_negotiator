@@ -81,6 +81,12 @@ try {
   assert.equal(await evaluate("document.querySelector('#notice').hidden"),true);
   assert.equal(await evaluate("document.querySelectorAll('#matches tr').length"),30);
   assert.equal(await evaluate("document.querySelectorAll('.metric strong')[2].textContent"),"77.7");
+  assert.equal(await evaluate("document.querySelector('#reset').disabled"),true);
+  assert.equal(await evaluate("savedAt('2026-10-24T15:31:24+02:00')"),"24 Oct 2026, 13:31:24 UTC");
+  assert.equal(await evaluate("savedAt('unavailable')"),"unavailable");
+  await evaluate("document.querySelector('#help').click()");
+  assert.ok(await evaluate("document.querySelector('#reading-guide').open && document.activeElement.tagName === 'SUMMARY'"));
+  await evaluate("document.querySelector('#reading-guide').open=false; scrollTo(0,0)");
   assert.equal(await evaluate("document.querySelector('#scores [data-value=\"close\"] .bar-value').textContent"),"80");
   assert.ok(await evaluate("document.querySelector('#detail').textContent.includes('Unknown')"),"Null costs must not become zero");
   assert.ok(await evaluate("document.querySelectorAll('.quote-chart circle').length > 0"));
@@ -92,6 +98,7 @@ try {
   await evaluate("document.querySelector('#scores [data-value=\"scripts\"]').click()");
   assert.equal(await evaluate("document.querySelector('#strategy').value"),"scripts");
   assert.ok(await evaluate("document.querySelector('#match-count').textContent.includes('18')"));
+  assert.ok(await evaluate("document.querySelector('#filter-summary').textContent.includes('18 of 35 matches · filters applied')"));
   await select("wave","2");
   assert.ok(await evaluate("[...document.querySelectorAll('.case-button')].every(e=>e.textContent.includes('wave 2'))"));
   await evaluate("document.querySelector('#refresh').click()");
@@ -99,7 +106,9 @@ try {
   assert.equal(await evaluate("document.querySelector('#wave').value"),"2");
   await evaluate("document.querySelector('#reset').click(); document.querySelector('#search').value='no-such-case'; document.querySelector('#search').dispatchEvent(new Event('input'))");
   assert.ok(await evaluate("document.querySelector('#matches').textContent.includes('No matches')"));
-  await evaluate("document.querySelector('#reset').click()");
+  await evaluate("document.querySelector('[data-clear-filters]').click()");
+  assert.equal(await evaluate("document.querySelector('#search').value"),"");
+  assert.equal(await evaluate("document.querySelector('#reset').disabled"),true);
   await select("scenario","simple_price");
   await select("sort","time");
   await evaluate("document.querySelector('.case-button').focus()");
@@ -114,7 +123,7 @@ try {
   assert.ok(await evaluate("document.querySelector('#notice').textContent.includes('Hosted practice') && !document.querySelector('#notice').textContent.includes('Historical evaluator')"));
   assert.ok(await evaluate("document.querySelector('#run-meta').textContent.includes('winsortf') && document.querySelector('#wave').disabled"));
   assert.ok(await evaluate("document.querySelector('#detail').textContent.includes('Wall time 90.5s') && !document.querySelector('#detail').textContent.includes('seed')"));
-  assert.equal(await evaluate("document.querySelector('#detail a').href"),"https://arena.tacto.ai/replay/session-1");
+  assert.equal(await evaluate("document.querySelector('#detail a[target=\"_blank\"]').href"),"https://arena.tacto.ai/replay/session-1");
   assert.ok(await evaluate("document.querySelector('#detail').textContent.includes('fallback risk')"));
   assert.equal(await evaluate("replayLink('javascript:alert(1)') + replayLink('https://attacker.example/replay/a') + replayLink('https://arena.tacto.ai@attacker.example/replay/a')"),"");
   await upload(imported);
@@ -144,6 +153,17 @@ try {
     else {await select("report","current.json");await until("document.querySelector('#status')?.textContent.includes('35 matches')");}
     await evaluate("scrollTo(0,0)");
     await writeFile(process.env.DASHBOARD_SCREENSHOT,Buffer.from((await command("Page.captureScreenshot",{format:"png"})).data,"base64"));
+    await evaluate("document.querySelector('#detail').scrollIntoView({block:'start'})");
+    await writeFile(process.env.DASHBOARD_SCREENSHOT.replace(/\.png$/,"-detail.png"),Buffer.from((await command("Page.captureScreenshot",{format:"png"})).data,"base64"));
+    await command("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
+    await evaluate("scrollTo(0,0)");
+    assert.ok(await evaluate("document.documentElement.scrollWidth <= innerWidth"),"Loaded run fits mobile");
+    await writeFile(process.env.DASHBOARD_SCREENSHOT.replace(/\.png$/,"-mobile.png"),Buffer.from((await command("Page.captureScreenshot",{format:"png"})).data,"base64"));
+    await evaluate("document.querySelector('.case-button').click()");
+    assert.equal(await evaluate("document.activeElement.id"),"detail");
+    await writeFile(process.env.DASHBOARD_SCREENSHOT.replace(/\.png$/,"-detail-mobile.png"),Buffer.from((await command("Page.captureScreenshot",{format:"png"})).data,"base64"));
+    await evaluate("document.querySelector('.back-to-matches').click()");
+    assert.equal(await evaluate("location.hash"),"#workspace");
   }
   console.log("Dashboard browser checks passed: reports, charts, filters, pagination, keyboard, traces, deadlines, legacy data, local import, escaping, errors, mobile and loopback-only requests.");
 } finally {

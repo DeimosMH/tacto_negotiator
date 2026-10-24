@@ -10,13 +10,13 @@ The atlas explains the active application in src/tacto_negotiator, its root test
 
 For the implemented scripts, parallel local scenarios and measured OpenAI comparison, open [Local competition](COMPETITION.md). It includes reproducible commands, results, limitations and a step-by-step guide to changing a scenario or policy.
 
-New to the project? Open the **Start here** tab or read [the beginner tutorial](TUTORIAL.md). It explains one negotiation, walks through a local buyer change with expected results, and shows how to modify the project and this atlas.
+New to the project? The atlas opens on the [beginner guide](BEGINNER_GUIDE.md): install, browse the example run, create 30 local matches, and inspect one decision. Continue with [Your first negotiation](TUTORIAL.md) when you are ready to change the buyer in Python.
 
 Preparing for Sunday 13:30? Open **Sunday final** for [implementation priorities, five-wave simulations and the rehearsal guide](FINAL_READINESS.md), then read [the hosted model recommendation and qualification procedure](MODEL_SELECTION.md).
 
 Open **FAQ advantages** for [official clarifications translated into policy changes, regression tests and event preparation](FAQ_ADVANTAGE.md). It distinguishes measured local behavior from remaining hosted qualification.
 
-The implemented **Routing guide** explains [how a decision selects a script, Sol or optional Astra](ROUTING.md), including the deadline adapter, configuration, local examples and how to change a rule.
+The **Decision routing** guide explains [how a decision selects a script, Sol or optional Astra](ROUTING.md), including the deadline adapter, configuration, local examples and how to change a rule.
 
 The [review resolution record](reviews/FIXES.md) maps all nine findings to fixes and regression tests, with results from 900 new offline matches. The original reviews remain available as historical evidence.
 
@@ -30,13 +30,17 @@ Then open http://127.0.0.1:8000. The entire explanation is embedded in data.js; 
 
 ## Explore
 
+- The sidebar groups guides into getting started, understanding the system, evaluation and competition reference. On mobile, use **Menu** to open it.
+- Every guide has an **On this page** index; links can be bookmarked or shared. **Read Markdown** opens the original guide.
+- Expand **Browse source**, or press `/`, to search the project files. **Project map** opens the dependency graph.
+
 - Expand directories in the file tree. Select a file for its purpose, rationale, classes/functions, internal state or data schema, source content and relationships.
 - Search names, paths, explanations, identifiers and symbol names. Matching branches open automatically.
 - Enable Full explanations to show each visible file's complete explanation in the tree; Expand all reveals the entire file guide at once.
-- The landing page's Source files view shows the implemented Python modules, dashboard assets and connected runtime systems/libraries. Switch to Groups & subgroups to inspect the logical organization.
+- The Project map's Source files view shows the implemented Python modules, dashboard assets and connected runtime systems/libraries. Switch to Groups & subgroups to inspect the logical organization.
 - Selecting a source, test, configuration or data file shows its direct incoming and outgoing neighbors. Edges describe imports, joins, configuration or reviewed interactions. The relationship list includes direction, meaning and evidence, and is a keyboard-accessible alternative to the graph.
 - Use the graph controls to zoom, drag its background to pan, or Fit to reset. Group boundaries and node colors follow the legend. Nodes can be activated with Enter or Space. Browser Back/Forward restores selections.
-- Start here contains the beginner walkthrough. Sunday final contains priorities and simulation results; Routing guide explains the implemented routed buyer. Implementation describes the current architecture and separates remaining work. Proposals remain in the written guides rather than appearing as implemented graph nodes.
+- Beginner guide contains the first-run walkthrough; Your first negotiation continues with a Python exercise. Sunday final contains priorities and simulation results; Decision routing explains the implemented routed buyer. Architecture describes the current architecture and separates remaining work. Proposals remain in the written guides rather than appearing as implemented graph nodes.
 
 ## Refresh and verify
 

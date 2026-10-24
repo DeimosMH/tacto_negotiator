@@ -4,6 +4,8 @@ A procurement buyer that negotiates complete packages under supplier and wave de
 It uses deterministic scripts for supported quantitative decisions, a model for unresolved
 semantics, and a shared validator before any message or acceptance reaches the arena.
 
+New here? Start with [the beginner guide](docs/BEGINNER_GUIDE.md): open the example results, run your first local experiment, and understand one negotiation. No API key is needed.
+
 ## Project structure
 
 ```text

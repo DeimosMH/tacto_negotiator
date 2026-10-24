@@ -18,15 +18,19 @@ Open http://localhost:1234. Keep the terminal open; Ctrl+C stops the server. If 
 
 The server binds to 127.0.0.1. Change `--port` if another program uses 1234. `--reports` selects one directory of saved JSON reports; the default is docs/results relative to the working directory. The installed wheel includes all three web assets.
 
+New to the project? Start with the [beginner guide](BEGINNER_GUIDE.md) for installation and your first 30-match experiment.
+
 ## Your first walkthrough
 
 1. Select **dashboard-demo.json**. This fresh scoring-v2 run contains 150 local matches: three strategies, ten scenario families, one seed and five repeated waves. It uses synthetic suppliers and no paid model calls. Its model attempts are deliberately unavailable callbacks used to exercise fallback.
-2. Read the five cards: filtered match count, valid outcomes, mean score, model attempts and mean decision time. The raw report stores scores from 0 to 1; the dashboard converts them to points out of 100. Missing costs stay **Unknown**.
+2. Read the five summary metrics: filtered match count, valid outcomes, mean score, model attempts and mean decision time. The raw report stores scores from 0 to 1; the dashboard converts them to points out of 100. Missing costs stay **Unknown**.
 3. Select a strategy bar or outcome bar. This sets the matching filter. Use scenario, wave and case/seed search to narrow it further. **Reset** clears the filters. Charts and cards always describe the filtered set.
-4. Select a match in the table. The inspector shows its final outcome, score, full cost, feasible reference, supplier delay, timeouts and final terms. On mobile it scrolls to the inspector.
+4. Use **Explore matches** to jump to the match list, then select a match in the table. The inspector shows its final outcome, score, full cost, feasible reference, supplier delay, timeouts and final terms. On mobile it scrolls to the inspector; **Back to matches** returns to the list.
 5. Follow **Price movement**. Green dots are standing quotes before a decision; orange dots are submitted buyer offers; blue dots are supplier replies. Hover for supplier, step and unit price. This is unit price, not total package cost. Multiple bidders or package options can produce several dots per step.
 6. Select a numbered timeline step. **What** shows the submitted action. **Why** translates the recorded policy reason. **How** shows route, model attempts and measured decision time against its budget. Remaining thread and wave time show the situation before the decision.
 7. Expand **Proposed action** and **Submitted action** when a deadline override appears. They preserve the distinction between an agent's proposal and what the runner actually sent. Submission errors are shown separately.
+
+The **Reading guide** in the header opens a short walkthrough and explains scores, timings and model attempts. **Match investigation** shows how many matches remain after filtering. Empty filter results offer a direct reset.
 
 Historical offline, holdout and model reports remain available. A banner identifies scores that predate evaluator v2, and diagnostic pilots stay visibly excluded from comparison. Older reports may lack quote snapshots, final terms or decision details; the inspector tells you when these were not recorded. Reports are viewed individually, so different evaluator versions are never merged into one ranking.
 

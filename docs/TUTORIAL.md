@@ -1,6 +1,6 @@
 # Your first negotiation, step by step
 
-Start here if the project is new to you. You will follow one negotiation, run it on your own computer, change the buyer's behavior and check the result. Basic Python knowledge is enough for the coding steps. You do not need an AI model, a paid account or an arena API key.
+For installation and your first saved run, start with the [beginner guide](BEGINNER_GUIDE.md). This tutorial is the next step: changing the buyer in Python. You will follow one negotiation, run it on your own computer, change the buyer's behavior and check the result. Basic Python knowledge is enough for the coding steps. You do not need an AI model, a paid account or an arena API key.
 
 The first two sections explain the system. Steps 1–6 are a local exercise. Step 7 explains how to move your experiment into Tacto Negotiator. Step 8 shows how to update this documentation site. The exercise creates a temporary Python file. After it, the [routing guide](ROUTING.md) introduces the default script/fast/strong buyer; [the architecture guide](IMPLEMENTATION.md) explains the implemented blocks and remaining work.
 
@@ -70,7 +70,7 @@ Use the atlas to see this flow: search for naive.py, select it, and read Classes
 
 ## Step 1 — Get your bearings
 
-Open the Project map tab. Expand src → tacto_negotiator in the tree. This is the active application package. Tests live in tests, the procurement snapshot in data, and project configuration in the root pyproject.toml. The original supplied kit is archived in materials/starter_kit and excluded from the active project map. Edit src and tests when changing the application.
+Open **Project map** in the sidebar, then expand **Browse source**. Expand src → tacto_negotiator in the tree. This is the active application package. Tests live in tests, the procurement snapshot in data, and project configuration in the root pyproject.toml. The original supplied kit is archived in materials/starter_kit and excluded from the active project map. Edit src and tests when changing the application.
 
 | Start with | What to look for |
 | --- | --- |

@@ -342,12 +342,16 @@ function readRoute() {
   state.selected = state.group = state.guide = null;
   let hash;
   try { hash = decodeURIComponent(location.hash.slice(1)); } catch { hash = "home"; }
+  const [route, section] = hash.split("&section=");
+  hash = route || "guide=BEGINNER_GUIDE.md";
   if (hash.startsWith("file=") && byId.has(hash.slice(5))) state.selected = hash.slice(5);
   if (hash.startsWith("group=") && atlas.nodes.some(node => mapIds.has(node.id) && subgroupId(node) === hash.slice(6))) state.group = hash.slice(6);
   if (hash.startsWith("guide=") && atlas.guides["docs/" + hash.slice(6)]) state.guide = hash.slice(6);
   const node = byId.get(state.selected), isGuide = Boolean(state.guide);
   $("#workspace").hidden = isGuide;
   $("#guide").hidden = !isGuide;
+  $("#guide-layout").hidden = !isGuide;
+  $("#source-explorer").open = !isGuide;
   $("#stats").hidden = Boolean(isGuide || state.selected || state.group);
   $("#workspace").classList.toggle("has-selection", Boolean(state.selected));
   $(".page-tabs").querySelectorAll("a").forEach(link => {
@@ -356,16 +360,30 @@ function readRoute() {
   });
   if (isGuide) {
     const guide = atlas.guides["docs/" + state.guide];
-    $("#page-heading").innerHTML = '<p class="breadcrumb">FIELD NOTES / ' + escapeHTML(state.guide) + '</p>';
+    $("#page-heading").innerHTML = '<p class="breadcrumb">Documentation <span>/</span> ' + escapeHTML($("[aria-current=page]")?.textContent.replace("Start here", "").trim() || "Reference") + '</p>';
     $("#guide").innerHTML = markdown(guide.content, guide.id);
-    document.title = `${state.guide} · Tacto atlas`;
+    const headings = [...$("#guide").querySelectorAll("h2")];
+    headings.forEach((heading, index) => { heading.id = `section-${index + 1}`; heading.tabIndex = -1; });
+    $("#guide-toc").innerHTML = `<details ${window.matchMedia("(min-width:1151px)").matches ? "open" : ""}><summary>On this page</summary><div>${headings.map(heading => `<a href="#guide=${encodeURIComponent(state.guide)}&section=${heading.id}" ${section === heading.id ? 'aria-current="location"' : ""}>${escapeHTML(heading.textContent)}</a>`).join("")}<a class="toc-source" href="${escapeHTML(originalLink(guide.id))}">Read Markdown ↗</a></div></details>`;
+    document.title = `${$("#guide h1")?.textContent || state.guide} · Tacto docs`;
   } else {
     $("#page-heading").innerHTML = node ? `<p class="breadcrumb">${escapeHTML(node.id)}</p><h1>${escapeHTML(node.label)}</h1><p class="intro">${escapeHTML(node.role)}</p>` : state.group ? `<p class="breadcrumb">LOGICAL GROUP / ${escapeHTML(state.group.slice(6))}</p><h1>Follow the connections.</h1><p class="intro">The selected subgroup, its members and the files or systems they interact with.</p>` : '<p class="breadcrumb">TACTO NEGOTIATION ARENA / SYSTEM FIELD GUIDE</p><h1>Understand the system.<br>Follow every connection.</h1><p class="intro">From a supplier’s email to a defensible deal. Explore the active buyer modules, their runtime dependencies, and the evidence behind each decision.</p>';
-    if (!node && !state.group) $("#page-heading").insertAdjacentHTML("beforeend", '<p class="intro"><a href="#guide=TUTORIAL.md">Start with the beginner walkthrough →</a></p>');
+    if (!node && !state.group) $("#page-heading").insertAdjacentHTML("beforeend", '<p class="intro"><a href="#guide=BEGINNER_GUIDE.md">New here? Start with the beginner guide →</a></p>');
     renderGraph(); renderInspector();
     document.title = `${node?.label || "Project atlas"} · Tacto`;
   }
   highlightTree();
+  setNavigation(false);
+  if (section) {
+    const heading = document.getElementById(section);
+    if (heading && $("#guide").contains(heading)) { heading.scrollIntoView(); heading.focus({preventScroll:true}); }
+  } else window.scrollTo(0, 0);
+}
+
+function setNavigation(open) {
+  if (!open && window.matchMedia("(max-width:760px)").matches && $("#sidebar").contains(document.activeElement)) $("#main").focus({preventScroll:true});
+  document.body.classList.toggle("nav-open", open);
+  $("#nav-toggle").setAttribute("aria-expanded", String(open));
 }
 
 let drag = null, suppressClick = false;
@@ -398,11 +416,18 @@ $("#map-mode").addEventListener("change", event => { state.mode = event.target.v
 $("#full-explanations").checked = state.full;
 $("#full-explanations").addEventListener("change", event => { state.full = event.target.checked; saveSettings(); renderTree(); });
 $("#search").addEventListener("input", event => { state.search = event.target.value; renderTree(); });
+$("#nav-toggle").addEventListener("click", () => setNavigation($("#nav-toggle").getAttribute("aria-expanded") !== "true"));
+$(".page-tabs").addEventListener("click", event => { if (event.target.closest("a")) setNavigation(false); });
+window.matchMedia("(min-width:1151px)").addEventListener("change", event => {
+  const contents = $("#guide-toc details");
+  if (contents) contents.open = event.matches;
+});
 $("#tree").addEventListener("click", event => { const button = event.target.closest("[data-file]"); if (button) location.hash = routeFor(button.dataset.file); });
 $("#expand-all").addEventListener("click", () => { $("#tree").querySelectorAll("details").forEach(detail => { detail.open = true; state.expanded.add(detail.dataset.directory); }); });
 $("#collapse-all").addEventListener("click", () => { state.expanded.clear(); $("#tree").querySelectorAll("details").forEach(detail => { detail.open = false; }); });
 document.addEventListener("keydown", event => {
-  if (event.key === "/" && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) { event.preventDefault(); $("#search").focus(); }
+  if (event.key === "/" && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) { event.preventDefault(); setNavigation(true); $("#source-explorer").open = true; $("#search").focus(); }
+  if (event.key === "Escape" && document.body.classList.contains("nav-open")) { setNavigation(false); $("#nav-toggle").focus(); }
 });
 window.addEventListener("hashchange", readRoute);
 $("#file-count").textContent = `${files.length} files`;
