@@ -221,9 +221,10 @@ def test_failure_falls_back_without_trying_a_second_provider(scenario, failure):
     assert agent.last_decision["route"] == "strong" and agent.last_decision["fallback"]
 
 
-def test_invalid_model_can_repair_a_must_have_instead_of_abandoning_the_case(scenario):
+@pytest.mark.parametrize("goal", ["quality_first", "secure_supply", "stabilise"])
+def test_invalid_model_can_repair_a_must_have_instead_of_abandoning_the_case(scenario, goal):
     case, threads, sid = scenario
-    case["buyer"]["category_goal"] = "quality_first"
+    case["buyer"]["category_goal"] = goal  # hosted P10 (secure_supply) walked away in round 1
     case["buyer"]["must_haves"] = [{"field": "payment_days", "op": ">=", "value": 60}]
     case["term_options"] = {"payment_days": [14, 30, 60]}
     threads[sid][-1]["body"] = "Please explain the new requirement."
