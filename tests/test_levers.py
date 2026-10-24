@@ -46,6 +46,17 @@ def test_flat_or_small_rises_and_later_rounds_are_not_cited():
     assert order_path(rising, CASE, "sup:2") is None
 
 
+def test_a_price_flat_all_year_cites_the_step_of_its_last_rise():
+    facts = _orders([28.94] * 4 + [29.89] * 20)  # rose 3.3 % twenty months ago, flat since
+    path = order_path(SimpleNamespace(facts=facts), CASE, "sup:1")
+    assert path["prices"] == [28.94, 29.89] and path["refs"] == ["po:sup:1-3", "po:sup:1-4"]
+    claim = {"type": "price_history", "refs": path["refs"], "asserted": {"prices": path["prices"]}}
+    assert ClaimChecker(CASE, facts).check("sup:1", [claim])[0]["result"] == "verified"
+    assert order_path(SimpleNamespace(facts=_orders([30.50] * 4 + [29.89] * 20)), CASE, "sup:1") is None  # a fall
+    assert order_path(SimpleNamespace(facts=_orders([29.50] * 4 + [29.89] * 20)), CASE, "sup:1") is None  # +1.3 %
+    assert order_path(SimpleNamespace(facts=_orders([29.89] * 24)), CASE, "sup:1") is None  # never moved
+
+
 def test_price_history_claims_check_supplier_part_and_prices():
     facts = _orders([5.0, 5.4])
     refs = list(facts)

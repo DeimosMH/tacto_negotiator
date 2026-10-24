@@ -4,7 +4,8 @@
   `PATH_MIN_RISE` over twelve months, the first message leads with that path - "our orders moved from
   X to Y; that rise is already in our price" - citing the order IDs. Their P08 first counter fell from
   5.41 to 5.25 and the final followed (0.912). A flat history moved no supplier (0 of 23 citations by
-  earlier teams), so only a rising one is cited. Every claim is checked with our offline checker first.
+  earlier teams), so only a rising one is cited; a price that held all year cites the step of its last
+  rise instead. Every claim is checked with our offline checker first.
 - Ask the floor (rules 58/63): once per case, when the supplier holds after our move and is not yet
   final, ask `FLOOR_QUESTION`. A supplier that names a floor equal to its standing price is not probed
   below it.
@@ -68,22 +69,32 @@ def order_path(package, case, sid):
         window = before[-1:] + [r for r in rows if r[0] >= start]
         if len(window) < 2 or window[-1][0] < _months_back(newest, 3).isoformat():
             continue
-        runs = []  # [first row, length] per price level
-        for row in window:
-            if runs and math.isclose(runs[-1][0][2], row[2]):
-                runs[-1][1] += 1
-            else:
-                runs.append([row, 1])
-        kept = [run for i, run in enumerate(runs) if run[1] > 1 or i in (0, len(runs) - 1)]
-        path = []
-        for run in kept:
-            if not path or not math.isclose(path[-1][2], run[0][2]):
-                path.append(run[0])
-        if not path or not math.isclose(window[-1][2], path[-1][2]):
-            continue
-        path[-1] = window[-1]  # today's level by its newest order
-        trough = min(range(len(path)), key=lambda i: (path[i][2], -i))
-        path = path[trough:]  # from the last low to today's price, rising all the way
+        if all(math.isclose(row[2], window[-1][2]) for row in window):
+            # Flat all year: today's price is still the last rise. Its step (last order at the old price ->
+            # first at today's) whatever its age, so a supplier asking for more hears that the rise is
+            # already paid; a flat path alone moved no supplier. Hosted suppliers took 8 of 8 price
+            # histories; an earlier team's capacity supplier counter 31.50 with it vs 31.70 without.
+            last_old = max((i for i, row in enumerate(rows) if not math.isclose(row[2], window[-1][2])), default=None)
+            if last_old is None or rows[last_old][2] > window[-1][2]:
+                continue
+            path = [rows[last_old], rows[last_old + 1]]
+        else:
+            runs = []  # [first row, length] per price level
+            for row in window:
+                if runs and math.isclose(runs[-1][0][2], row[2]):
+                    runs[-1][1] += 1
+                else:
+                    runs.append([row, 1])
+            kept = [run for i, run in enumerate(runs) if run[1] > 1 or i in (0, len(runs) - 1)]
+            path = []
+            for run in kept:
+                if not path or not math.isclose(path[-1][2], run[0][2]):
+                    path.append(run[0])
+            if not path or not math.isclose(window[-1][2], path[-1][2]):
+                continue
+            path[-1] = window[-1]  # today's level by its newest order
+            trough = min(range(len(path)), key=lambda i: (path[i][2], -i))
+            path = path[trough:]  # from the last low to today's price, rising all the way
         if any(b[2] < a[2] for a, b in zip(path, path[1:], strict=False)):
             continue
         if len(path) > PATH_MAX_IDS:
