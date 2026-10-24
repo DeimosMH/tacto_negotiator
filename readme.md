@@ -16,5 +16,7 @@ https://github.com/tacto-playground/negotiation-arena-kit
 ARENA_URL=https://arena.tacto.ai
 ARENA_API_KEY=<your key>
 
-`uv run arena me`
-`uv run arena play case:P01 -v`
+```sh
+uv run arena me
+uv run arena play case:P01 -v
+```
