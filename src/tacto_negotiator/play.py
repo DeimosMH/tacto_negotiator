@@ -266,6 +266,46 @@ def acceptable_offer(case, events):
         return None
 
 
+# Opening ask below the quoted unit price, by category goal. Earlier teams on this arena found the
+# best attainable prices 12-25 % below the openings while 4-8 % asks left most of that unclaimed;
+# relationship goals stay closer because squeezing the supplier's margin is charged in C.
+ANCHOR_BY_GOAL = {"leverage": 0.20, "routine": 0.18, "quality_first": 0.15, "secure_supply": 0.12,
+                  "stabilise": 0.08}
+GAP_STEP, HOLD_STEP = 0.30, 0.15
+
+
+def ask_limit(case, events):
+    """Highest buyer cost C our next term sheet in this thread may carry (excluding supplier health).
+
+    Suppliers concede only in response to movement, so every round moves - but by a share of the
+    gap, never straight to the supplier's number. After a large supplier concession we hold more."""
+    try:
+        _, terms, std, missing = known_offer(case, events)
+        if missing:
+            return math.inf
+        resolved = {**std, **case.get("fixed_terms", {}), **terms}
+        current = total_cost(case, terms, std)
+        sent = [e for e in events if e.get("from") == "buyer" and e.get("term_sheets")]
+        if not sent:
+            anchor = ANCHOR_BY_GOAL.get(case["buyer"].get("category_goal"), 0.15)
+            opening = {**resolved, "unit_price": round(resolved["unit_price"] * (1 - anchor), 2)}
+            return min(current, total_cost(case, {f: opening[f] for f in case["negotiable"]}, std))
+        ours = min(total_cost(case, s.get("terms", s)) for s in sent[-1]["term_sheets"])
+        if current <= ours:
+            return current
+        step = GAP_STEP
+        if len(sent) >= 2:  # the supplier's last concession, measured against the gap before it
+            before = min(total_cost(case, s.get("terms", s)) for s in sent[-2]["term_sheets"])
+            index = events.index(sent[-1])
+            _, prior_terms, prior_std, _ = known_offer(case, events[:index])
+            previous = total_cost(case, prior_terms, prior_std)
+            if previous > before and previous - current > 0.5 * (previous - before):
+                step = HOLD_STEP
+        return ours + step * (current - ours)
+    except (KeyError, TypeError, ValueError, OverflowError, AttributeError, StopIteration, ZeroDivisionError):
+        return math.inf
+
+
 def closing_move(case, threads):
     """Accept the cheapest standing term sheet that keeps the must-haves and matches/beats the alternative
     (C with each supplier's standard terms), else walk away - what to do when time runs out."""

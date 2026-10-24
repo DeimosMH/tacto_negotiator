@@ -12,8 +12,10 @@ import time
 
 from ..cost import RELATIONSHIP_GOALS, complete_offer, must_haves_ok, total_cost, valid_value
 from ..play import (
+    ANCHOR_BY_GOAL,
     CLOSE_BEFORE_CAP_S,
     acceptable_offer,
+    ask_limit,
     closing_move,
     known_offer,
     latest,
@@ -95,6 +97,9 @@ class RoutedAgent:
                     return None
                 if complete not in clean:
                     clean.append(complete)
+            limit = ask_limit(case, events)  # the shared concession schedule binds scripts and models
+            if any(total_cost(case, t) > limit * 1.005 + 0.01 for t in clean):
+                return None
             move = {"supplier_id": sid, "message": {
                 "subject": subject, "body": body, "term_sheets": [{"terms": t} for t in clean]}}
             return move if len(json.dumps({"message": move["message"]}).encode()) <= 64_000 else None
@@ -264,21 +269,20 @@ class RoutedAgent:
             if record["terminal"] or record["plateau"]:
                 continue
             current_cost = total_cost(case, current, record["std"])
-            target_cost = current_cost * 0.9
+            target_cost = ask_limit(case, threads[sid])
             if sent:
                 prior = [sheet["terms"] for sheet in sent[-1]["term_sheets"]]
                 if any(set(sheet) != set(case["negotiable"]) or any(not valid_value(f, v) for f, v in sheet.items())
                        for sheet in prior):
                     return None
                 previous_cost = min(total_cost(case, sheet) for sheet in prior)
-                target_cost = min(current_cost, (previous_cost + current_cost) / 2)
                 small_gap = current_cost <= previous_cost * 1.002
                 if tried and (small_gap or moves_left(case, threads[sid]) <= 1):
                     if self.validate(case, threads, {"supplier_id": sid, "action": "accept"}):
                         return "small_cost_gap" if small_gap else "round_reserve", closing_move(case, threads)
-            rows = self._packages(case, record["options"], target_cost, alternative,
-                                  current["unit_price"],
-                                  price_ceiling=round(current["unit_price"] * 0.9, 2) if not sent else math.inf)
+            anchor = ANCHOR_BY_GOAL.get(case["buyer"].get("category_goal"), 0.15)
+            rows = self._packages(case, record["options"], target_cost, alternative, current["unit_price"],
+                                  price_ceiling=math.inf if sent else round(current["unit_price"] * (1 - anchor), 2))
             if not rows:
                 continue
             chosen = [rows[0][1]]
@@ -331,7 +335,8 @@ class RoutedAgent:
             sid = live[0]
             _, terms, std, missing = known_offer(case, threads[sid])
             if not missing and not any(m.get("from") == "buyer" for m in threads[sid]):
-                proposal = {**std, **terms, "unit_price": round(terms["unit_price"] * 0.9, 2)}
+                anchor = ANCHOR_BY_GOAL.get(case["buyer"].get("category_goal"), 0.15)
+                proposal = {**std, **terms, "unit_price": round(terms["unit_price"] * (1 - anchor), 2)}
                 d = {"supplier_id": sid, "action": "send", "body": "Thank you. Please consider this price proposal.",
                      "term_sheets": [complete_offer(case, proposal, std)]}
                 move = self.validate(case, threads, d)

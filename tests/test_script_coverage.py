@@ -9,6 +9,7 @@ import pytest
 from tacto_negotiator.agents.routed import MAX_SCRIPT_CANDIDATES, RoutedAgent
 from tacto_negotiator.cost import must_haves_ok, total_cost
 from tacto_negotiator.docs import quote_terms
+from tacto_negotiator.play import ask_limit
 
 
 @pytest.fixture
@@ -57,14 +58,14 @@ def test_full_term_opening_offers_cheaper_packages_and_a_familiar_tradeoff(negot
     move = agent.decide(case, threads)
     packages = [sheet["terms"] for sheet in move["message"]["term_sheets"]]
     assert calls == [] and agent.last_decision["reason"] == "enumerated_opening"
-    assert packages[0] == {"unit_price": 99.0, "payment_days": 60, "incoterm": "DAP"}
+    assert packages[0] == {"unit_price": 90.2, "payment_days": 60, "incoterm": "DAP"}  # 18 % routine anchor
     baseline = next(t for t in packages if t["payment_days"] == 14 and t["incoterm"] == "EXW")
-    assert baseline["unit_price"] < packages[0]["unit_price"]
+    assert baseline["unit_price"] <= packages[0]["unit_price"]  # both may sit at the anchored price cap
     assert len(packages) <= 3 and all(set(t) == set(case["negotiable"]) for t in packages)
     assert total_cost(case, packages[0]) < total_cost(case, threads["sup:A"][0]["term_sheets"][0]["terms"])
     assert not move["message"].get("action")
-    ceiling = total_cost(case, threads["sup:A"][0]["term_sheets"][0]["terms"]) * 0.9
-    assert all(total_cost(case, t) <= ceiling and t["unit_price"] <= 99 for t in packages)
+    ceiling = ask_limit(case, threads["sup:A"])
+    assert all(total_cost(case, t) <= ceiling and t["unit_price"] <= 90.2 for t in packages)
 
 
 def test_covering_more_demand_does_not_raise_the_opening_unit_price(negotiation):
@@ -79,7 +80,7 @@ def test_covering_more_demand_does_not_raise_the_opening_unit_price(negotiation)
     assert not calls
     packages = [s["terms"] for s in move["message"]["term_sheets"]]
     assert any(t["contract_months"] >= 24 for t in packages)
-    assert all(t["unit_price"] <= 99 for t in packages)
+    assert all(t["unit_price"] <= 90.2 for t in packages)
 
 
 def test_explicit_outgoing_package_repairs_a_negotiable_must_have(negotiation):
@@ -139,8 +140,8 @@ def test_followup_concedes_in_full_cost_and_closes_agreement(negotiation):
     proposed = followup["message"]["term_sheets"][0]["terms"]
     previous_cost = min(total_cost(case, sheet["terms"]) for sheet in opening["message"]["term_sheets"])
     current_cost = total_cost(case, reply)
-    assert previous_cost <= total_cost(case, proposed) <= (previous_cost + current_cost) / 2 < current_cost
-    assert proposed["unit_price"] > reply["unit_price"]  # a premium pays for DAP/longer payment, not worse total C
+    # every round moves, but only 30 % of the gap: never straight to the supplier's number
+    assert previous_cost <= total_cost(case, proposed) <= previous_cost + 0.3 * (current_cost - previous_cost) + 0.01
     record_round(threads, followup, proposed, number=2, status="agreed")
     assert agent.decide(case, threads)["message"]["action"]["type"] == "accept"
     assert calls == []
@@ -241,5 +242,5 @@ def test_bounded_search_parses_the_quote_once_per_decision_stage(negotiation):
     with patch("tacto_negotiator.docs.quote_terms", wraps=quote_terms) as parsing:
         move = agent.decide(case, threads)
     assert not calls and move["message"]["term_sheets"]
-    assert parsing.call_count <= 5  # independent of the 256 candidate packages
+    assert parsing.call_count <= 7  # constant per stage, independent of the 256 candidate packages
     assert all(must_haves_ok(case, sheet["terms"]) for sheet in move["message"]["term_sheets"])

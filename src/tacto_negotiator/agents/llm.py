@@ -20,7 +20,7 @@ import httpx
 
 from ..cost import complete_offer, cost_breakdown, must_haves_ok, total_cost
 from ..docs import standard_terms
-from ..play import acceptable_offer, closing_move, latest, live_threads, moves_left, standing
+from ..play import acceptable_offer, ask_limit, closing_move, latest, live_threads, moves_left, standing
 from .naive import NaiveAgent
 
 log = logging.getLogger("arena")
@@ -175,6 +175,10 @@ class LLMAgent:
                 f"{moves_left(case, events)} messages left; standing {sheet_id} "
                 f"{json.dumps(terms)} -> C = {c}; standard terms {json.dumps(std)}"
             )
+            if math.isfinite(limit := ask_limit(case, events)) and moves_left(case, events) > 0:
+                out.append(f"ASK LIMIT: every term sheet you send to {sid} now must have C <= {limit:,.0f} "
+                           "(an ambitious opening, then 30% of the remaining gap per round). Sheets above it are "
+                           "rejected. Accepting a standing offer is not limited.")
             if components:
                 out.append(f"C COMPONENTS (EUR, nonzero; supplier health not estimated): {json.dumps(components)}")
                 comparisons = []
