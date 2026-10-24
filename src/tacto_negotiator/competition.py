@@ -18,7 +18,7 @@ from dataclasses import dataclass
 
 from .cost import closing_terms, cost_breakdown, must_haves_ok, score, total_cost
 from .docs import read_document
-from .play import CLOSE_BEFORE_CAP_S, MOVE_LIMIT_S, SEND_MARGIN_S, closing_move, live_threads
+from .play import CLOSE_BEFORE_CAP_S, MOVE_LIMIT_S, SEND_MARGIN_S, closing_move, latest, live_threads, standing
 from .sim import Fail, Sim
 
 
@@ -365,8 +365,11 @@ def _match(variant, factory, scenario, wave, waves, decision_seconds):
                 break
             prep = time.monotonic()
             threads = _public_threads(sim, session, cache)
-            sim.now += time.monotonic() - prep
             live = live_threads(threads)
+            prices = [{"supplier_id": sid, "unit_price": standing(threads[sid])[1].get("unit_price"),
+                       "term_sheet_id": standing(threads[sid])[0], "status": latest(threads[sid]).get("status")}
+                      for sid in live]
+            sim.now += time.monotonic() - prep
             if not live:
                 sim._settle(session, "no_deal")
                 break
@@ -394,6 +397,8 @@ def _match(variant, factory, scenario, wave, waves, decision_seconds):
             trace = dict(getattr(agent, "last_decision", {}))
             trace.update(decision_wall_s=elapsed, budget_s=budget, model_attempts=counts["attempts"] - before,
                          forced_close=forced_close, elapsed_over_budget=elapsed > budget if budget > 0 else False)
+            trace.update(wave_seconds_left=wave_left, thread_seconds_left=thread_left,
+                         standing_prices=prices)
             trace.setdefault("route", "model" if trace["model_attempts"] else "script")
             trace.setdefault("fallback", False)
             trace.setdefault("reason", "deadline_close" if forced_close else "agent_policy")
@@ -413,8 +418,13 @@ def _match(variant, factory, scenario, wave, waves, decision_seconds):
                 trace["deadline_override"] = True
             trace["sent_action"] = _action_summary(decision, case, session["offers"])
             try:
-                sim.message("local", session["id"], decision["supplier_id"], decision["message"])
+                reply = sim.message("local", session["id"], decision["supplier_id"], decision["message"])
+                sheet = (reply.get("term_sheets") or [{}])[0]
+                trace["supplier_reply"] = {"supplier_id": decision["supplier_id"], "status": reply.get("status"),
+                                           "unit_price": sheet.get("terms", {}).get("unit_price"),
+                                           "term_sheet_id": sheet.get("term_sheet_id")}
             except Fail as failure:
+                trace["submission_error"] = failure.status
                 if failure.status != 409:
                     invalid_moves += int(failure.status == 422)
                     raise

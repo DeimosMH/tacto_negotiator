@@ -115,6 +115,7 @@ def test_agents_only_receive_public_data_and_cannot_mutate_private_state():
     assert row["valid"] and row["error"] is None
     assert row["decisions"][0]["sent_action"]["action"] == "accept"
     assert row["terms"]["unit_price"] > 1
+    assert row["decisions"][0]["standing_prices"][0]["unit_price"] > 1
 
 
 def test_parallel_workers_really_overlap():
@@ -282,6 +283,19 @@ def test_no_feasible_reference_is_an_invalid_scenario():
     scenario.case["buyer"]["must_haves"] = [{"field": "lead_time_days", "op": "<=", "value": 1}]
     with pytest.raises(ValueError, match="no feasible deal"):
         feasible_reference(scenario)
+
+
+def test_decision_trace_records_public_prices_replies_and_remaining_time():
+    report = run_competition({"guarded": GuardedNaive}, scenarios=["simple_price"], seeds=(0,), waves=1)
+    row = report["matches"][0]
+    first = row["decisions"][0]
+    assert 0 < first["wave_seconds_left"] <= 480
+    assert 0 < first["thread_seconds_left"] <= 60
+    assert first["standing_prices"][0]["supplier_id"] == "sup:A"
+    assert first["standing_prices"][0]["unit_price"] > 0
+    assert first["supplier_reply"]["unit_price"] > 0
+    assert set(first["supplier_reply"]) == {"supplier_id", "status", "unit_price", "term_sheet_id"}
+    assert not {"body", "profiles", "floor", "full_cost"} & set(first)
 
 
 @pytest.mark.parametrize("options", [{"waves": 0}, {"workers": 0}, {"seeds": ()},
