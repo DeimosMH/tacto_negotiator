@@ -70,6 +70,8 @@ Reply with ONE JSON object and nothing else:
 - Use the computed term tradeoffs to compare alternatives. A quality commitment and a chargeback
   can cover the same defect cost; do not pay twice for protection. Ask the supplier to make the
   cheapest attractive alternative its primary standing offer before accepting it.
+  Suppliers price a term they did not offer (chargeback, stricter ppm, longer payment, shorter lead
+  time) at their own value: when their premium for it exceeds its TERM TRADEOFFS saving, drop it.
 - Compare the complete need over the entire horizon. Shorter contracts or lower volume leave
   uncovered demand at fallback cost plus risk. Use the computed cost components, not price alone.
 - The case's category_goal sets its rates. In stabilise and secure_supply cases C also charges for

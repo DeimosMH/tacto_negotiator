@@ -41,6 +41,10 @@ MAX_SCRIPT_CANDIDATES = 256
 CONDITIONAL_WORDING = ("subject to", "provided that", "only if", "pending approval", "conditional on", "unless",
                        "please clarify", "please explain", "capacity constraint", "of our cost", "whole range",
                        "faster payment", "alternatively", "no-go")
+# Terms that move cash or effort to the supplier (`cost.supplier_value`): it prices each at its own
+# value, often far above ours. Contract length, volume and index clauses are security instead.
+SUPPLIER_CASH_TERMS = {"payment_days", "chargeback_eur_per_complaint", "ppm_commitment", "lead_time_days",
+                       "tooling_eur", "incoterm"}
 
 
 class RoutedAgent:
@@ -291,6 +295,52 @@ class RoutedAgent:
         return sorted(rows, key=lambda row: decision_cost(case, {**row[1], "unit_price": reference_price},
                                                           standard, sid))
 
+    def _opening_sheets(self, case, record, rows, alternative, cap):
+        """Open on the supplier's own non-price terms - only must-have fields moved, to the nearest
+        allowed value - at the anchored price, plus trades at exactly equal cost to us.
+
+        At one capped price the package cheapest for us always carried every buyer-favourable term the
+        supplier had not offered. Suppliers price such terms at their own value, not ours: hosted P11
+        answered a EUR 500 chargeback (worth EUR 0.68/unit to us) by raising 47.00 to 49.50-50.00 and
+        held that package to a 48.50 final (0.23; runs that dropped it closed at 46.00 for 0.63).
+        Unrequested terms stay available later as equal-cost trades. Relationship goals keep the
+        health-floor pricing of every package: there the floor, not the anchor, sets the price."""
+        if case["buyer"].get("category_goal") in RELATIONSHIP_GOALS:
+            return None
+        current, sid, std = record["current"], record["sid"], record["std"]
+        fields = [field for field in case["negotiable"] if field != "unit_price"]
+        required = {rule["field"] for rule in case["buyer"].get("must_haves", [])}
+
+        def numeric(value):
+            return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+        def distance(terms):
+            total = 0.0
+            for field in fields:
+                ours, theirs = terms[field], current[field]
+                if ours == theirs or field not in SUPPLIER_CASH_TERMS:
+                    continue
+                if field not in required:
+                    return None
+                total += (abs(ours - theirs) / max(abs(theirs), 1)) if numeric(ours) and numeric(theirs) else 1.0
+            return total
+
+        candidates = [(gap, index) for index, (_, terms) in enumerate(rows) if (gap := distance(terms)) is not None]
+        if not candidates:
+            return None
+        base = rows[min(candidates)[1]][1]
+        base_cost = decision_cost(case, base, std, sid)
+        equal = self._packages(case, record["options"], base_cost, alternative, current["unit_price"],
+                               price_ceiling=cap, sid=sid, standard=std)
+        chosen = [base]
+        for cost, terms in equal:
+            if len(chosen) == 3:
+                break
+            same_terms = all(terms[field] == base[field] for field in fields)
+            if not same_terms and cost >= base_cost * 0.997 - 0.01:
+                chosen.append(terms)
+        return chosen
+
     def _forecast_evidence(self, case, threads):
         """One forecast argument per case: hosted replays mark any later `fc:` claim duplicate, even for
         another part or month, so extra forecasts would only spend claim slots."""
@@ -400,24 +450,27 @@ class RoutedAgent:
                     if self.validate(case, threads, {"supplier_id": sid, "action": "accept"}):
                         return "small_cost_gap" if small_gap else "round_reserve", closing_move(case, threads)
             anchor = ANCHOR_BY_GOAL.get(case["buyer"].get("category_goal"), 0.15)
+            cap = math.inf if sent else max(round(current["unit_price"] * (1 - anchor), 2),
+                                            opening_price_cap(case, threads[sid], sid))
             rows = self._packages(case, record["options"], target_cost, alternative, current["unit_price"],
-                                  price_ceiling=math.inf if sent else max(
-                                      round(current["unit_price"] * (1 - anchor), 2),
-                                      opening_price_cap(case, threads[sid], sid)),
-                                  sid=sid, standard=record["std"])
+                                  price_ceiling=cap, sid=sid, standard=record["std"])
             if not rows:
                 continue
-            chosen = [rows[0][1]]
-            baseline = next((terms for _, terms in rows if all(
-                terms[field] == current[field] for field in case["negotiable"] if field != "unit_price"
-            )), None)
-            if baseline and baseline not in chosen:
-                chosen.append(baseline)
-            for _, terms in rows:
-                if len(chosen) == 3:
-                    break
-                if terms not in chosen:
-                    chosen.append(terms)
+            opening = None if sent else self._opening_sheets(case, record, rows, alternative, cap)
+            if opening:
+                chosen = opening
+            else:
+                chosen = [rows[0][1]]
+                baseline = next((terms for _, terms in rows if all(
+                    terms[field] == current[field] for field in case["negotiable"] if field != "unit_price"
+                )), None)
+                if baseline and baseline not in chosen:
+                    chosen.append(baseline)
+                for _, terms in rows:
+                    if len(chosen) == 3:
+                        break
+                    if terms not in chosen:
+                        chosen.append(terms)
             rival = self._rival_evidence(case, threads, sid)
             move = self.validate(case, threads, {"supplier_id": sid, "action": "send",
                 "body": ("Please consider these complete packages for the stated requirement. "

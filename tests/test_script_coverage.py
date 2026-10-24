@@ -58,7 +58,9 @@ def test_full_term_opening_offers_cheaper_packages_and_a_familiar_tradeoff(negot
     move = agent.decide(case, threads)
     packages = [sheet["terms"] for sheet in move["message"]["term_sheets"]]
     assert calls == [] and agent.last_decision["reason"] == "enumerated_opening"
-    assert packages[0] == {"unit_price": 85.25, "payment_days": 60, "incoterm": "DAP"}  # 22.5 % routine anchor
+    # 22.5 % routine anchor on the supplier's own cash terms: longer payment and the freight leg are
+    # not asked for unpaid at the opening (suppliers price them at their own value)
+    assert packages[0] == {"unit_price": 85.25, "payment_days": 14, "incoterm": "EXW"}
     # sheets dearer for us than the cheapest are dropped: the supplier would pick exactly those
     cheapest = min(total_cost(case, t) for t in packages)
     assert all(total_cost(case, t) <= cheapest * 1.003 + 0.01 for t in packages)
@@ -97,6 +99,50 @@ def test_explicit_outgoing_package_repairs_a_negotiable_must_have(negotiation):
     assert all(must_haves_ok(case, sheet["terms"]) and sheet["terms"]["lead_time_days"] == 14
                for sheet in move["message"]["term_sheets"])
     assert agent.validate(case, threads, {"supplier_id": "sup:A", "action": "accept"}) is None
+
+
+def test_quality_opening_repairs_only_the_must_have_and_trades_chargebacks_at_equal_cost(negotiation):
+    """Hosted P11: three sheets that all asked a EUR 500 chargeback at one price made the supplier
+    raise 47.00 to 49.50-50.00 and hold that package to a 48.50 final."""
+    case, threads = negotiation
+    case["negotiable"] = ["ppm_commitment", "chargeback_eur_per_complaint", "unit_price"]
+    case["fixed_terms"].update(payment_days=60, incoterm="DAP")
+    case["term_options"] = {"ppm_commitment": [300, 800, 1500, 2500],
+                            "chargeback_eur_per_complaint": [0, 150, 300, 500]}
+    case["buyer"].update(category_goal="quality_first", cost_per_defect=450,
+                         must_haves=[{"field": "ppm_commitment", "op": "<=", "value": 1500}])
+    threads["sup:A"] = [quote({"unit_price": 47.0, "ppm_commitment": 6400, "chargeback_eur_per_complaint": 0})]
+    agent, calls = agent_with_calls()
+    opening = agent.decide(case, threads)
+    assert calls == [] and agent.last_decision["reason"] == "must_have_repair"
+    sheets = [s["terms"] for s in opening["message"]["term_sheets"]]
+    # the supplier's own chargeback, ppm moved only as far as the must-have requires, at the anchor
+    assert sheets[0] == {"ppm_commitment": 1500, "chargeback_eur_per_complaint": 0, "unit_price": 38.07}
+    assert all(s["chargeback_eur_per_complaint"] == 0 for s in sheets)
+    # later rounds still offer the chargeback, but only at equal cost to us (a higher price)
+    record_round(threads, opening, {"unit_price": 47.0, "ppm_commitment": 1500,
+                                    "chargeback_eur_per_complaint": 0})
+    follow = agent.decide(case, threads)
+    sheets = [s["terms"] for s in follow["message"]["term_sheets"]]
+    costs = [total_cost(case, s) for s in sheets]
+    assert max(costs) <= min(costs) * 1.003 + 0.01
+    by_chargeback = {s["chargeback_eur_per_complaint"]: s["unit_price"] for s in sheets}
+    assert 0 in by_chargeback and len(by_chargeback) > 1
+    assert all(price > by_chargeback[0] for charge, price in by_chargeback.items() if charge > 0)
+
+
+def test_opening_still_asks_security_terms_the_supplier_did_not_offer(negotiation):
+    """Contract length is security, not cash, for the supplier: the opening may still extend it."""
+    case, threads = negotiation
+    case["buyer"]["horizon_years"] = 2
+    case["fixed_terms"].pop("contract_months")
+    case["negotiable"].append("contract_months")
+    case["term_options"]["contract_months"] = [12, 24, 36]
+    threads["sup:A"][0]["term_sheets"][0]["terms"]["contract_months"] = 12
+    agent, _ = agent_with_calls()
+    sheets = [s["terms"] for s in agent.decide(case, threads)["message"]["term_sheets"]]
+    assert sheets[0]["contract_months"] >= 24
+    assert sheets[0]["payment_days"] == 14 and sheets[0]["incoterm"] == "EXW"
 
 
 def test_rfq_uses_full_cost_and_services_untried_suppliers(negotiation):
