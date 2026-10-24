@@ -4,7 +4,7 @@ CODE = "src/tacto_negotiator/"
 DATA = "data/"
 GUIDES = ("README.md", "BEGINNER_GUIDE.md", "TUTORIAL.md", "IMPLEMENTATION.md", "DATA_GUIDE.md", "LOCAL_TESTING.md",
           "FINAL_READINESS.md", "MODEL_SELECTION.md", "ROUTING.md", "COMPETITION.md", "WEB_UI.md", "FAQ_ADVANTAGE.md",
-          "LIVE_PRACTICE.md", "EVALUATION.md")
+          "LIVE_PRACTICE.md", "EVALUATION.md", "FINAL_RUNBOOK.md")
 
 GROUPS = {
     "project": {"label": "Project setup", "color": "#e4b86b"},

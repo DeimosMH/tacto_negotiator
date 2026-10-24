@@ -1,5 +1,7 @@
 # Sunday: finish five eight-minute waves reliably
 
+> **For the step-by-step final procedure, use the [final runbook](FINAL_RUNBOOK.md).** The model recommendation below is historical: the final runs Claude Opus 5.5 at high effort.
+
 Tacto Negotiator already has a routed deadline controller and shared deterministic action checks. Preserve those controls and prioritize the remaining RFQ scheduling and evidence gaps below. A stronger model does not compensate for missing a thread deadline or leaving a case open at the wave cap.
 
 The [FAQ advantage guide](FAQ_ADVANTAGE.md) records official clarification, implemented tie handling and cost-context changes, local evidence and final-machine preparation. Stop practice activity before the final so old sessions do not consume its capacity. The CLI now leaves incomplete final totals unknown instead of silently scoring missing cases as zero.
