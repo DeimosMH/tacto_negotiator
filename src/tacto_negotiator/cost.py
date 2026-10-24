@@ -268,23 +268,23 @@ def decision_cost(case, terms, standard=None, sid=None):
 
 def cheapest_price(case, terms, standard=None, sid=None):
     """The unit price at which `decision_cost` is lowest for otherwise fixed terms, or None without a
-    health estimate. Below it, squeezing the supplier's margin costs more than the price saves."""
-    if not (case.get("_supplier_estimates") or {}).get(sid) or not terms.get("unit_price"):
+    health estimate. Below it, squeezing the supplier's margin costs more than the price saves.
+    C is convex in price here (linear price cost plus a convex margin penalty), so a ternary search
+    over a fixed range around the supplier's full cost gives the same answer for any input price."""
+    estimate = (case.get("_supplier_estimates") or {}).get(sid)
+    if not estimate or not estimate.get("full_cost"):
         return None
-    quoted = terms["unit_price"]
-    best = None
-    for step in range(401):  # 50 %-100 % of the given price, then refined around the best point
-        price = round(quoted * (0.5 + step / 800), 2)
-        cost = decision_cost(case, {**terms, "unit_price": price}, standard, sid)
-        if math.isfinite(cost) and (best is None or cost < best[0]):
-            best = (cost, price)
-    if best is None:
-        return None
-    for cents in range(-150, 151):
-        price = round(best[1] + cents / 100, 2)
-        if price > 0:
-            cost = decision_cost(case, {**terms, "unit_price": price}, standard, sid)
-            if math.isfinite(cost) and cost < best[0]:
-                best = (cost, price)
-    return best[1]
 
+    def cost(price):
+        value = decision_cost(case, {**terms, "unit_price": price}, standard, sid)
+        return value if math.isfinite(value) else math.inf
+
+    low, high = estimate["full_cost"] * 0.5, estimate["full_cost"] * 3
+    for _ in range(80):
+        a, b = low + (high - low) / 3, high - (high - low) / 3
+        if cost(a) <= cost(b):
+            high = b
+        else:
+            low = a
+    best = round((low + high) / 2, 2)
+    return min((round(best + cents / 100, 2) for cents in range(-3, 4)), key=lambda price: (cost(price), price))

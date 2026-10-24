@@ -18,6 +18,7 @@ from .agents.naive import NaiveAgent
 from .agents.routed import RoutedAgent
 from .benchmark import BudgetedCompletion, BudgetLedger, preflight_models, read_llm_key
 from .competition import run_competition
+from .data import DataPackage
 
 MODELS = {"sol": "gpt-6.1-sol", "astra": "gpt-6-astra", "luna": "gpt-6-luna"}
 STRATEGIES = ("naive", "close", "scripts", "sol", "astra", "luna", "hybrid")
@@ -42,8 +43,8 @@ class ModelAgent(RoutedAgent):
         return None
 
 
-def make_factories(strategies, completions=None, *, decision_seconds=25):
-    """Fresh policy state per match; clients and budget ledger may be shared safely."""
+def make_factories(strategies, completions=None, *, decision_seconds=25, package=None):
+    """Fresh policy state per match; clients, budget ledger and the read-only package may be shared."""
     completions = completions or {}
     factories = {}
     for strategy in strategies:
@@ -54,14 +55,16 @@ def make_factories(strategies, completions=None, *, decision_seconds=25):
         elif strategy == "close":
             factories[strategy] = lambda: CloseAgent(unavailable)
         elif strategy == "scripts":
-            factories[strategy] = lambda: RoutedAgent(unavailable, max_decision_seconds=decision_seconds)
+            factories[strategy] = lambda: RoutedAgent(unavailable, package=package,
+                                                      max_decision_seconds=decision_seconds)
         elif strategy == "hybrid":
             fast, strong = completions["sol"], completions["astra"]
             factories[strategy] = lambda f=fast, s=strong: RoutedAgent(
-                f, strong=s, max_decision_seconds=decision_seconds)
+                f, strong=s, package=package, max_decision_seconds=decision_seconds)
         else:
             complete = completions[strategy]
-            factories[strategy] = lambda c=complete: ModelAgent(c, max_decision_seconds=decision_seconds)
+            factories[strategy] = lambda c=complete: ModelAgent(c, package=package,
+                                                                max_decision_seconds=decision_seconds)
     return factories
 
 
@@ -83,6 +86,8 @@ def main(argv=None):
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--decision-seconds", type=float, default=25)
     parser.add_argument("--holdout", action="store_true")
+    parser.add_argument("--replica", action="store_true",
+                        help="the 10 hosted practice cases with a supplier calibrated on hosted replies")
     parser.add_argument("--live", action="store_true", help="Authorize paid OpenAI completions; suppliers stay local")
     parser.add_argument("--key-file", type=Path, help="Read only literal LLM_API_KEY from this file")
     parser.add_argument("--budget-usd", type=float, default=60, help="Conservative reservation ceiling for this run")
@@ -109,13 +114,17 @@ def main(argv=None):
         for name in names:
             client = CompletionClient(MODELS[name], key, effort="low", service_tier="default", semaphore=semaphore)
             completions[name] = BudgetedCompletion(client, ledger)
-    factories = make_factories(args.strategies, completions, decision_seconds=args.decision_seconds)
+    package = None
+    if args.replica:
+        package = DataPackage(Path(__file__).resolve().parents[2] / "data")
+        package.lookup("")
+    factories = make_factories(args.strategies, completions, decision_seconds=args.decision_seconds, package=package)
     metadata = {"started_utc": datetime.now(UTC).isoformat(), "models": {n: c.model for n, c in completions.items()},
                 "effort": "low", "service_tier": "default", "max_output_tokens": 4096,
                 "preflight": preflight, "status": "running"}
     metadata["source_sha256"] = {
         name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
-        for name in ("compete.py", "competition.py", "benchmark.py", "cost.py", "play.py", "sim.py")
+        for name in ("compete.py", "competition.py", "benchmark.py", "cost.py", "play.py", "sim.py", "hosted_like.py")
     }
     for name in ("routed.py", "llm.py", "completion.py"):
         metadata["source_sha256"]["agents/" + name] = hashlib.sha256(
@@ -133,7 +142,7 @@ def main(argv=None):
     monitor.start()
     try:
         result = run_competition(factories, args.scenarios, args.seeds, args.waves, args.workers,
-                                 holdout=args.holdout, decision_seconds=args.decision_seconds)
+                                 holdout=args.holdout, decision_seconds=args.decision_seconds, replica=args.replica)
     finally:
         stop.set()
         monitor.join()

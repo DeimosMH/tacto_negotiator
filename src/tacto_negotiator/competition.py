@@ -31,6 +31,8 @@ class Scenario:
     profiles: dict
     seed: int
     holdout: bool = False
+    sim: object = None  # simulator class; CompetitionSim by default
+    reference: dict = None  # recorded hosted C_open/C_best for replica cases
 
 
 def build_scenarios(seed=0, *, holdout=False):
@@ -347,7 +349,7 @@ def _action_summary(decision, case, offers):
 
 def _match(variant, factory, scenario, wave, waves, decision_seconds):
     started = time.monotonic()
-    sim = CompetitionSim(scenario, waves)
+    sim = (scenario.sim or CompetitionSim)(scenario, waves)
     sim.now += (wave - 1) * 480
     wave_start = sim.now
     opened = sim.open("local", f"case:R{wave}-{scenario.case['case_id'][5:]}")
@@ -457,7 +459,7 @@ def _match(variant, factory, scenario, wave, waves, decision_seconds):
 
 
 def run_competition(factories, scenarios=None, seeds=(0, 1, 2), waves=5, workers=4, *,
-                    holdout=False, decision_seconds=25):
+                    holdout=False, decision_seconds=25, replica=False):
     """Run paired policies in parallel within five sequential virtual 480-second waves.
 
     factories maps variant names to no-argument fresh-agent factories. scenarios is an optional
@@ -474,7 +476,12 @@ def run_competition(factories, scenarios=None, seeds=(0, 1, 2), waves=5, workers
     requested = None if scenarios is None else set(scenarios)
     cases = []
     for seed in seeds:
-        available = build_scenarios(seed, holdout=holdout)
+        if replica:
+            from .hosted_like import build_replica_scenarios
+
+            available = build_replica_scenarios(seed)
+        else:
+            available = build_scenarios(seed, holdout=holdout)
         if requested is not None and (not requested or requested - {s.name for s in available}):
             raise ValueError("scenarios must name existing scenario IDs")
         cases.extend(s for s in available if requested is None or s.name in requested)

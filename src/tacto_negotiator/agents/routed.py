@@ -112,8 +112,8 @@ class RoutedAgent:
             if any(decision_cost(case, t, std, sid) > limit * 1.005 + 0.01 for t in clean):
                 return None
             if clean and not any(e.get("from") == "buyer" and e.get("term_sheets") for e in events):
-                cap = opening_price_cap(case, events, sid)
-                if any(t["unit_price"] > cap + 0.005 for t in clean):
+                cap = opening_price_cap(case, events, sid)  # per package: its own health floor may be higher
+                if any(t["unit_price"] > max(cap, cheapest_price(case, t, std, sid) or 0) + 0.02 for t in clean):
                     return None
             if clean:  # the supplier picks the sheet dearest for us (hosted P03): keep equal-cost sheets only
                 cheapest = min(decision_cost(case, t, std, sid) for t in clean)
