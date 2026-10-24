@@ -23,6 +23,7 @@ from ..cost import (
 from ..play import (
     ANCHOR_BY_GOAL,
     CLOSE_BEFORE_CAP_S,
+    GAP_STEP,
     HOLD_STEP,
     acceptable_offer,
     ask_limit,
@@ -47,6 +48,9 @@ CONDITIONAL_WORDING = ("subject to", "provided that", "only if", "pending approv
 # value, often far above ours. Contract length, volume and index clauses are security instead.
 SUPPLIER_CASH_TERMS = {"payment_days", "chargeback_eur_per_complaint", "ppm_commitment", "lead_time_days",
                        "tooling_eur", "incoterm"}
+# An index-clause sheet (relationship goals) needs a series rise this many times its expected cost to us,
+# and must close this share of the gap from the standing offer to our cheapest sheet (`_clause_sheet`).
+CLAUSE_RISE_RATIO, CLAUSE_GAP_SHARE = 3.0, 0.5
 
 
 class RoutedAgent:
@@ -129,6 +133,8 @@ class RoutedAgent:
                 ceiling = max(cap, cheapest_price(case, t, std, sid) or 0) if opening else math.inf
                 if total_cost(case, t, std) > limit * 1.005 + 0.01 or t["unit_price"] > ceiling + 0.02:
                     t = {**t, "unit_price": self._price_within(case, t, std, sid, limit, ceiling)}
+                if reprice:
+                    t = self._off_repeat(case, events, t, terms, std)
                 if t not in conformed:
                     conformed.append(t)
             clean = conformed
@@ -143,6 +149,8 @@ class RoutedAgent:
             if clean:  # the supplier picks the sheet dearest for us (hosted P03): keep equal-cost sheets only
                 cheapest = min(decision_cost(case, t, std, sid) for t in clean)
                 clean = [t for t in clean if decision_cost(case, t, std, sid) <= cheapest * 1.003 + 0.01]
+                if reprice and (protected := self._clause_sheet(case, events, sid, clean)):
+                    clean = [protected, *clean[:2]]
                 if reprice:  # a mirrored supplier package goes back alone
                     clean += self._toward_sheets(case, events, sid, clean, 3 - len(clean), limit)
                 # Equal cost to us is not credibility to the supplier: hosted P18 v8 got a 2.78 sheet (a 12-month
@@ -189,6 +197,95 @@ class RoutedAgent:
             if (equal or near) and variant not in sheets + out:
                 out.append(variant)
         return out
+
+    def _clause_sheet(self, case, events, sid, sheets):
+        """Relationship goals: our cheapest sheet with an index clause, priced at its own health floor,
+        when the clause's series rose far more over twelve months than the clause is expected to cost us.
+
+        A supplier passing on a material rise takes the clause instead of the increase: hosted P02
+        answered a 90-day sheet with a 5 % deadband clause at 349.05 (the old price) while without it
+        it never went below 371.95 (0.39-0.50 in eight runs). The clause costs us only its index risk
+        there (0.8 % of spend), so 361.42 at the floor scores about 0.72; 349.05 itself scored 0.06
+        because it squeezed the supplier's margin. The supplier answers the sheet it prefers, so the
+        clause sheet leads, offered once, and only if it closes at least `CLAUSE_GAP_SHARE` of the
+        gap between the standing offer and our cheapest sheet at its floor (the price-only path's best
+        hosted result). Without the series' data or a health estimate there is no clause sheet."""
+        clauses = [o for o in case.get("term_options", {}).get("index_clause") or [] if o]
+        if (case["buyer"].get("category_goal") not in RELATIONSHIP_GOALS or "index_clause" not in case["negotiable"]
+                or not clauses or not sheets):
+            return None
+        _, terms, std, missing = known_offer(case, events)
+        position = {**std, **case.get("fixed_terms", {}), **terms}
+        if missing or position.get("index_clause") or any(
+                s.get("terms", s).get("index_clause") for e in events if e.get("from") == "buyer"
+                for s in e.get("term_sheets") or []):
+            return None  # the supplier already holds a clause, or it saw ours and preferred none
+        base = min(sheets, key=lambda t: decision_cost(case, t, std, sid))
+        floor = cheapest_price(case, base, std, sid)
+        if floor is None:
+            return None
+        best = None
+        for clause in clauses:
+            if not self._clause_pays(case, clause):
+                continue
+            variant = {**base, "index_clause": clause}
+            variant["unit_price"] = cheapest_price(case, variant, std, sid)
+            if not variant["unit_price"] or not must_haves_ok(case, variant, std):
+                continue
+            cost = decision_cost(case, variant, std, sid)
+            if math.isfinite(cost) and (best is None or cost < best[0]):
+                best = (cost, variant)
+        current = decision_cost(case, terms, std, sid)
+        lowest = decision_cost(case, {**base, "unit_price": floor}, std, sid)
+        if best is None or not best[0] <= current - CLAUSE_GAP_SHARE * (current - lowest):
+            return None
+        return best[1]
+
+    @staticmethod
+    def _off_repeat(case, events, sheet, terms, std):
+        """A sheet the supplier just countered on the same package goes up by `GAP_STEP` of that
+        package's gap instead of repeating: an unchanged sheet draws no concession, and hosted P02 v4
+        walked away after the same health-floor sheet three times. Packages are compared on non-price
+        terms; the health floor of a package (e.g. one with an index clause) otherwise repeats. `terms` and
+        `std` are the supplier's standing terms and standard terms (`known_offer`)."""
+        sent = [e for e in events if e.get("from") == "buyer" and e.get("term_sheets")]
+        if not sent or "unit_price" not in terms:
+            return sheet
+
+        def package(t):
+            resolved = {**std, **case.get("fixed_terms", {}), **t}
+            return {f: resolved.get(f) for f in case["negotiable"] if f != "unit_price"}
+
+        if package(terms) != package(sheet):
+            return sheet
+        ours = [s.get("terms", s)["unit_price"] for s in sent[-1]["term_sheets"]
+                if package(s.get("terms", s)) == package(sheet)]
+        if not ours or sheet["unit_price"] > max(ours) + 0.005 or terms["unit_price"] <= max(ours):
+            return sheet
+        return {**sheet, "unit_price": round(max(ours) + GAP_STEP * (terms["unit_price"] - max(ours)), 2)}
+
+    def _clause_pays(self, case, clause):
+        """The clause's series rose over the last twelve months by at least `CLAUSE_RISE_RATIO` times
+        what the clause is expected to cost us per unit of material share (index path beyond the
+        deadband plus index risk). Hosted P02 copper rose 47.7 % against 4 % and the supplier traded the
+        increase for the clause; P08/P18 steel rose 5.9 % against 2 % and clause sheets moved nothing."""
+        package = getattr(self.context, "package", None)
+        try:
+            refs = package.ids(f"idx:{clause['series']}@") if package is not None else []
+            if not refs:
+                return False
+            newest = package.lookup(refs[-1])
+            month = newest["month"]
+            previous = package.lookup(f"idx:{clause['series']}@{int(month[:4]) - 1}{month[4:]}")
+            if not previous or not previous.get("value") or previous["value"] <= 0:
+                return False
+            rise = newest["value"] / previous["value"] - 1
+            buyer = case["buyer"]
+            path = buyer.get("index_paths", {}).get(clause["series"], 0.0)
+            ours = max(0.0, abs(path) - clause["deadband_pct"] / 100) + buyer.get("index_risk_pct", 0) / 100
+            return rise > 0 and rise >= CLAUSE_RISE_RATIO * ours
+        except (KeyError, TypeError, ValueError, AttributeError, ZeroDivisionError):
+            return False
 
     @staticmethod
     def _strip_wasted_claims(case, threads, body):

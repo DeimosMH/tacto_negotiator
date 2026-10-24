@@ -167,3 +167,72 @@ def test_scripted_opening_covers_the_need_when_that_is_cheaper_at_our_ask():
     terms = [sheet["terms"] for sheet in move["message"]["term_sheets"]]
     assert reason == "enumerated_opening"
     assert all(t["contract_months"] >= 24 for t in terms) and max(t["unit_price"] for t in terms) <= 4.54
+def test_relationship_opening_leads_with_an_index_clause_at_its_health_floor():
+    """Hosted P02: with a 5 % deadband copper clause the supplier countered 349.05 (anchor run); without
+    one it never went below 371.95 (0.39-0.50). The clause sheet at its health floor scores about 0.72."""
+    from tacto_negotiator.agents.routed import RoutedAgent
+    from tacto_negotiator.cost import cheapest_price, decision_cost, score
+    from tacto_negotiator.play import known_offer
+
+    feedback = json.loads((ROOT / "tests/fixtures/practice_feedback.json").read_text())
+    case = dict(feedback["cases"]["case:P02"])
+    sid = "sup:70510"
+    result = next(s for s in feedback["sessions"] if s["case_id"] == "case:P02")["result"]
+    quote = [{"name": "quote.pdf", "text": "Our standard terms\nPayment terms (days net) 30\nIncoterm DAP"}]
+    opening = {"unit_price": 370.96, "payment_days": 30, "index_clause": None}
+    events = [{"from": "supplier", "status": "open", "attachments": quote,
+               "term_sheets": [{"term_sheet_id": "offer:0", "terms": opening}]}]
+    threads = {sid: events}
+    agent = RoutedAgent(None, package=DataPackage(ROOT / "data"))
+    agent._prepare(case)
+    std = known_offer(case, events)[2]
+    model = agent.validate(case, threads, {"supplier_id": sid, "action": "send",
+                                           "term_sheets": [{"unit_price": 361.51, "payment_days": 90}]})
+    for move in (agent._structured_bargain(case, threads)[1], model):
+        lead = move["message"]["term_sheets"][0]["terms"]
+        assert lead["index_clause"]["deadband_pct"] == 5 and lead["payment_days"] == 90
+        assert lead["unit_price"] == cheapest_price(case, lead, std, sid)
+        assert score(result["c_open"], decision_cost(case, lead, std, sid), result["c_best"]) > 0.7
+    # offered once; when the supplier holds a clause itself the schedule takes over
+    plain = {**lead, "index_clause": None}
+    countered = [*events, {"from": "buyer", "term_sheets": model["message"]["term_sheets"]},
+                 {"from": "supplier", "status": "open", "attachments": quote, "term_sheets": [
+                     {"term_sheet_id": "offer:1", "terms": {**opening, "unit_price": 373.88, "payment_days": 90}}]}]
+    assert agent._clause_sheet(case, countered, sid, [plain]) is None
+    held = [{**events[0], "term_sheets": [{"term_sheet_id": "offer:0",
+                                           "terms": {**opening, "index_clause": lead["index_clause"]}}]}]
+    assert agent._clause_sheet(case, held, sid, [plain]) is None
+
+
+def test_small_index_rises_and_other_goals_get_no_clause_sheet():
+    """Hosted P08/P18 steel rose 5.9 % against a 2 % expected clause cost; clause sheets moved nothing."""
+    from tacto_negotiator.agents.routed import RoutedAgent
+
+    feedback = json.loads((ROOT / "tests/fixtures/practice_feedback.json").read_text())
+    agent = RoutedAgent(None, package=DataPackage(ROOT / "data"))
+    p02, p08 = feedback["cases"]["case:P02"], feedback["cases"]["case:P08"]
+    assert agent._clause_pays(p02, p02["term_options"]["index_clause"][-1])
+    assert not agent._clause_pays(p08, p08["term_options"]["index_clause"][-1])
+    events = [{"from": "supplier", "status": "open", "term_sheets": [{"term_sheet_id": "offer:0", "terms": {
+        "unit_price": 370.96, "payment_days": 30, "index_clause": None}}]}]
+    sheet = {"unit_price": 361.51, "payment_days": 90, "index_clause": None}
+    routine = {**p02, "buyer": {**p02["buyer"], "category_goal": "routine"}}
+    assert agent._clause_sheet(routine, events, "sup:70510", [sheet]) is None
+
+
+def test_a_sheet_the_supplier_countered_moves_instead_of_repeating():
+    """An unchanged sheet draws no concession (hosted P02 v4 repeated its floor and the supplier walked)."""
+    from tacto_negotiator.agents.routed import RoutedAgent
+
+    case = {"negotiable": ["unit_price", "payment_days"], "fixed_terms": {}, "buyer": {}}
+    ours = {"unit_price": 361.42, "payment_days": 90}
+    events = [{"from": "supplier", "status": "open", "term_sheets": [
+                  {"term_sheet_id": "offer:0", "terms": {"unit_price": 370.96, "payment_days": 30}}]},
+              {"from": "buyer", "term_sheets": [{"terms": ours}]},
+              {"from": "supplier", "status": "open", "term_sheets": [
+                  {"term_sheet_id": "offer:1", "terms": {"unit_price": 365.0, "payment_days": 90}}]}]
+    standing = events[-1]["term_sheets"][0]["terms"]
+    moved = RoutedAgent._off_repeat(case, events, dict(ours), standing, {})
+    assert moved["unit_price"] == round(361.42 + 0.2 * 3.58, 2)
+    other = {"unit_price": 361.0, "payment_days": 60}  # another package keeps its scheduled price
+    assert RoutedAgent._off_repeat(case, events, other, standing, {}) == other
