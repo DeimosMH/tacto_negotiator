@@ -172,9 +172,10 @@ def test_409_recovery_keeps_current_offer_terms_and_rounds(arena):
     thread["round"] += 1
     thread["messages"].append({"from": "buyer", "body": "A later offer"})
     current = arena.state._mail(session, thread, "open", {"unit_price": 25, "payment_days": 14}, "New price")
+    current_id = current["term_sheets"][0]["term_sheet_id"]
+    current["term_sheets"].insert(0, {"term_sheet_id": "offer:older", "terms": {"unit_price": 10}})
     recovered = table.missed(sid, ArenaError(409, "round limit reached"))["messages"]
-    assert standing(recovered) == (current["term_sheets"][0]["term_sheet_id"],
-                                   {"unit_price": 25, "payment_days": 14})
+    assert standing(recovered) == (current_id, {"unit_price": 25, "payment_days": 14})
     assert moves_left(case, recovered) == case["round_limit"] - 2
     case["buyer"]["alternative"] = {"kind": "quote", "terms": {"unit_price": 20, "payment_days": 14}}
     agent = RoutedAgent(None)
