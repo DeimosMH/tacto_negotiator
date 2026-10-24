@@ -165,6 +165,8 @@ class RoutedAgent:
             # opening above the anchored price) is repriced to it, keeping the chosen terms. Rejecting
             # them sent 8 of 10 hosted v4 openings to the fallback.
             limit = ask_limit(case, events, sid) if reprice else math.inf
+            if reprice:  # never ask for a deal dearer than one another supplier already offers (hosted P05 v17)
+                limit = min(limit, self._rival_limit(case, threads, sid))
             opening = reprice and not any(e.get("from") == "buyer" and e.get("term_sheets") for e in events)
             cap = opening_price_cap(case, events, sid) if opening else math.inf
             low = opening_price_floor(case, events) if opening else 0.0
@@ -536,6 +538,26 @@ class RoutedAgent:
         else:
             self._record(case, "script", "deadline_close", start, start)
         return move
+
+    @staticmethod
+    def _rival_limit(case, threads, sid):
+        """Cash cost just below the best acceptable offer standing in another live thread, but never below
+        our last ask in this one (no retreat). Hosted P05 v17: the model offered one bidder 29.18 at
+        14 days (C 248.2k) while another stood at 28.50 at 30 days (C ~243k); the first bidder agreed."""
+        best = math.inf
+        for other in live_threads(threads):
+            if other == sid or not acceptable_offer(case, threads[other], other):
+                continue
+            _, terms, std, missing = known_offer(case, threads[other])
+            if not missing:
+                best = min(best, total_cost(case, terms, std))
+        if not math.isfinite(best):
+            return math.inf
+        sent = [e for e in threads[sid] if e.get("from") == "buyer" and e.get("term_sheets")]
+        _, _, std, _ = known_offer(case, threads[sid])
+        ours = min((total_cost(case, s.get("terms", s), std) for s in sent[-1]["term_sheets"]), default=0.0) \
+            if sent else 0.0
+        return max(best * 0.998, ours)
 
     @staticmethod
     def _price_within(case, sheet, std, sid, limit, cap=math.inf):

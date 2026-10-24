@@ -280,3 +280,43 @@ def test_the_clause_sheet_carries_the_longest_payment_term():
                "attachments": [{"name": "quote.pdf", "text": "Our standard terms\nPayment terms (days net) 30"}]}]
     sheet = agent._clause_sheet(case, events, sid, [{"unit_price": 357.0, "payment_days": 30, "index_clause": None}])
     assert sheet["payment_days"] == 90  # hosted P02 v16 agreed to a 30-day clause sheet: 0.634 vs 0.735
+
+
+def test_no_sheet_dearer_than_a_rival_standing_offer():
+    from tacto_negotiator.agents.routed import RoutedAgent
+    from tacto_negotiator.compete import unavailable
+    from tacto_negotiator.cost import total_cost
+
+    feedback = json.loads((ROOT / "tests/fixtures/practice_feedback.json").read_text())
+    case = dict(feedback["cases"]["case:P05"])
+    agent = RoutedAgent(unavailable, package=DataPackage(ROOT / "data"))
+    agent._prepare(case)
+
+    def quote(ppm):
+        return [{"name": "quote.pdf", "text": "Our standard terms\nPayment terms (days net) 30\n"
+                 f"Lead time (days) 28\nQuality commitment (ppm) {ppm}\nChargeback per complaint (EUR) 0"}]
+
+    def offer(sid, n, price):
+        return {"from": "supplier", "status": "open", "body": "Our offer.", "term_sheets": [
+            {"term_sheet_id": f"offer:{sid[4:]}-{n}", "terms": {"unit_price": price, "payment_days": 30,
+                                                                "lead_time_days": 28}}]}
+
+    def ask(price):
+        return {"from": "buyer", "term_sheets": [{"terms": {"unit_price": price, "payment_days": 30,
+                                                            "lead_time_days": 28}}]}
+
+    rival = [{**offer("sup:70210", 0, 36.0), "attachments": quote(1200)}, ask(27.0), offer("sup:70210", 1, 28.5)]
+    bidder = [{**offer("sup:70250", 0, 38.5), "attachments": quote(600)}, ask(28.88), offer("sup:70250", 1, 31.0)]
+    opening = [{**offer("sup:70240", 0, 33.0), "attachments": quote(1400)}]
+    threads = {"sup:70210": rival, "sup:70250": bidder, "sup:70240": opening}
+    # Hosted P05 v17: the model offered 29.18 at 14 days while 70210 stood at 28.50 at 30 days; 70250 agreed.
+    move = agent.validate(case, threads, {"supplier_id": "sup:70250", "action": "send", "body": "Our proposal.",
+                                          "term_sheets": [{"unit_price": 29.18, "payment_days": 14,
+                                                           "lead_time_days": 28}]})
+    std = {"payment_days": 30, "lead_time_days": 28, "ppm_commitment": 600, "chargeback_eur_per_complaint": 0.0}
+    rival_cost = total_cost(case, {"unit_price": 28.5, "payment_days": 30, "lead_time_days": 28},
+                            {**std, "ppm_commitment": 1200})
+    last_ask = total_cost(case, {"unit_price": 28.88, "payment_days": 30, "lead_time_days": 28}, std)
+    assert last_ask > rival_cost  # the rival has since undercut our last ask: hold it, do not concede
+    sheets = move["message"]["term_sheets"]
+    assert sheets and all(total_cost(case, s.get("terms", s), std) <= last_ask + 1 for s in sheets)
