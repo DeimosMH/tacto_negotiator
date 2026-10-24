@@ -75,6 +75,16 @@ class RoutedAgent:
         resolved = {**std, **case.get("fixed_terms", {}), **terms}
         required = set(case["negotiable"]) | {rule["field"] for rule in case["buyer"].get("must_haves", [])}
         missing = sorted(f for f in required if f not in resolved or not valid_value(f, resolved[f]))
+        for message in reversed(events):
+            if message.get("from") == "buyer":
+                continue
+            quotes = [att for att in message.get("attachments") or []
+                      if att.get("name", "").lower().startswith("quote")
+                      and att.get("name", "").lower().endswith(".pdf")]
+            if quotes:
+                if any(att.get("read_failed") for att in quotes):
+                    missing.append("supplier quote defaults")
+                break  # a newer readable quote supersedes older document failures
         return sheet, terms, std, missing
 
     def validate(self, case, threads, decision):
@@ -167,16 +177,23 @@ class RoutedAgent:
                 return move
         raise ValueError("no live supplier belongs to this case")
 
-    def _record(self, route, reason, start, deadline, fallback=False):
-        self.last_decision = {"route": route, "reason": reason, "elapsed_s": max(0, self.clock() - start),
+    def _record(self, case, route, reason, start, deadline, fallback=False):
+        self.last_decision = {"case_id": case["case_id"], "route": route, "reason": reason,
+                              "elapsed_s": max(0, self.clock() - start),
                               "budget_s": max(0, deadline - start), "fallback": fallback}
-        log.info("buyer route=%s reason=%s elapsed=%.3fs budget=%.3fs fallback=%s", route, reason,
+        log.info("buyer case=%s route=%s reason=%s elapsed=%.3fs budget=%.3fs fallback=%s",
+                 case["case_id"], route, reason,
                  self.last_decision["elapsed_s"], self.last_decision["budget_s"], fallback)
 
     def closing_move(self, case, threads):
         start = self.clock()
         move = self._closing(case, threads)
-        self._record("script", "deadline_close", start, start)
+        if self.last_decision.get("case_id") == case["case_id"] and self.last_decision.get("fallback"):
+            self.last_decision["closure"] = "deadline_close"
+            log.info("buyer case=%s closure=deadline_close attempted_route=%s fallback=True",
+                     case["case_id"], self.last_decision["route"])
+        else:
+            self._record(case, "script", "deadline_close", start, start)
         return move
 
     def _script(self, case, threads):
@@ -216,13 +233,13 @@ class RoutedAgent:
         deadline = min(deadline, start + self.max_decision_seconds)
         if deadline <= start or (wave_seconds_left is not None and wave_seconds_left <= CLOSE_BEFORE_CAP_S):
             move = self._closing(case, threads)
-            self._record("script", "deadline_close", start, deadline)
+            self._record(case, "script", "deadline_close", start, deadline)
             return move
         route, reason = "fast", "semantic_decision"
         try:
             if scripted := self._script(case, threads):
                 reason, move = scripted
-                self._record("script", reason, start, deadline)
+                self._record(case, "script", reason, start, deadline)
                 return move
             complex_ = (case["buyer"].get("category_goal") in RELATIONSHIP_GOALS
                         or len(case["negotiable"]) >= 4
@@ -248,10 +265,10 @@ class RoutedAgent:
             move = self.validate(case, threads, parse(reply))
             if move is None:
                 raise ValueError("model action rejected")
-            self._record(route, reason, start, deadline)
+            self._record(case, route, reason, start, deadline)
             return move
         except Exception as error:
             # Providers enforce cancellation; this also discards late results from injected completions.
             move = self._closing(case, threads)
-            self._record(route, type(error).__name__, start, deadline, fallback=True)
+            self._record(case, route, type(error).__name__, start, deadline, fallback=True)
             return move

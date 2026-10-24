@@ -158,16 +158,26 @@ def moves_left(case, events):
 
 
 def fetch_documents(table, message, *, deadline=None):
-    """Download every attachment of a supplier message and add its text."""
+    """Extract attachment text; timed readers mark unavailable documents for conservative routing."""
     for att in message.get("attachments") or []:
-        if att.get("attachment_id") and "text" not in att:
+        if not att.get("attachment_id") or "text" in att or att.get("read_failed"):
+            continue
+        try:
             options = {}
             if deadline is not None:
                 left = deadline - time.monotonic()
                 if left <= 0:
-                    raise TimeoutError("no budget for an attachment refresh")
+                    raise TimeoutError("no budget for an attachment read")
                 options = {"timeout": left, "retries": 0}
-            att["text"] = read_document(att["name"], table.attachment(att["attachment_id"], **options))
+            parsed = read_document(att["name"], table.attachment(att["attachment_id"], **options))
+            if deadline is not None and time.monotonic() >= deadline:
+                raise TimeoutError("attachment exceeded its read budget")
+            att["text"] = parsed
+        except Exception as error:
+            if deadline is None or isinstance(error, ArenaError) and error.status in {401, 403}:
+                raise
+            att["read_failed"] = True
+            log.warning("attachment unavailable (%s); defaults must not be assumed", type(error).__name__)
     return message
 
 
@@ -196,19 +206,26 @@ def play(table, case_id, agent, deadline=None):
     received = dict.fromkeys(threads, time.monotonic())
     timed_decide = getattr(agent, "decide_timed", None)
     close = getattr(agent, "closing_move", closing_move)
+
+    def read_deadline():
+        expires = min(received[sid] + MOVE_LIMIT_S for sid in live_threads(threads)) - SEND_MARGIN_S
+        cap = deadline() if callable(deadline) else deadline
+        if cap is not None:
+            expires = min(expires, time.monotonic() + cap - time.time() - SEND_MARGIN_S)
+        return min(expires, time.monotonic() + SEND_MARGIN_S)
+
+    def read(message):
+        return fetch_documents(table, message, deadline=read_deadline() if timed_decide else None)
+
     for events in threads.values():
         for m in events:
-            fetch_documents(table, m)
+            read(m)
     slowest = 0.0  # the longest round so far: decision + the supplier's reply
     while live_threads(threads):
         decision_deadline = None
         if timed_decide:
             if get_deadlines := getattr(table, "thread_deadlines", None):
-                refresh_deadline = min(received[sid] + MOVE_LIMIT_S for sid in live_threads(threads)) - SEND_MARGIN_S
-                cap = deadline() if callable(deadline) else deadline
-                if cap is not None:
-                    refresh_deadline = min(refresh_deadline, time.monotonic() + cap - time.time() - SEND_MARGIN_S)
-                thread_deadlines = get_deadlines(threads, deadline=refresh_deadline)
+                thread_deadlines = get_deadlines(threads, deadline=read_deadline())
                 received.update({sid: expires - MOVE_LIMIT_S for sid, expires in thread_deadlines.items()})
                 if getattr(table, "done", None):
                     return table.done
@@ -252,12 +269,12 @@ def play(table, case_id, agent, deadline=None):
             reply = table.missed(sid, e)  # e.g. late, or the thread or the case has ended
             received[sid] = time.monotonic()
             if msg.get("action") and "result" not in reply:  # the case goes on: decide again
-                threads[sid].append(fetch_documents(table, reply))
+                threads[sid].append(read(reply))
                 continue
         if "result" in reply:  # the reply ended the case, e.g. the last supplier walked away
             return reply["result"]
         received[sid] = time.monotonic()
-        threads[sid] += [{**msg, "from": "buyer"}, fetch_documents(table, reply)]
+        threads[sid] += [{**msg, "from": "buyer"}, read(reply)]
         slowest = max(slowest, time.monotonic() - t0)
         log.info("%s %s %s", sid, reply.get("status"), standing(threads[sid])[1])
     return table.result()

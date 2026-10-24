@@ -16,6 +16,7 @@ from test_final import arena as arena
 
 from arena_kit.agents.completion import CompletionClient
 from arena_kit.agents.routed import RoutedAgent
+from arena_kit.cost import complete_offer
 from arena_kit.play import RemoteTable, play, play_waves
 from arena_kit.sim import load_cases
 
@@ -37,7 +38,7 @@ class LocalTable:
     def open(self, case_id):
         return self.case, self.threads
 
-    def attachment(self, attachment_id):
+    def attachment(self, attachment_id, **options):
         self.clock.advance(self.document_delay)
         return b"Synthetic document delay."
 
@@ -174,6 +175,56 @@ def test_transient_timer_read_failure_closes_without_model_or_read_retry(arena):
     result = play(table, "case:S02", RoutedAgent(complete, clock=arena.clock))
     assert result["ended"] and len(reads) == 1
     assert 0 < reads[0].extensions["timeout"]["read"] <= 5
+
+
+@pytest.mark.parametrize("failed_document", ["opening", "reply"])
+def test_unavailable_quote_documents_cannot_cause_unguarded_acceptance(arena, failed_document):
+    case = arena.state.cases["case:S03"]
+    sid = case["suppliers"][0]
+    failed_reads, model_calls = [], []
+
+    def handle(request):
+        round_ = "-0-" if failed_document == "opening" else "-1-"
+        if "/attachments/" in request.url.path and round_ in request.url.path:
+            failed_reads.append(request)
+            arena.clock.advance(1)
+            raise httpx.ReadTimeout("synthetic quote timeout", request=request)
+        return arena.handle(request)
+
+    def complete(system, user, *, deadline):
+        model_calls.append(True)
+        if failed_document == "opening":
+            return json.dumps({"supplier_id": sid, "action": "accept"})
+        terms = complete_offer(case, {"unit_price": round(case["buyer"]["current_unit_price"] * 1.1, 2)})
+        return json.dumps({"supplier_id": sid, "action": "send", "body": "Please confirm this package.",
+                           "term_sheets": [terms]})
+
+    result = play(RemoteTable(arena.client(transport=handle, retries=3)), case["case_id"],
+                  RoutedAgent(complete, clock=arena.clock))
+    assert result["ended"] and not result["deal"]
+    assert len(failed_reads) == len(model_calls) == 1
+    assert 0 < failed_reads[0].extensions["timeout"]["read"] <= 5
+
+
+def test_thread_deadline_closure_preserves_attempted_model_and_timeout(arena):
+    arena.state.rehearse(wait=0, cap=480, waves=1)
+    client = arena.client()
+    case = next(c for c in client.cases("final") if c["case_id"] == "case:R1-S03")
+    client.open_session(case["case_id"])
+    arena.clock.advance(35)
+
+    def complete(system, user, *, deadline):
+        arena.clock.now = deadline
+        raise TimeoutError("synthetic exact-deadline timeout")
+
+    agent = RoutedAgent(complete, clock=arena.clock)
+    result = play(RemoteTable(client, case), case["case_id"], agent, deadline=arena.clock() + 445)
+    assert result["ended"]
+    assert agent.last_decision["route"] == "fast" and agent.last_decision["fallback"]
+    assert agent.last_decision["reason"] == "TimeoutError"
+    assert agent.last_decision["case_id"] == case["case_id"]
+    assert agent.last_decision["budget_s"] == 20
+    assert agent.last_decision["closure"] == "deadline_close"
 
 
 def test_provider_timeout_cancels_io_and_closes_once(arena, monkeypatch):

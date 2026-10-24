@@ -66,9 +66,9 @@ def test_semantic_followup_uses_fast_once_and_logs_its_budget(scenario, caplog):
         agent.decide_timed(case, threads, deadline=140)
     assert len(calls) == 1 and strong_calls == []
     assert calls[0]["deadline"] == 125
-    assert agent.last_decision == {"route": "fast", "reason": "semantic_decision", "elapsed_s": 0,
-                                   "budget_s": 25, "fallback": False}
-    assert "route=fast" in caplog.text and "Our proposal" not in caplog.text
+    assert agent.last_decision == {"case_id": case["case_id"], "route": "fast", "reason": "semantic_decision",
+                                   "elapsed_s": 0, "budget_s": 25, "fallback": False}
+    assert f"case={case['case_id']} route=fast" in caplog.text and "Our proposal" not in caplog.text
 
 
 @pytest.mark.parametrize(("seconds", "route"), [(25, "strong"), (19, "fast")])
@@ -220,3 +220,53 @@ def test_must_have_needs_evidence_even_when_it_is_not_negotiable(scenario):
     case["fixed_terms"].pop("lead_time_days")
     case["buyer"]["must_haves"] = [{"field": "lead_time_days", "op": "<=", "value": 42}]
     assert RoutedAgent(None).closing_move(case, threads)["message"]["action"]["type"] == "walk_away"
+
+
+def test_unreadable_latest_quote_blocks_acceptance_and_gets_one_clarification(scenario):
+    case, threads, sid = scenario
+    threads[sid][-1]["attachments"] = [{"name": "quote.pdf", "read_failed": True}]
+    calls = []
+    agent = RoutedAgent(completion(sid, calls, json.dumps({"supplier_id": sid, "action": "accept"})))
+    assert agent.validate(case, threads, {"supplier_id": sid, "action": "accept"}) is None
+    ask = agent.decide(case, threads)
+    assert calls == [] and "supplier quote defaults" in ask["message"]["body"]
+    threads[sid].append({**ask["message"], "from": "buyer"})
+    assert agent.decide(case, threads)["message"]["action"]["type"] == "walk_away"
+    assert len(calls) == 1
+
+
+def test_a_new_readable_quote_clears_an_older_document_failure(scenario):
+    case, threads, sid = scenario
+    earlier = copy.deepcopy(threads[sid][-1])
+    threads[sid][-1]["attachments"] = [{"name": "quote.pdf", "read_failed": True}]
+    newer = {**earlier, "attachments": [{"name": "quote.pdf", "text":
+        "Our standard terms\nPayment terms (days net) 30"}]}
+    threads[sid].append(newer)
+    assert RoutedAgent(None).closing_move(case, threads)["message"]["action"]["type"] == "accept"
+
+
+def test_latest_quote_failure_is_not_hidden_by_an_older_readable_quote(scenario):
+    case, threads, sid = scenario
+    threads[sid][-1]["attachments"] = [{"name": "quote.pdf", "text":
+        "Our standard terms\nPayment terms (days net) 30"}]
+    newer = copy.deepcopy(threads[sid][-1])
+    newer["attachments"] = [{"name": "quote.pdf", "read_failed": True}]
+    threads[sid].append(newer)
+    assert RoutedAgent(None).closing_move(case, threads)["message"]["action"]["type"] == "walk_away"
+
+
+def test_post_deadline_closure_preserves_the_failed_model_attempt(scenario, caplog):
+    case, threads, sid = scenario
+    after_opening(threads, sid)
+    clock = Clock()
+    agent = RoutedAgent(completion(sid, [], clock=clock, delay=10), clock=clock)
+    with caplog.at_level("INFO", logger="arena"):
+        agent.decide_timed(case, threads, deadline=clock() + 10)
+        failed = dict(agent.last_decision)
+        agent.closing_move(case, threads)
+    assert failed["route"] == "fast" and failed["fallback"] and failed["reason"] == "TimeoutError"
+    assert agent.last_decision == {**failed, "closure": "deadline_close"}
+    assert f"case={case['case_id']} closure=deadline_close attempted_route=fast" in caplog.text
+    another = {**case, "case_id": "case:new"}
+    agent.closing_move(another, threads)
+    assert agent.last_decision["case_id"] == "case:new" and not agent.last_decision["fallback"]
