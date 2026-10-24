@@ -16,8 +16,8 @@ from test_final import arena as arena
 
 from tacto_negotiator.agents.completion import CompletionClient
 from tacto_negotiator.agents.routed import RoutedAgent
-from tacto_negotiator.cost import complete_offer
 from tacto_negotiator.client import ArenaError
+from tacto_negotiator.cost import complete_offer
 from tacto_negotiator.play import RemoteTable, moves_left, play, play_waves, standing, thread_events
 from tacto_negotiator.sim import load_cases
 

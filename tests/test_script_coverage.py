@@ -2,11 +2,13 @@
 
 import copy
 import json
+from unittest.mock import patch
 
 import pytest
 
 from tacto_negotiator.agents.routed import MAX_SCRIPT_CANDIDATES, RoutedAgent
 from tacto_negotiator.cost import must_haves_ok, total_cost
+from tacto_negotiator.docs import quote_terms
 
 
 @pytest.fixture
@@ -180,3 +182,35 @@ def test_missing_quote_defaults_are_clarified_before_enumerating(negotiation):
     move = agent.decide(case, threads)
     assert calls == [] and agent.last_decision["reason"] == "missing_quote_terms"
     assert "incoterm" in move["message"]["body"] and not move["message"]["term_sheets"]
+
+
+def test_supplier_standard_packages_keep_the_cost_ceiling(negotiation):
+    case, threads = negotiation
+    case["term_options"]["incoterm"] = ["EXW"]
+    case["buyer"]["alternative"] = {"kind": "quote", "terms": {
+        "unit_price": 30, "incoterm": "DAP", "payment_days": 60}}
+    threads["sup:A"] = [quote({"unit_price": 100, "payment_days": 14, "incoterm": "DAP"},
+        attachments=[{"name": "quote.pdf", "text": "Our standard terms\nIncoterm DAP"}])]
+    agent, calls = agent_with_calls()
+    move = agent.decide(case, threads)
+    packages = [sheet["terms"] for sheet in move["message"]["term_sheets"]]
+    assert not calls and not agent.last_decision["fallback"]
+    assert any(t["incoterm"] == "DAP" for t in packages)
+    assert all(total_cost(case, t) < 30000 for t in packages)
+
+
+def test_bounded_search_parses_the_quote_once_per_decision_stage(negotiation):
+    case, threads = negotiation
+    case["negotiable"].remove("incoterm")
+    case["fixed_terms"]["incoterm"] = "DAP"
+    case["negotiable"].append("contract_months")
+    case["fixed_terms"].pop("contract_months")
+    case["term_options"] = {"payment_days": list(range(14, 30)), "contract_months": list(range(1, 17))}
+    threads["sup:A"] = [quote({"unit_price": 100}, attachments=[{"name": "quote.pdf", "text":
+        "Our standard terms\nPayment terms (days net) 14\nContract term (months) 12"}])]
+    agent, calls = agent_with_calls()
+    with patch("tacto_negotiator.docs.quote_terms", wraps=quote_terms) as parsing:
+        move = agent.decide(case, threads)
+    assert not calls and move["message"]["term_sheets"]
+    assert parsing.call_count <= 5  # independent of the 256 candidate packages
+    assert all(must_haves_ok(case, sheet["terms"]) for sheet in move["message"]["term_sheets"])

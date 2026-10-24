@@ -18,9 +18,9 @@ import re
 
 import httpx
 
-from ..cost import complete_offer, must_haves_ok, total_cost
+from ..cost import complete_offer, total_cost
 from ..docs import standard_terms
-from ..play import closing_move, latest, live_threads, moves_left, standing
+from ..play import acceptable_offer, closing_move, latest, live_threads, moves_left, standing
 from .naive import NaiveAgent
 
 log = logging.getLogger("arena")
@@ -149,31 +149,24 @@ class LLMAgent:
 
     def guard(self, case, threads, d):
         sid, kind = d.get("supplier_id"), d.get("action")
-        if sid not in live_threads(threads):
+        if sid not in case["suppliers"] or sid not in live_threads(threads):
             return None
         events = threads[sid]
         if kind == "walk_away":
             return {"supplier_id": sid, "message": {"action": {"type": "walk_away"}}}
-        sheet_id, terms = standing(events)
+        _, terms = standing(events)
         if kind == "accept":
-            std = standard_terms(events)
-            alt = case["buyer"].get("alternative") or {}
-            beats = (
-                alt.get("kind") in (None, "none")
-                or not alt.get("terms", {}).get("unit_price")
-                or total_cost(case, terms, std) <= total_cost(case, alt["terms"])
-            )
-            if sheet_id and must_haves_ok(case, terms, std) and beats:
+            if accepted := acceptable_offer(case, events):
                 return {
                     "supplier_id": sid,
-                    "message": {"action": {"type": "accept", "term_sheet_id": sheet_id}},
+                    "message": {"action": {"type": "accept", "term_sheet_id": accepted[0]}},
                 }
             return None
         if kind != "send" or moves_left(case, events) <= 0:
             return None
         sheets = []
         for ts in (d.get("term_sheets") or [])[:3]:
-            t = complete_offer(case, {**terms, **ts.get("terms", ts)})
+            t = complete_offer(case, {**terms, **ts.get("terms", ts)}, standard_terms(events))
             if t not in sheets:
                 sheets.append(t)
         offers = {standing(ev)[0] for ev in threads.values()}

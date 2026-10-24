@@ -9,56 +9,25 @@ import json
 import logging
 import math
 import time
-from datetime import date
 
-from ..cost import RELATIONSHIP_GOALS, complete_offer, must_haves_ok, total_cost
-from ..docs import LABELS, standard_terms
-from ..play import CLOSE_BEFORE_CAP_S, latest, live_threads, moves_left, standing
+from ..cost import RELATIONSHIP_GOALS, complete_offer, must_haves_ok, total_cost, valid_value
+from ..play import (
+    CLOSE_BEFORE_CAP_S,
+    acceptable_offer,
+    closing_move,
+    known_offer,
+    latest,
+    live_threads,
+    moves_left,
+    standing,
+)
 from .llm import ID_RE, SYSTEM, LLMAgent, parse
 
 log = logging.getLogger("arena")
-NUMERIC = set(LABELS.values()) - {"incoterm", "effective_date", "index_clause"}
-INTEGER = {"payment_days", "lead_time_days", "volume_per_year", "contract_months", "ppm_commitment"}
-NULLABLE = {"effective_date", "index_clause"}
 MAX_SCRIPT_CANDIDATES = 256
 # shortcut: conservative phrase matching; use structured side-condition extraction for broader prose coverage.
 CONDITIONAL_WORDING = ("subject to", "provided that", "only if", "pending approval", "conditional on", "unless",
                        "please clarify", "please explain", "capacity constraint")
-
-
-def valid_value(field, value):
-    """Validate before arithmetic or option snapping can hide malformed model values."""
-    if value is None:
-        return field in NULLABLE
-    if field in NUMERIC:
-        if type(value) not in (int, float) or not math.isfinite(value):
-            return False
-        if field in INTEGER and (type(value) is not int and not value.is_integer()):
-            return False
-        if field in {"payment_days", "contract_months"} and value > {"payment_days": 120, "contract_months": 36}[field]:
-            return False
-        return value > 0 if field in {"unit_price", "volume_per_year"} else value >= 0
-    if field == "incoterm":
-        return isinstance(value, str) and value in {"EXW", "FCA", "DAP"}
-    if field == "effective_date":
-        try:
-            return isinstance(value, str) and date.fromisoformat(value).isoformat() == value
-        except ValueError:
-            return False
-    if field == "index_clause":
-        if not isinstance(value, dict) or set(value) != {"series", "material_share", "deadband_pct", "base_month"}:
-            return False
-        share, band = value["material_share"], value["deadband_pct"]
-        try:
-            month = value["base_month"]
-            return (isinstance(value["series"], str) and bool(value["series"])
-                    and type(share) in (int, float) and math.isfinite(share) and 0 <= share <= 1
-                    and type(band) in (int, float) and math.isfinite(band) and band >= 0
-                    and isinstance(month, str) and len(month) == 7
-                    and date.fromisoformat(month + "-01").strftime("%Y-%m") == month)
-        except ValueError:
-            return False
-    return False
 
 
 class RoutedAgent:
@@ -74,24 +43,6 @@ class RoutedAgent:
         self.context = LLMAgent(None, package)
         self.last_decision = {}
 
-    def _known(self, case, events):
-        sheet, terms = standing(events)
-        std = standard_terms(events)
-        resolved = {**std, **case.get("fixed_terms", {}), **terms}
-        required = set(case["negotiable"]) | {rule["field"] for rule in case["buyer"].get("must_haves", [])}
-        missing = sorted(f for f in required if f not in resolved or not valid_value(f, resolved[f]))
-        for message in reversed(events):
-            if message.get("from") == "buyer":
-                continue
-            quotes = [att for att in message.get("attachments") or []
-                      if att.get("name", "").lower().startswith("quote")
-                      and att.get("name", "").lower().endswith(".pdf")]
-            if quotes:
-                if any(att.get("read_failed") for att in quotes):
-                    missing.append("supplier quote defaults")
-                break  # a newer readable quote supersedes older document failures
-        return sheet, terms, std, missing
-
     def validate(self, case, threads, decision):
         """One gate for scripts, model proposals and fallback. Return a wire move or None."""
         try:
@@ -105,32 +56,11 @@ class RoutedAgent:
             if action == "walk_away":
                 return {"supplier_id": sid, "message": {"action": {"type": "walk_away"}}}
             events = threads[sid]
-            sheet, terms, std, missing = self._known(case, events)
             if action == "accept":
-                if not isinstance(sheet, str) or not sheet or missing or set(terms) - set(case["negotiable"]):
-                    return None
-                if any(not valid_value(f, v) for f, v in {**std, **case.get("fixed_terms", {}), **terms}.items()):
-                    return None
-                for field, value in terms.items():
-                    options = case.get("term_options", {}).get(field)
-                    if options and value not in options and value != std.get(field):
-                        return None
-                if not must_haves_ok(case, terms, std):
-                    return None
-                cost = total_cost(case, terms, std)
-                alt = case["buyer"].get("alternative") or {}
-                if alt.get("kind") not in (None, "none"):
-                    other = alt.get("terms", {})
-                    if not valid_value("unit_price", other.get("unit_price")):
-                        return None
-                    if any(not valid_value(f, v) for f, v in other.items()):
-                        return None
-                    other_cost = total_cost(case, other)
-                    if not math.isfinite(other_cost) or cost >= other_cost:
-                        return None
-                if not math.isfinite(cost):
-                    return None
-                return {"supplier_id": sid, "message": {"action": {"type": "accept", "term_sheet_id": sheet}}}
+                accepted = acceptable_offer(case, events)
+                return {"supplier_id": sid, "message": {"action": {
+                    "type": "accept", "term_sheet_id": accepted[0]}}} if accepted else None
+            _, terms, std, _ = known_offer(case, events)
             if action != "send" or moves_left(case, events) <= 0:
                 return None
             body, subject = decision.get("body", ""), decision.get("subject", f"Re: {case['title']}")
@@ -156,7 +86,7 @@ class RoutedAgent:
                     if options and value not in options and value != std.get(field):
                         return None
                 # Full outgoing terms bind; proposing missing fields differs from accepting missing defaults.
-                complete = complete_offer(case, {**std, **terms, **proposed})
+                complete = complete_offer(case, {**std, **terms, **proposed}, std)
                 if set(complete) != set(case["negotiable"]) or any(not valid_value(f, v) for f, v in complete.items()):
                     return None
                 if not must_haves_ok(case, complete) or not math.isfinite(total_cost(case, complete)):
@@ -169,19 +99,6 @@ class RoutedAgent:
         except (KeyError, TypeError, ValueError, OverflowError, AttributeError):
             return None
 
-    def _closing(self, case, threads):
-        accepted = []
-        for sid in live_threads(threads):
-            move = self.validate(case, threads, {"supplier_id": sid, "action": "accept"})
-            if move:
-                accepted.append((total_cost(case, standing(threads[sid])[1], standard_terms(threads[sid])), sid, move))
-        if accepted:
-            return min(accepted, key=lambda row: (row[0], row[1]))[2]
-        for sid in live_threads(threads):
-            if move := self.validate(case, threads, {"supplier_id": sid, "action": "walk_away"}):
-                return move
-        raise ValueError("no live supplier belongs to this case")
-
     def _record(self, case, route, reason, start, deadline, fallback=False):
         self.last_decision = {"case_id": case["case_id"], "route": route, "reason": reason,
                               "elapsed_s": max(0, self.clock() - start),
@@ -192,7 +109,7 @@ class RoutedAgent:
 
     def closing_move(self, case, threads):
         start = self.clock()
-        move = self._closing(case, threads)
+        move = closing_move(case, threads)
         if self.last_decision.get("case_id") == case["case_id"] and self.last_decision.get("fallback"):
             self.last_decision["closure"] = "deadline_close"
             log.info("buyer case=%s closure=deadline_close attempted_route=%s fallback=True",
@@ -216,11 +133,11 @@ class RoutedAgent:
         quotes = []
         for index, event in enumerate(events):
             if event.get("from") != "buyer" and event.get("term_sheets"):
-                _, terms, std, missing = self._known(case, events[:index + 1])
+                _, terms, std, missing = known_offer(case, events[:index + 1])
                 quotes.append(None if missing else {**std, **case.get("fixed_terms", {}), **terms})
         return len(quotes) >= 3 and quotes[-1] is not None and quotes[-1] == quotes[-2] == quotes[-3]
 
-    def _packages(self, case, threads, sid, options, target_cost, alternative, reference_price):
+    def _packages(self, case, options, target_cost, alternative, reference_price):
         """Price each trade under the same full-cost ceiling, including the outside option."""
         fields = [field for field in case["negotiable"] if field != "unit_price"]
         rows = []
@@ -240,9 +157,9 @@ class RoutedAgent:
             if cost > ceiling:
                 proposal["unit_price"] = round(proposal["unit_price"] - 0.01, 2)
                 cost = total_cost(case, proposal)
-            if not math.isfinite(cost) or cost > ceiling or cost >= alternative:
+            if proposal["unit_price"] <= 0 or not math.isfinite(cost) or cost > ceiling or cost >= alternative:
                 continue
-            if self.validate(case, threads, {"supplier_id": sid, "action": "send", "term_sheets": [proposal]}):
+            if must_haves_ok(case, proposal):
                 rows.append((cost, proposal))
         return sorted(rows, key=lambda row: total_cost(case, {**row[1], "unit_price": reference_price}))
 
@@ -262,7 +179,7 @@ class RoutedAgent:
                 return None
         for sid in live_threads(threads):
             events = threads[sid]
-            _, terms, std, missing = self._known(case, events)
+            _, terms, std, missing = known_offer(case, events)
             if missing:
                 return None
             resolved = {**std, **case.get("fixed_terms", {}), **terms}
@@ -299,9 +216,9 @@ class RoutedAgent:
         if tried and any(latest(threads[record["sid"]]).get("status") == "agreed"
                          and self.validate(case, threads, {"supplier_id": record["sid"], "action": "accept"})
                          for record in records):
-            return "agreed_package", self._closing(case, threads)
+            return "agreed_package", closing_move(case, threads)
         if all(record["terminal"] or record["plateau"] for record in records):
-            return "quote_plateau", self._closing(case, threads)
+            return "quote_plateau", closing_move(case, threads)
         proposals = []
         for record in records:
             sid, current, sent = record["sid"], record["current"], record["sent"]
@@ -319,8 +236,8 @@ class RoutedAgent:
                 small_gap = current_cost <= previous_cost * 1.01
                 if tried and (small_gap or moves_left(case, threads[sid]) <= 1):
                     if self.validate(case, threads, {"supplier_id": sid, "action": "accept"}):
-                        return "small_cost_gap" if small_gap else "round_reserve", self._closing(case, threads)
-            rows = self._packages(case, threads, sid, record["options"], target_cost, alternative,
+                        return "small_cost_gap" if small_gap else "round_reserve", closing_move(case, threads)
+            rows = self._packages(case, record["options"], target_cost, alternative,
                                   current["unit_price"])
             if not rows:
                 continue
@@ -353,9 +270,9 @@ class RoutedAgent:
         live = live_threads(threads)
         if all(latest(threads[s]).get("status") in {"agreed", "final_offer"}
                or moves_left(case, threads[s]) <= 0 for s in live):
-            return "terminal_offers", self._closing(case, threads)
+            return "terminal_offers", closing_move(case, threads)
         for sid in live:
-            _, _, _, missing = self._known(case, threads[sid])
+            _, _, _, missing = known_offer(case, threads[sid])
             already_asked = any(m.get("from") == "buyer" and m.get("body", "").startswith("Please confirm these terms:")
                                 for m in threads[sid])
             if missing and not already_asked and moves_left(case, threads[sid]) > 1:
@@ -369,11 +286,11 @@ class RoutedAgent:
                 and case["buyer"].get("category_goal", "routine") in {"routine", "leverage"}
                 and (case["buyer"].get("alternative") or {}).get("kind") in (None, "none")):
             sid = live[0]
-            _, terms, std, missing = self._known(case, threads[sid])
+            _, terms, std, missing = known_offer(case, threads[sid])
             if not missing and not any(m.get("from") == "buyer" for m in threads[sid]):
                 proposal = {**std, **terms, "unit_price": round(terms["unit_price"] * 0.9, 2)}
                 d = {"supplier_id": sid, "action": "send", "body": "Thank you. Please consider this price proposal.",
-                     "term_sheets": [complete_offer(case, proposal)]}
+                     "term_sheets": [complete_offer(case, proposal, std)]}
                 move = self.validate(case, threads, d)
                 if move and total_cost(case, move["message"]["term_sheets"][0]["terms"]) < total_cost(case, terms, std):
                     return "simple_opening_counter", move
@@ -388,7 +305,7 @@ class RoutedAgent:
             raise ValueError("deadline must be finite")
         deadline = min(deadline, start + self.max_decision_seconds)
         if deadline <= start or (wave_seconds_left is not None and wave_seconds_left <= CLOSE_BEFORE_CAP_S):
-            move = self._closing(case, threads)
+            move = closing_move(case, threads)
             self._record(case, "script", "deadline_close", start, deadline)
             return move
         route, reason = "fast", "semantic_decision"
@@ -425,6 +342,6 @@ class RoutedAgent:
             return move
         except Exception as error:
             # Providers enforce cancellation; this also discards late results from injected completions.
-            move = self._closing(case, threads)
+            move = closing_move(case, threads)
             self._record(case, route, type(error).__name__, start, deadline, fallback=True)
             return move

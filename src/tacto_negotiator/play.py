@@ -10,6 +10,7 @@ An agent is any object with `decide(case, threads) -> {"supplier_id": ..., "mess
 
 import functools
 import logging
+import math
 import re
 import threading
 import time
@@ -18,7 +19,7 @@ from concurrent.futures import ThreadPoolExecutor
 import httpx
 
 from .client import ArenaError
-from .cost import must_haves_ok, total_cost
+from .cost import must_haves_ok, total_cost, valid_value
 from .docs import read_document, standard_terms
 
 log = logging.getLogger("arena")
@@ -196,19 +197,69 @@ def fetch_documents(table, message, *, deadline=None):
     return message
 
 
+def known_offer(case, events):
+    """Resolve evidenced defaults, fixed and stated terms; identify missing quote information."""
+    sheet, terms = standing(events)
+    std = standard_terms(events)
+    resolved = {**std, **case.get("fixed_terms", {}), **terms}
+    required = set(case["negotiable"]) | {rule["field"] for rule in case["buyer"].get("must_haves", [])}
+    missing = sorted(f for f in required if f not in resolved or not valid_value(f, resolved[f]))
+    for message in reversed(events):
+        if message.get("from") == "buyer":
+            continue
+        quotes = [att for att in message.get("attachments") or []
+                  if att.get("name", "").lower().startswith("quote")
+                  and att.get("name", "").lower().endswith(".pdf")]
+        if quotes:
+            if any(att.get("read_failed") for att in quotes):
+                missing.append("supplier quote defaults")
+            break  # a newer readable quote supersedes older document failures
+    return sheet, terms, std, missing
+
+
+def acceptable_offer(case, events):
+    """Return (standing offer ID, cost) only when its known terms safely beat the alternative."""
+    try:
+        sheet, terms, std, missing = known_offer(case, events)
+        if not isinstance(sheet, str) or not sheet or missing or set(terms) - set(case["negotiable"]):
+            return None
+        if any(not valid_value(f, v) for f, v in {**std, **case.get("fixed_terms", {}), **terms}.items()):
+            return None
+        for field, value in terms.items():
+            options = case.get("term_options", {}).get(field)
+            if options and value not in options and value != std.get(field):
+                return None
+        if not must_haves_ok(case, terms, std):
+            return None
+        cost = total_cost(case, terms, std)
+        alt = case["buyer"].get("alternative") or {}
+        if alt.get("kind") not in (None, "none"):
+            other = alt.get("terms", {})
+            if not valid_value("unit_price", other.get("unit_price")) or any(
+                not valid_value(f, v) for f, v in other.items()
+            ):
+                return None
+            other_cost = total_cost(case, other)
+            if not math.isfinite(other_cost) or cost >= other_cost:
+                return None
+        return (sheet, cost) if math.isfinite(cost) else None
+    except (KeyError, TypeError, ValueError, OverflowError, AttributeError):
+        return None
+
+
 def closing_move(case, threads):
     """Accept the cheapest standing term sheet that keeps the must-haves and beats the alternative
     (C with each supplier's standard terms), else walk away - what to do when time runs out."""
-    alt = case["buyer"].get("alternative") or {}
-    c_alt = total_cost(case, alt["terms"]) if alt.get("terms", {}).get("unit_price") else float("inf")
+    live = [sid for sid in live_threads(threads) if sid in case["suppliers"]]
+    if not live:
+        raise ValueError("no live supplier belongs to this case")
     best = None
-    for sid in live_threads(threads):
-        sheet_id, terms = standing(threads[sid])
-        std = standard_terms(threads[sid])
-        if sheet_id and must_haves_ok(case, terms, std) and (c := total_cost(case, terms, std)) < c_alt:
+    for sid in live:
+        if accepted := acceptable_offer(case, threads[sid]):
+            sheet_id, c = accepted
             best = min(best or (c, sid, sheet_id), (c, sid, sheet_id))
     if best is None:
-        return {"supplier_id": live_threads(threads)[0], "message": {"action": {"type": "walk_away"}}}
+        return {"supplier_id": live[0], "message": {"action": {"type": "walk_away"}}}
     return {"supplier_id": best[1], "message": {"action": {"type": "accept", "term_sheet_id": best[2]}}}
 
 

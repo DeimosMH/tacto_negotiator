@@ -43,6 +43,9 @@ NOT_STARTED = "the final has not started; its cases appear wave by wave"  # the 
 
 
 def _fmt(v):
+    if isinstance(v, dict) and set(v) == {"series", "material_share", "deadband_pct", "base_month"}:
+        return (f"{v['series']}, {v['material_share'] * 100:.12g}% material, "
+                f"deadband {v['deadband_pct']:g} %, base {v['base_month']}")
     return "none" if v is None else f"{v:.2f}" if isinstance(v, float) else str(v)
 
 

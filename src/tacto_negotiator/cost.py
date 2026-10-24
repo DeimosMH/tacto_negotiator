@@ -12,6 +12,8 @@ import math
 import operator
 from datetime import date
 
+from .docs import LABELS
+
 # Strategic and bottleneck goals: leaving the supplier below a sustainable margin costs.
 RELATIONSHIP_GOALS = {"stabilise", "secure_supply"}
 OPS = {
@@ -22,6 +24,46 @@ OPS = {
     "==": operator.eq,
     "!=": operator.ne,
 }
+
+
+NUMERIC = set(LABELS.values()) - {"incoterm", "effective_date", "index_clause"}
+INTEGER = {"payment_days", "lead_time_days", "volume_per_year", "contract_months", "ppm_commitment"}
+NULLABLE = {"effective_date", "index_clause"}
+
+
+def valid_value(field, value):
+    """Validate before arithmetic or option snapping can hide malformed model values."""
+    if value is None:
+        return field in NULLABLE
+    if field in NUMERIC:
+        if type(value) not in (int, float) or not math.isfinite(value):
+            return False
+        if field in INTEGER and (type(value) is not int and not value.is_integer()):
+            return False
+        if field in {"payment_days", "contract_months"} and value > {"payment_days": 120, "contract_months": 36}[field]:
+            return False
+        return value > 0 if field in {"unit_price", "volume_per_year"} else value >= 0
+    if field == "incoterm":
+        return isinstance(value, str) and value in {"EXW", "FCA", "DAP"}
+    if field == "effective_date":
+        try:
+            return isinstance(value, str) and date.fromisoformat(value).isoformat() == value
+        except ValueError:
+            return False
+    if field == "index_clause":
+        if not isinstance(value, dict) or set(value) != {"series", "material_share", "deadband_pct", "base_month"}:
+            return False
+        share, band = value["material_share"], value["deadband_pct"]
+        try:
+            month = value["base_month"]
+            return (isinstance(value["series"], str) and bool(value["series"])
+                    and type(share) in (int, float) and math.isfinite(share) and 0 <= share <= 1
+                    and type(band) in (int, float) and math.isfinite(band) and band >= 0
+                    and isinstance(month, str) and len(month) == 7
+                    and date.fromisoformat(month + "-01").strftime("%Y-%m") == month)
+        except ValueError:
+            return False
+    return False
 
 
 def closing_terms(case, terms, standard=None):
@@ -196,16 +238,19 @@ def snap(case, field, value):
     return options[0]
 
 
-def complete_offer(case, terms):
-    """A valid term sheet: exactly the negotiable fields, gaps from the buyer's plan, snapped."""
+def complete_offer(case, terms, standard=None):
+    """Complete negotiable fields, preserving legal supplier defaults and snapping other values."""
+    standard = standard or {}
     plan = closing_terms(case, {"unit_price": None})
     freight = case["buyer"]["freight_eur_per_unit"]
     plan["incoterm"] = min(freight, key=freight.get)  # when asking, ask for the cheapest freight
     out = {}
     for field in case["negotiable"]:
         value = terms.get(field, plan.get(field))
-        if value is None and case.get("term_options", {}).get(field):
-            value = case["term_options"][field][0]
-        value = snap(case, field, value)
+        if field not in standard or value != standard[field]:
+            options = case.get("term_options", {}).get(field)
+            if value is None and options and None not in options:
+                value = options[0]
+            value = snap(case, field, value)
         out[field] = round(value, 2) if field == "unit_price" and value is not None else value
     return out

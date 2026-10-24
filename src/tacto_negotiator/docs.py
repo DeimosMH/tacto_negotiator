@@ -22,7 +22,7 @@ SECTIONS = {
     "Terms fixed by your enquiry": "fixed",
     "Agreed terms": "agreed",
 }
-CLAUSE = re.compile(r"(\S+), (\d+)% material, deadband ([\d.]+) %, base (\S+)")
+CLAUSE = re.compile(r"(\S+), (\d+(?:\.\d+)?)% material, deadband (\d+(?:\.\d+)?) %, base (\S+)")
 
 
 def read_document(name, data):
@@ -45,13 +45,15 @@ def read_document(name, data):
 
 def _value(field, text):
     if field == "index_clause":
-        m = CLAUSE.match(text)
-        if not m:
+        if text.casefold() == "none":
             return None
+        m = CLAUSE.fullmatch(text)
+        if not m:
+            raise ValueError("unrecognized index clause in quote")
         series, share, deadband, base = m.groups()
         return {
             "series": series,
-            "material_share": int(share) / 100,
+            "material_share": float(share) / 100,
             "deadband_pct": float(deadband),
             "base_month": base,
         }
