@@ -31,11 +31,13 @@ from .sim import Sim
 FIXTURE = Path(__file__).resolve().parents[2] / "tests/fixtures/practice_feedback.json"
 DATA = Path(__file__).resolve().parents[2] / "data"
 # (a1, cap1, a2, floor depth F, final round R, cumulative-gap % G) ranges by category goal.
+# secure_supply G: 15 hosted P10 first rounds stayed open at package-adjusted gaps of 6.3-13.7 % and drew a
+# final offer at 14.2 % and above.
 PROFILE_RANGES = {
     "leverage": ((0.8, 0.9), (0.10, 0.20), (0.1, 0.2), (0.16, 0.20), (2, 3), (20, 30)),
     "stabilise": ((0.0, 0.7), (0.01, 0.04), (0.0, 0.3), (0.03, 0.07), (4, 5), (99, 99)),
     "routine": ((0.2, 0.3), (0.01, 0.04), (0.0, 0.2), (0.02, 0.07), (3, 4), (30, 40)),
-    "secure_supply": ((0.0, 0.0), (0.01, 0.01), (0.6, 0.6), (0.02, 0.02), (2, 2), (15, 15)),
+    "secure_supply": ((0.0, 0.0), (0.01, 0.01), (0.6, 0.6), (0.02, 0.02), (2, 2), (14, 14)),
     "quality_first": ((0.0, 0.0), (0.01, 0.01), (0.3, 0.3), (0.03, 0.03), (5, 5), (99, 99)),
 }
 # Share of a clause's pass-through (material share x the series' twelve-month rise beyond the deadband)
