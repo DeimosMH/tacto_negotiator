@@ -27,6 +27,7 @@ log = logging.getLogger("arena")
 ENDED = {"walked_away", "no_bid"}
 # A message later than this after the supplier's last one counts as a timeout.
 MOVE_LIMIT_S = 60
+REFRESH_S = 10  # the authoritative timer refresh (with any changed threads and their documents)
 SEND_MARGIN_S = 5  # leave time for validation, shared pacing and submitting the move
 # In the Live Final, close this long before the wave's cap - or the slowest round of the case so far
 # (your decision plus a supplier reply of up to about a minute) plus a margin, if that is longer.
@@ -78,7 +79,7 @@ class RemoteTable:
     def thread_deadlines(self, threads, deadline=None):
         """Read authoritative timers, including after resume; use monotonic time locally."""
         requested = time.monotonic()
-        read_deadline = min(deadline, requested + SEND_MARGIN_S) if deadline is not None else requested + SEND_MARGIN_S
+        read_deadline = min(deadline, requested + REFRESH_S) if deadline is not None else requested + REFRESH_S
 
         def remaining():
             left = read_deadline - time.monotonic()
@@ -108,12 +109,14 @@ class RemoteTable:
                 deadlines[sid] = requested + max(0, left if left is not None else MOVE_LIMIT_S)
             return deadlines
         except (httpx.TransportError, TimeoutError):
-            log.warning("timer refresh failed; closing without model work")
+            log.warning("timer refresh failed; using local 60 s estimates")
         except ArenaError as error:
             if error.status not in {429, 500, 502, 503, 504}:
                 raise
-            log.warning("timer refresh returned %s; closing without model work", error.status)
-        return dict.fromkeys(live_threads(threads), requested)
+            log.warning("timer refresh returned %s; using local 60 s estimates", error.status)
+        # A slow refresh says nothing about the supplier clocks: hosted cases closed with a 0 s budget
+        # seconds after a reply when this returned "now" (P01 0.34 vs 0.94, P10 0.00 vs 0.67).
+        return None
 
     def missed(self, supplier_id, error):
         """After a 409: the result if the case has ended (e.g. at a wave's cap), else what the
@@ -334,12 +337,12 @@ def play(table, case_id, agent, deadline=None):
     timed_decide = getattr(agent, "decide_timed", None)
     close = getattr(agent, "closing_move", closing_move)
 
-    def read_deadline():
+    def read_deadline(limit=SEND_MARGIN_S):
         expires = min(received[sid] + MOVE_LIMIT_S for sid in live_threads(threads)) - SEND_MARGIN_S
         cap = deadline() if callable(deadline) else deadline
         if cap is not None:
             expires = min(expires, time.monotonic() + cap - time.time() - SEND_MARGIN_S)
-        return min(expires, time.monotonic() + SEND_MARGIN_S)
+        return min(expires, time.monotonic() + limit)
 
     def read(message):
         return fetch_documents(table, message, deadline=read_deadline() if timed_decide else None)
@@ -353,8 +356,11 @@ def play(table, case_id, agent, deadline=None):
         if timed_decide:
             reread_skipped_documents(table, threads)
             if get_deadlines := getattr(table, "thread_deadlines", None):
-                thread_deadlines = get_deadlines(threads, deadline=read_deadline())
-                received.update({sid: expires - MOVE_LIMIT_S for sid, expires in thread_deadlines.items()})
+                thread_deadlines = get_deadlines(threads, deadline=read_deadline(REFRESH_S))
+                if thread_deadlines is None:
+                    thread_deadlines = {sid: received[sid] + MOVE_LIMIT_S for sid in live_threads(threads)}
+                else:
+                    received.update({sid: expires - MOVE_LIMIT_S for sid, expires in thread_deadlines.items()})
                 if getattr(table, "done", None):
                     return table.done
                 if not live_threads(threads):

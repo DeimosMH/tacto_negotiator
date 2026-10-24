@@ -158,7 +158,7 @@ def test_status_change_with_same_offer_id_refreshes_the_thread(arena):
     assert threads[sid][-1]["status"] == "final_offer"
     assert threads[sid][-1]["term_sheets"][0]["term_sheet_id"] == offer_id
     reads = [r for r, _ in arena.requests if r.url.path.endswith(f"/threads/{sid}")]
-    assert len(reads) == 1 and 0 < reads[0].extensions["timeout"]["read"] <= 5
+    assert len(reads) == 1 and 0 < reads[0].extensions["timeout"]["read"] <= 10
 
 
 def test_409_recovery_keeps_current_offer_terms_and_rounds(arena):
@@ -231,7 +231,8 @@ def test_terminal_opening_returns_result_without_document_work(status):
     assert play(TerminalTable(), case["case_id"], RoutedAgent(None)) is result
 
 
-def test_transient_timer_read_failure_closes_without_model_or_read_retry(arena):
+def test_transient_timer_read_failure_keeps_negotiating_on_local_deadlines(arena):
+    # Hosted cases closed with a 0 s budget seconds after a reply when a slow refresh meant "now".
     reads = []
 
     def handle(request):
@@ -240,13 +241,11 @@ def test_transient_timer_read_failure_closes_without_model_or_read_retry(arena):
             return httpx.Response(503, json={"detail": "synthetic metadata outage"})
         return arena.handle(request)
 
-    def complete(*args, **kwargs):
-        pytest.fail("unavailable timers must not authorize more model time")
-
     table = RemoteTable(arena.client(transport=handle, retries=3))
-    result = play(table, "case:S02", RoutedAgent(complete, clock=arena.clock))
-    assert result["ended"] and len(reads) == 1
-    assert 0 < reads[0].extensions["timeout"]["read"] <= 5
+    result = play(table, "case:S02", RoutedAgent(lambda *args, **kwargs: "not JSON", clock=arena.clock))
+    moves = [r for r, _ in arena.requests if r.url.path.endswith("/messages")]
+    assert result["ended"] and len(moves) > 1 and reads
+    assert all(0 < read.extensions["timeout"]["read"] <= 10 for read in reads)
 
 
 @pytest.mark.parametrize("failed_document", ["opening", "reply"])
