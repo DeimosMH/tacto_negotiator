@@ -1,6 +1,6 @@
 # Local competition: scripts and real models
 
-The competition harness runs independent buyer strategies against the same synthetic supplier scenarios. Suppliers and arena state stay in memory. The optional model strategies make real, measured OpenAI requests. Start with [the tutorial](TUTORIAL.md) for the negotiation loop and [the routing guide](ROUTING.md) for the decision tree.
+The Tacto Negotiator competition harness runs independent buyer strategies against the same synthetic supplier scenarios. Suppliers and arena state stay in memory. The optional model strategies make real, measured OpenAI requests. Its current entry points are tacto-compete and python -m tacto_negotiator.compete. Start with [the tutorial](TUTORIAL.md) for the negotiation loop and [the routing guide](ROUTING.md) for the decision tree.
 
 ## Results and recommendation
 
@@ -20,6 +20,8 @@ Script coverage means an entire valid match with no completion attempt and no fa
 The scripts improve must-have repair, plateau handling and alternative selection. They do not win every family: on development payment/freight cases their mean score is 62.29 versus naive's 76.49, and on holdout slow replies it is 66.49 versus 72.59. Do not remove safeguards or semantic routing to chase the simulator's score. Both rules and tests should address real causes.
 
 Raw reports: [development](results/offline.json), [fresh holdout](results/holdout.json), [diagnostic API pilot](results/pilot.json), [measured model tournament](results/models.json). The pilot exposed non-neutral case labels and a supplier quote-floor bug; both were fixed before the scored run. Its economic scores are excluded. Its 26 actual calls and USD 0.198582125 conservative usage estimate remain in campaign accounting.
+
+**Historical provenance:** these JSON files are preserved byte-for-byte from the completed experiment before the project migration. Their source paths, hashes and commit IDs identify the then-measured files under starter_kit/starter-kit/arena_kit. Current source lives under src/tacto_negotiator, tests under tests, and the active dataset under data. Map old arena_kit imports to tacto_negotiator when following current commands. The original supplied starter kit was separately restored to commit 0166e6948f53ecbf629ab371135f69ec3243f998 and archived in materials/starter_kit; it does not contain the later measured buyer. Migration does not regenerate these reports or rerun paid calls.
 
 ### Real model comparison
 
@@ -75,11 +77,11 @@ The buyer sees public case data and parsed quote attachments. It cannot see rese
 
 | Block | File | What to change here |
 | --- | --- | --- |
-| Scenario and supplier behavior | [competition.py](../starter_kit/starter-kit/arena_kit/competition.py) | Public cases, private economics, concession rules, delays, evaluation and parallel matches. |
-| Strategy selection and command | [compete.py](../starter_kit/starter-kit/arena_kit/compete.py) | Fresh policy factories, explicit live opt-in, model configuration, progress checkpoints and report writing. |
-| Spend accounting | [benchmark.py](../starter_kit/starter-kit/arena_kit/benchmark.py) | Literal key extraction, model-access preflight, thread-safe reservations and sanitized usage records. |
-| Deterministic policy | [routed.py](../starter_kit/starter-kit/arena_kit/agents/routed.py) | Supported situations, complete package enumeration, full-cost concessions, validation and fallback. |
-| Model transport | [completion.py](../starter_kit/starter-kit/arena_kit/agents/completion.py) | Absolute deadlines, shared concurrency slots, Responses requests and usage-only observation. |
+| Scenario and supplier behavior | [competition.py](../src/tacto_negotiator/competition.py) | Public cases, private economics, concession rules, delays, evaluation and parallel matches. |
+| Strategy selection and command | [compete.py](../src/tacto_negotiator/compete.py) | Fresh policy factories, explicit live opt-in, model configuration, progress checkpoints and report writing. |
+| Spend accounting | [benchmark.py](../src/tacto_negotiator/benchmark.py) | Literal key extraction, model-access preflight, thread-safe reservations and sanitized usage records. |
+| Deterministic policy | [routed.py](../src/tacto_negotiator/agents/routed.py) | Supported situations, complete package enumeration, full-cost concessions, validation and fallback. |
+| Model transport | [completion.py](../src/tacto_negotiator/agents/completion.py) | Absolute deadlines, shared concurrency slots, Responses requests and usage-only observation. |
 
 These are logical code blocks implemented by separate contributors. The deployed buyer does not need a coordinator model to route each decision.
 
@@ -129,25 +131,27 @@ Do not expand the deterministic route merely to improve its coverage percentage.
 
 ## Run it locally
 
-From the repository root, run a complete offline comparison:
+Install the root project using [the README](../README.md), then run a complete offline comparison from the repository root:
 
 ```sh
 TACTO_ROOT="$PWD"
-TACTO_PYTHON="$TACTO_ROOT/starter_kit/starter-kit/.venv/bin/python"
+TACTO_PYTHON="$TACTO_ROOT/.venv/bin/python"
 cd /tmp
 env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 \
-  "$TACTO_PYTHON" -m arena_kit.compete \
+  "$TACTO_PYTHON" -m tacto_negotiator.compete \
   --strategies naive close scripts --seeds 0 1 2 3 4 \
   --waves 5 --workers 8 --output /tmp/tacto-offline.json
 ```
 
 No environment file is read by this command. To inspect only one behavior, add --scenarios payment_freight. Use --holdout with a fresh list of seeds for validation. Reports contain aggregate results and a matches array; each match records route reasons, fallback status and decision/supplier/wave timing separately.
 
+The installed .venv/bin/tacto-compete command accepts the same arguments as the module invocation shown above. Keep new experiments in a separate output file; the checked-in results are the historical measurement record.
+
 Real model comparison is explicitly opt-in. The following example starts a separate paid run with a USD 5 ceiling:
 
 ```sh
 env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 \
-  "$TACTO_PYTHON" -m arena_kit.compete \
+  "$TACTO_PYTHON" -m tacto_negotiator.compete \
   --live --key-file "$TACTO_ROOT/.env" --budget-usd 5 \
   --strategies scripts sol astra luna hybrid \
   --scenarios payment_freight contradicted_claims relationship_risk \
@@ -174,10 +178,10 @@ The cap applies to one process. For a multi-run campaign, subtract every previou
 ```sh
 env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 \
   "$TACTO_PYTHON" -m pytest -q -p no:cacheprovider \
-  "$TACTO_ROOT/starter_kit/starter-kit/tests/test_script_coverage.py" \
-  "$TACTO_ROOT/starter_kit/starter-kit/tests/test_competition.py" \
-  "$TACTO_ROOT/starter_kit/starter-kit/tests/test_benchmark.py" \
-  "$TACTO_ROOT/starter_kit/starter-kit/tests/test_compete.py"
+  "$TACTO_ROOT/tests/test_script_coverage.py" \
+  "$TACTO_ROOT/tests/test_competition.py" \
+  "$TACTO_ROOT/tests/test_benchmark.py" \
+  "$TACTO_ROOT/tests/test_compete.py"
 ```
 
 ## What matters most for Sunday

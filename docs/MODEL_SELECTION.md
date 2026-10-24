@@ -4,6 +4,8 @@
 
 The implemented [routed buyer](ROUTING.md) handles known quantitative choices with bounded scripts, uses Sol as its default completion and can choose Astra for structured complexity when enough budget remains. Astra is disabled until configured. Each decision makes at most one completion request; failures use a local fallback. Use Astra for difficult preparation before a live session as well, if evaluation shows it improves those tasks.
 
+The figures below are preserved measurements from before the package migration. Their original report paths, hashes and commits remain unchanged; the active buyer is now src/tacto_negotiator and the command is tacto. [Competition provenance](COMPETITION.md) explains how the old arena_kit source maps to the current project. Moving the package did not create new provider measurements.
+
 The scored run made **1,673 real calls** at ten workers; the diagnostic pilot adds 26. Provider-call p95 was 5.51 seconds for Sol, 5.07 for Astra and 6.31 for Luna, including failures. Sol and Astra completed every provider request; Luna had two HTTP failures and one timeout. Completed responses can still fail the buyer guard: the model-only policies needed 10, 10 and 17 fallbacks respectively. The hybrid needed none. Astra's slight latency advantage here means the route labels fast and strong should not be read as a provider speed ranking.
 
 The campaign's conservative usage-plus-reservation estimate is **USD 16.486701**, including USD 0.008816125 reserved for unknown usage. It prices all input at the default 30-minute cache-write rate and output at standard rates; it is not an invoice. The [pilot report](results/pilot.json) retains its original estimate and adjusted USD 0.198582125 figure. Its economic scores are excluded because it preceded simulator corrections. Cache writes can cost more than ordinary input without explicit cache configuration. [Official prompt-cache pricing](https://developers.openai.com/api/docs/guides/prompt-caching).
@@ -41,15 +43,15 @@ A MILP solver becomes useful only if a future case couples many products, capaci
 
 ## Implemented adapter and remaining qualification
 
-The --agent routed path uses [CompletionClient](../starter_kit/starter-kit/arena_kit/agents/completion.py). It sends requests through OpenAI Responses, explicitly sets reasoning effort and a default 4,096-token output cap, and includes shared-provider queue time and HTTP reading in the supplied absolute deadline. It performs no automatic retries. Timed-out async I/O is cancelled and incomplete or late output is rejected; RoutedAgent then uses local fallback.
+The --agent routed path uses [CompletionClient](../src/tacto_negotiator/agents/completion.py). It sends requests through OpenAI Responses, explicitly sets reasoning effort and a default 4,096-token output cap, and includes shared-provider queue time and HTTP reading in the supplied absolute deadline. It performs no automatic retries. Timed-out async I/O is cancelled and incomplete or late output is rejected; RoutedAgent then uses local fallback.
 
 Fast and strong calls share one concurrency limit. A fresh HTTP client is created and closed for each call, so persistent connection warming remains an optimization to evaluate. Cancellation is cooperative I/O rather than a hard operating-system kill; an uncooperative resolver or injected transport requires stronger isolation. The router applies common structured-action checks, including finite values, permitted terms and guarded acceptance.
 
-The legacy --agent llm path still uses [llm_from_env](../starter_kit/starter-kit/arena_kit/agents/llm.py): **LLM_EFFORT has no effect on its OpenAI-compatible branch**, its nominal 45-second timeout does not cover an entire decision, and the Anthropic branch allows 16,000 output tokens. Choose the routed path to use the new adapter. Changing only LLM_MODEL does not change those legacy behaviors.
+The legacy --agent llm path still uses [llm_from_env](../src/tacto_negotiator/agents/llm.py): **LLM_EFFORT has no effect on its OpenAI-compatible branch**, its nominal 45-second timeout does not cover an entire decision, and the Anthropic branch allows 16,000 output tokens. Choose the routed path to use the new adapter. Changing only LLM_MODEL does not change those legacy behaviors.
 
 For GPT-6.1 Sol use a supported effort such as low, not none/minimal. The routed adapter uses Responses for plain structured decision text; it does not add model tool calls. [GPT-6.1 Sol capabilities](https://developers.openai.com/api/docs/models/gpt-6.1-sol).
 
-Representative latency, output-budget adequacy and model quality still need qualification beyond the pilot. Complete dossier preparation, evidence-claim arithmetic, supplier-health estimation and concurrent RFQ scheduling also remain work; see [the readiness plan](FINAL_READINESS.md).
+Representative latency, output-budget adequacy and model quality still need qualification beyond these synthetic comparisons. Complete dossier preparation, evidence-claim arithmetic, supplier-health estimation and concurrent RFQ scheduling also remain work; see [the readiness plan](FINAL_READINESS.md).
 
 ## How to qualify the choice step by step
 

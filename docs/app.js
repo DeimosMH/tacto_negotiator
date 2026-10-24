@@ -3,23 +3,23 @@
 const atlas = window.ATLAS;
 const byId = new Map(atlas.nodes.map(node => [node.id, node]));
 const files = atlas.nodes.filter(node => node.kind === "file");
+const mapIds = new Set(atlas.map_ids);
 const $ = selector => document.querySelector(selector);
 const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, char => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[char]));
 const jsonText = value => typeof value === "string" ? value : JSON.stringify(value, null, 2);
 const subgroupId = node => `group:${node.group}/${node.subgroup}`;
 const state = {
-  selected: null, group: null, guide: null, search: "", full: false, proposed: true, mode: "groups",
-  expanded: new Set(["materials", "starter_kit", "starter_kit/starter-kit", "starter_kit/starter-kit/arena_kit"]),
+  selected: null, group: null, guide: null, search: "", full: false, mode: "source",
+  expanded: new Set(["src", "src/tacto_negotiator", "src/tacto_negotiator/agents"]),
   bounds: [0, 0, 1000, 620], view: [0, 0, 1000, 620],
 };
 try {
   const saved = JSON.parse(localStorage.getItem("tacto-atlas-display") || "{}");
   state.full = saved.full === true;
-  state.proposed = saved.proposed !== false;
 } catch { /* file:// storage is optional; preferences stay in memory. */ }
 
 function saveSettings() {
-  try { localStorage.setItem("tacto-atlas-display", JSON.stringify({full: state.full, proposed: state.proposed})); }
+  try { localStorage.setItem("tacto-atlas-display", JSON.stringify({full: state.full})); }
   catch { /* Browsing still works when storage is unavailable. */ }
 }
 
@@ -29,6 +29,12 @@ function routeFor(id) {
 
 function nodeLink(id, label) {
   return `<a class="node-link" href="${routeFor(id)}">${escapeHTML(label || byId.get(id)?.label || id)}</a>`;
+}
+
+function originalLink(id) {
+  const encoded = id.split("/").map(encodeURIComponent).join("/");
+  if (id.startsWith("docs/")) return encoded.slice(5);
+  return location.protocol === "file:" || /\/docs\/(?:index.html)?$/.test(location.pathname) ? `../${encoded}` : null;
 }
 
 function fieldsHTML(node) {
@@ -107,7 +113,13 @@ function inlineMarkdown(text, source) {
         const url = new URL(match[3], `https://atlas.invalid/${source}`);
         if (url.origin === "https://atlas.invalid") {
           const id = decodeURIComponent(url.pathname.slice(1));
-          if (byId.has(id)) href = id.startsWith("docs/") && id.endsWith(".md") ? `#guide=${encodeURIComponent(id.slice(5))}` : routeFor(id);
+          if (atlas.guides[id]) href = `#guide=${encodeURIComponent(id.slice(5))}`;
+          else if (byId.has(id)) href = routeFor(id);
+          else if (id === "docs/index.html") href = "#home";
+          else if (atlas.reports[id] || id.startsWith("materials/")) {
+            const original = originalLink(id);
+            if (original) href = original + url.hash;
+          }
         } else if (["http:", "https:"].includes(url.protocol)) href = url.href;
       } catch { /* Malformed source links are displayed as text. */ }
       result += href ? `<a href="${escapeHTML(href)}" ${href.startsWith("http") ? 'target="_blank" rel="noreferrer"' : ""}>${label}</a>` : label;
@@ -159,33 +171,31 @@ function renderInspector() {
   const node = byId.get(state.selected);
   if (node) {
     const connections = atlas.edges.filter(edge => edge.source === node.id || edge.target === node.id);
-    const encoded = node.id.split("/").map(encodeURIComponent).join("/");
-    const original = location.protocol === "file:" || /\/docs\/(?:index.html)?$/.test(location.pathname) ? `../${encoded}` : node.id.startsWith("docs/") ? encoded.slice(5) : null;
+    const original = originalLink(node.id);
     $("#inspector").innerHTML = `<div class="inspector-card"><span class="eyebrow">${node.kind === "file" ? "FILE EXPLAINED" : "COMPONENT EXPLAINED"}</span><h2>${escapeHTML(node.label)}</h2><div class="tags"><span class="tag ${node.status}">${node.status}</span><span class="tag">${escapeHTML(atlas.groups[node.group].label)}</span></div><div class="file-path">${escapeHTML(node.id)} · ${escapeHTML(node.subgroup)}</div>${explanationHTML(node)}${node.headings?.length ? `<div class="detail-block"><h3>Document contents</h3><p>${node.headings.map(escapeHTML).join(" · ")}</p></div>` : ""}${node.sample ? `<details class="source-details"><summary>Sample / binary structure${node.rows ? ` · ${node.rows.toLocaleString()} total records` : ""}</summary><pre>${escapeHTML(jsonText(node.sample))}</pre></details>` : ""}${node.content ? `<details class="source-details" ${node.id.includes("/correspondence/") || node.id.includes("/contracts/") ? "open" : ""}><summary>${node.id.endsWith(".md") ? "Read document" : "View source"}</summary>${node.id.endsWith(".md") ? `<div class="prose">${markdown(node.content, node.id)}</div>` : `<pre><code>${escapeHTML(node.content)}</code></pre>`}</details>` : ""}<div class="file-actions">${node.kind === "file" && original ? `<a href="${original}" target="_blank" rel="noreferrer">Open original file ↗</a>` : ""}<span class="muted">${connections.length} relationships${node.bytes !== undefined ? ` · ${node.bytes.toLocaleString()} bytes` : ""}</span></div></div>`;
   } else if (state.group) {
-    const members = atlas.nodes.filter(item => subgroupId(item) === state.group);
+    const members = atlas.nodes.filter(item => mapIds.has(item.id) && subgroupId(item) === state.group);
     $("#inspector").innerHTML = `<div class="inspector-card"><span class="eyebrow">LOGICAL SUBGROUP</span><h2>${escapeHTML(members[0]?.subgroup || "Unknown group")}</h2><p>Every member of this subgroup is shown below. Select one to see its own incoming and outgoing interactions.</p><ul class="relationship-list">${members.map(item => `<li>${nodeLink(item.id)}<span class="relation-label">${escapeHTML(item.role)}</span></li>`).join("")}</ul></div>`;
   } else {
-    $("#inspector").innerHTML = `<div class="overview-flow"><section class="flow-card"><span class="step">01 / PREPARE</span><h3>Read the supplier's situation</h3><p>Join the data, open the notes and compute claims with their source IDs.</p>${nodeLink("starter_kit/starter-kit/arena_kit/data.py", "Explore evidence access →")}</section><section class="flow-card"><span class="step">02 / NEGOTIATE</span><h3>Trade complete packages</h3><p>The model writes the email. Code checks the figures and compares total cost.</p>${nodeLink("starter_kit/starter-kit/arena_kit/agents/llm.py", "Explore the example buyer →")}</section><section class="flow-card"><span class="step">03 / CLOSE</span><h3>Accept, or choose the alternative</h3><p>Validate the standing offer, standard terms and must-haves before closing.</p><a href="#guide=IMPLEMENTATION.md">Read the implementation plan →</a></section></div><p class="scope-note">${escapeHTML(atlas.scope)}</p>`;
+    $("#inspector").innerHTML = `<div class="overview-flow"><section class="flow-card"><span class="step">01 / PREPARE</span><h3>Read the supplier's situation</h3><p>Join the data, open the notes and compute claims with their source IDs.</p>${nodeLink("src/tacto_negotiator/data.py", "Explore evidence access →")}</section><section class="flow-card"><span class="step">02 / NEGOTIATE</span><h3>Trade complete packages</h3><p>Scripts handle known cases. A model handles uncertain decisions; code checks every action and compares total cost.</p>${nodeLink("src/tacto_negotiator/agents/routed.py", "Explore the routed buyer →")}</section><section class="flow-card"><span class="step">03 / CLOSE</span><h3>Accept, or choose the alternative</h3><p>Validate the standing offer, standard terms and must-haves before closing.</p><a href="#guide=IMPLEMENTATION.md">Read the implementation plan →</a></section></div><p class="scope-note">${escapeHTML(atlas.scope)}</p>`;
   }
 }
 
 function graphData() {
-  const included = atlas.nodes.filter(node => state.proposed || node.status !== "proposed" || node.id === state.selected);
-  const eligible = new Set(included.map(node => node.id));
-  const edges = atlas.edges.filter(edge => eligible.has(edge.source) && eligible.has(edge.target));
   if (state.selected) {
-    const near = edges.filter(edge => edge.source === state.selected || edge.target === state.selected);
+    const near = atlas.edges.filter(edge => edge.source === state.selected || edge.target === state.selected);
     const ids = new Set([state.selected, ...near.flatMap(edge => [edge.source, edge.target])]);
-    return {nodes: included.filter(node => ids.has(node.id)), edges: near, raw: near};
+    return {nodes: atlas.nodes.filter(node => ids.has(node.id)), edges: near, raw: near};
   }
+  const included = atlas.nodes.filter(node => mapIds.has(node.id));
+  const edges = atlas.edges.filter(edge => mapIds.has(edge.source) && mapIds.has(edge.target));
   if (state.group) {
     const ids = new Set(included.filter(node => subgroupId(node) === state.group).map(node => node.id));
     const near = edges.filter(edge => ids.has(edge.source) || ids.has(edge.target));
     const visible = new Set([...ids, ...near.flatMap(edge => [edge.source, edge.target])]);
     return {nodes: included.filter(node => visible.has(node.id)), edges: near, raw: near};
   }
-  if (state.mode === "all") return {nodes: included, edges, raw: edges};
+  if (state.mode === "source") return {nodes: included, edges, raw: edges};
   const groups = new Map();
   included.forEach(node => {
     const id = subgroupId(node);
@@ -277,10 +287,9 @@ function renderGraph() {
   data.edges.forEach(edge => {
     const a = layout.points.get(edge.source), b = layout.points.get(edge.target);
     if (!a || !b) return;
-    const proposed = a.node.group === "proposed" || b.node.group === "proposed";
     const dx = b.x - a.x, dy = b.y - a.y, length = Math.hypot(dx, dy) || 1;
     const endX = b.x - dx / length * 13, endY = b.y - dy / length * 13;
-    const path = svgElement("path", {class: `map-edge${proposed ? " proposed" : ""}`, d: `M ${a.x} ${a.y} Q ${(a.x + b.x) / 2 + dy * .08} ${(a.y + b.y) / 2 - dx * .08} ${endX} ${endY}`, "marker-end": "url(#arrow)"});
+    const path = svgElement("path", {class: "map-edge", d: `M ${a.x} ${a.y} Q ${(a.x + b.x) / 2 + dy * .08} ${(a.y + b.y) / 2 - dx * .08} ${endX} ${endY}`, "marker-end": "url(#arrow)"});
     path.append(svgElement("title", {}, `${a.node.label} → ${b.node.label}: ${edge.relation}`));
     edgeGroup.append(path);
   });
@@ -288,13 +297,13 @@ function renderGraph() {
   const nodesGroup = svgElement("g");
   layout.points.forEach(({x, y, node}) => {
     const color = atlas.groups[node.group].color;
-    const group = svgElement("g", {class: `map-node ${node.status === "proposed" ? "proposal" : ""} ${state.selected === node.id ? "selected" : ""}`, transform: `translate(${x},${y})`, tabindex: "0", role: "button", "aria-label": `${node.kind === "group" ? "Explore subgroup" : "Explain"} ${node.label}${node.count ? `, ${node.count} items` : ""}`, "data-node": node.id});
+    const group = svgElement("g", {class: `map-node ${state.selected === node.id ? "selected" : ""}`, transform: `translate(${x},${y})`, tabindex: "0", role: "button", "aria-label": `${node.kind === "group" ? "Explore subgroup" : "Explain"} ${node.label}${node.count ? `, ${node.count} items` : ""}`, "data-node": node.id});
     group.append(svgElement("circle", {class: "node-halo", r: 14, stroke: color}));
     group.append(svgElement("circle", {r: node.kind === "group" ? 8 : 6, fill: color}));
     const limit = node.kind === "group" ? 22 : 27;
     const label = node.label.length > limit ? node.label.slice(0, limit - 2) + "…" : node.label;
     group.append(svgElement("text", {x: 20, y: 3}, label));
-    const subtitle = node.count ? `${node.count} ${node.group === "proposed" ? "proposals" : "items"}` : node.status === "proposed" ? "PROPOSED · not implemented" : node.subgroup;
+    const subtitle = node.count ? `${node.count} items` : node.subgroup;
     group.append(svgElement("text", {class: "node-subtitle", x: 20, y: 20}, subtitle.length > 33 ? subtitle.slice(0, 31) + "…" : subtitle));
     group.append(svgElement("title", {}, `${node.id}\n${node.role || `${node.count} files / entities`}`));
     group.addEventListener("click", () => { if (!suppressClick) location.hash = routeFor(node.id); });
@@ -307,9 +316,9 @@ function renderGraph() {
   state.bounds = layout.bounds;
   fitGraph();
   $("#graph-count").textContent = `${data.nodes.length} nodes · ${data.edges.length} links`;
-  $("#graph-title").textContent = state.selected ? `${byId.get(state.selected).label} · neighborhood` : state.group ? "Subgroup and its connections" : "The whole project";
+  $("#graph-title").textContent = state.selected ? `${byId.get(state.selected).label} · neighborhood` : state.group ? "Subgroup and its connections" : "Project source map";
   $("#map-mode").disabled = Boolean(state.selected || state.group);
-  $("#legend").innerHTML = Object.entries(atlas.groups).filter(([id]) => data.nodes.some(node => node.group === id)).map(([, group]) => `<span><i style="background:${group.color}"></i>${escapeHTML(group.label)}</span>`).join("") + '<span>→ interaction direction</span><span>┄ proposed interaction</span>';
+  $("#legend").innerHTML = Object.entries(atlas.groups).filter(([id]) => data.nodes.some(node => node.group === id)).map(([, group]) => `<span><i style="background:${group.color}"></i>${escapeHTML(group.label)}</span>`).join("") + '<span>→ interaction direction</span>';
   renderRelationships(data.raw);
 }
 
@@ -334,8 +343,8 @@ function readRoute() {
   let hash;
   try { hash = decodeURIComponent(location.hash.slice(1)); } catch { hash = "home"; }
   if (hash.startsWith("file=") && byId.has(hash.slice(5))) state.selected = hash.slice(5);
-  if (hash.startsWith("group=") && atlas.nodes.some(node => subgroupId(node) === hash.slice(6))) state.group = hash.slice(6);
-  if (hash.startsWith("guide=") && byId.has("docs/" + hash.slice(6)) && hash.endsWith(".md")) state.guide = hash.slice(6);
+  if (hash.startsWith("group=") && atlas.nodes.some(node => mapIds.has(node.id) && subgroupId(node) === hash.slice(6))) state.group = hash.slice(6);
+  if (hash.startsWith("guide=") && atlas.guides["docs/" + hash.slice(6)]) state.guide = hash.slice(6);
   const node = byId.get(state.selected), isGuide = Boolean(state.guide);
   $("#workspace").hidden = isGuide;
   $("#guide").hidden = !isGuide;
@@ -346,12 +355,12 @@ function readRoute() {
     else link.removeAttribute("aria-current");
   });
   if (isGuide) {
-    const guide = byId.get("docs/" + state.guide);
+    const guide = atlas.guides["docs/" + state.guide];
     $("#page-heading").innerHTML = '<p class="breadcrumb">FIELD NOTES / ' + escapeHTML(state.guide) + '</p>';
     $("#guide").innerHTML = markdown(guide.content, guide.id);
     document.title = `${state.guide} · Tacto atlas`;
   } else {
-    $("#page-heading").innerHTML = node ? `<p class="breadcrumb">${escapeHTML(node.id)}</p><h1>${escapeHTML(node.label)}</h1><p class="intro">${escapeHTML(node.role)}</p>` : state.group ? `<p class="breadcrumb">LOGICAL GROUP / ${escapeHTML(state.group.slice(6))}</p><h1>Follow the connections.</h1><p class="intro">The selected subgroup, its members and the files or systems they interact with.</p>` : '<p class="breadcrumb">TACTO NEGOTIATION ARENA / SYSTEM FIELD GUIDE</p><h1>Understand the system.<br>Follow every connection.</h1><p class="intro">From a supplier’s email to a defensible deal. Explore the starter kit, the evidence behind it, and a practical plan for building your buyer agent.</p>';
+    $("#page-heading").innerHTML = node ? `<p class="breadcrumb">${escapeHTML(node.id)}</p><h1>${escapeHTML(node.label)}</h1><p class="intro">${escapeHTML(node.role)}</p>` : state.group ? `<p class="breadcrumb">LOGICAL GROUP / ${escapeHTML(state.group.slice(6))}</p><h1>Follow the connections.</h1><p class="intro">The selected subgroup, its members and the files or systems they interact with.</p>` : '<p class="breadcrumb">TACTO NEGOTIATION ARENA / SYSTEM FIELD GUIDE</p><h1>Understand the system.<br>Follow every connection.</h1><p class="intro">From a supplier’s email to a defensible deal. Explore the active buyer modules, their runtime dependencies, and the evidence behind each decision.</p>';
     if (!node && !state.group) $("#page-heading").insertAdjacentHTML("beforeend", '<p class="intro"><a href="#guide=TUTORIAL.md">Start with the beginner walkthrough →</a></p>');
     renderGraph(); renderInspector();
     document.title = `${node?.label || "Project atlas"} · Tacto`;
@@ -384,10 +393,8 @@ $("#graph").addEventListener("wheel", event => {
 $("#zoom-in").addEventListener("click", () => zoomGraph(.8));
 $("#zoom-out").addEventListener("click", () => zoomGraph(1.25));
 $("#fit").addEventListener("click", fitGraph);
-$("#reset-map").addEventListener("click", () => { state.mode = "groups"; $("#map-mode").value = "groups"; if (location.hash === "#home") readRoute(); else location.hash = "home"; });
+$("#reset-map").addEventListener("click", () => { state.mode = "source"; $("#map-mode").value = "source"; if (location.hash === "#home") readRoute(); else location.hash = "home"; });
 $("#map-mode").addEventListener("change", event => { state.mode = event.target.value; renderGraph(); });
-$("#show-proposed").checked = state.proposed;
-$("#show-proposed").addEventListener("change", event => { state.proposed = event.target.checked; saveSettings(); renderGraph(); });
 $("#full-explanations").checked = state.full;
 $("#full-explanations").addEventListener("change", event => { state.full = event.target.checked; saveSettings(); renderTree(); });
 $("#search").addEventListener("input", event => { state.search = event.target.value; renderTree(); });
@@ -399,6 +406,6 @@ document.addEventListener("keydown", event => {
 });
 window.addEventListener("hashchange", readRoute);
 $("#file-count").textContent = `${files.length} files`;
-$("#stats").innerHTML = [[atlas.stats.files, "Explained files"], [atlas.stats.tables, "Data tables"], [atlas.stats.facts.toLocaleString(), "Citable facts"], [atlas.stats.edges, "Mapped relationships"]].map(([value, label]) => `<div class="stat"><strong>${value}</strong><span>${label}</span></div>`).join("");
+$("#stats").innerHTML = [[atlas.stats.modules, "Source modules"], [atlas.stats.map_edges, "Source map links"], [atlas.stats.tables, "Evidence tables"], [atlas.stats.files, "Explained files"]].map(([value, label]) => `<div class="stat"><strong>${value}</strong><span>${label}</span></div>`).join("");
 renderTree();
 readRoute();

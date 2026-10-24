@@ -1,6 +1,6 @@
 # Verify locally without credentials
 
-Do not source ./env or .env, copy keys, or run arena data/me/play against the hosted service for these checks. The CLI main function automatically loads .env from its current directory. The commands below avoid that entry point and erase inherited provider and arena variables with env -i. Use the existing starter-kit virtual environment; it already contains the Python 3.12 dependencies on this checkout.
+These checks use the root .venv and the active tests directory. Install the project from the root pyproject.toml using [the README](../README.md) first. Run tests with a cleared environment and no credential file loading; do not source ./env or .env. Normal tacto commands load .env after parsing arguments, while tacto --help exits before loading it. The commands below use injected/local services and do not contact the hosted arena.
 
 ## Documentation checks
 
@@ -14,29 +14,29 @@ node --check docs/app.js
 node docs/test_browser.mjs
 ```
 
-The generator uses the standard library, reads allowlisted public files, skips symlinks and env/runtime directories, and never imports arena_kit. The browser check uses Node 22+ and an installed Chrome/Chromium executable (override with CHROME=/path/to/chrome). It opens the site with file:// in a temporary browser profile, blocks HTTP(S) requests and tests interactions through DevTools. It needs permission to launch a browser and bind a local debugging socket; no arena or model service is involved.
+The generator uses the standard library, reads allowlisted public files, skips symlinks and env/runtime directories, and never imports tacto_negotiator. The browser check uses Node 22+ and an installed Chrome/Chromium executable (override with CHROME=/path/to/chrome). It opens the site with file:// in a temporary browser profile, blocks HTTP(S) requests and tests interactions through DevTools. It needs permission to launch a browser and bind a local debugging socket; no arena or model service is involved.
 
-## Existing starter-kit contract suite
+## Project contract suite
 
 From the repository root, capture the executable and test path, then run in /tmp so the working directory contains no repository .env:
 
 ```sh
-TACTO_PYTHON="$PWD/starter_kit/starter-kit/.venv/bin/python"
-TACTO_TESTS="$PWD/starter_kit/starter-kit/tests"
+TACTO_PYTHON="$PWD/.venv/bin/python"
+TACTO_TESTS="$PWD/tests"
 cd /tmp
 env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 \
   "$TACTO_PYTHON" -m pytest -q -p no:cacheprovider "$TACTO_TESTS"
 ```
 
-The cleared environment removes ARENA_TEST_URL and ARENA_TEST_KEY, so the hosted test variant skips. HTTP integration tests start uvicorn on 127.0.0.1 with a simulator-issued key that works only in that simulator. Unit tests inject model completions and mock HTTP. No real keys are read. The test fixture needs local socket permissions; a restricted sandbox can reject it even though it never contacts the internet.
+The active suite has no hosted-service parametrization. HTTP integration tests start uvicorn on 127.0.0.1 with a simulator-issued key that works only in that simulator. Unit tests inject model completions and mock HTTP. No real keys are read. The root pytest configuration collects tests only; the archived starter-kit tests under materials are outside that default collection. Local HTTP fixtures need socket permissions even though they never contact the internet.
 
-Verified suite in this snapshot: **216 passed, 1 hosted variant skipped**. This includes the original contract checks plus routing, provider cancellation, script coverage, budget accounting, competition and CLI cases. The suite checks the implemented contract and policy behavior; real model measurements are a separate opt-in experiment.
+Verified after migration: **221 passed, 0 skipped**. The active project removes the hosted parametrization and adds command tests. The suite covers contract behavior, routing, provider cancellation, script coverage, budget accounting, competition and CLI behavior. Real model measurements remain a separate opt-in experiment recorded in [the competition guide](COMPETITION.md).
 
 The added test_final.py uses the actual simulator HTTP routes through FastAPI TestClient and httpx.MockTransport: no network connection is made. It drives five 480-second waves with virtual time and 150 sessions across three teams. Other tests inject model failures, slow decisions, slow suppliers, retry faults, restart/resume and an active host extension. A separate concurrent burst checks the shared client's pacing. Two diagnostic scenarios preserve failure outcomes for unbounded legacy/injected decision calls and neglected RFQ threads; passing them does not mean the agent is final-ready. See [the full scenario table and executable rehearsal](FINAL_READINESS.md).
 
 ## Routed buyer checks
 
-[test_routed.py](../starter_kit/starter-kit/tests/test_routed.py) uses fixed completions to check script/fast/strong routing, available-time selection, common validation and deterministic fallback. [test_completion.py](../starter_kit/starter-kit/tests/test_completion.py) injects mock HTTP and delayed response bodies to check output limits, effort settings, queue deadlines, cooperative cancellation and rejection of partial or late output. [test_routing_integration.py](../starter_kit/starter-kit/tests/test_routing_integration.py) checks runner budgets/closing hooks, resumed timers, aged RFQ threads, changed supplier status, metadata failures, opening/reply quote failures, fallback telemetry, five virtual waves and CLI integration. [test_client_deadline.py](../starter_kit/starter-kit/tests/test_client_deadline.py) verifies per-call read timeout/retry overrides while preserving the normal POST retry ID. None needs a real provider key.
+[test_routed.py](../tests/test_routed.py) uses fixed completions to check script/fast/strong routing, available-time selection, common validation and deterministic fallback. [test_completion.py](../tests/test_completion.py) injects mock HTTP and delayed response bodies to check output limits, effort settings, queue deadlines, cooperative cancellation and rejection of partial or late output. [test_routing_integration.py](../tests/test_routing_integration.py) checks runner budgets/closing hooks, resumed timers, aged RFQ threads, changed supplier status, metadata failures, opening/reply quote failures, fallback telemetry, five virtual waves and CLI integration. [test_client_deadline.py](../tests/test_client_deadline.py) verifies per-call read timeout/retry overrides while preserving the normal POST retry ID. [test_cli.py](../tests/test_cli.py) checks the active command defaults and help/configuration boundaries. None needs a real provider key.
 
 For a focused command and a small example that prints the selected routes, see [the routing guide](ROUTING.md). The tests prove behavior under their injected conditions. They do not establish actual Sol/Astra speed or success under arbitrary uncooperative transports.
 
@@ -45,6 +45,23 @@ For a focused command and a small example that prints the selected routes, see [
 [Local competition](COMPETITION.md) documents the new ten-scenario harness, offline commands, measured OpenAI comparison and its sanitized reports. The default command uses no credentials. Paid runs require both --live and an explicitly selected --key-file; only LLM_API_KEY is extracted, and all suppliers remain local. This opt-in benchmark is separate from the credential-free unit suite above.
 
 The additional tests cover bounded full-cost package enumeration, semantic near misses, private supplier data isolation, feasible references, quote-floor consistency, parallel worker overlap, model deadlines, budget reservations and the CLI opt-in boundary. These tests inject HTTP transports and never make real provider calls.
+
+## Migration verification
+
+The application moved from the historical arena_kit package into src/tacto_negotiator, with root packaging, tests and data. The recorded model reports retain their original bytes and pre-migration source hashes/commits; they were not regenerated by this migration.
+
+| Check | Verified result |
+| --- | --- |
+| Root test suite and default collection | 221 passed, zero skipped; collection includes the root tests only. |
+| Package builds | Source distribution and wheel built from the root pyproject.toml. |
+| Clean wheel installation | Installed into a separate temporary environment with locked dependencies; tacto_negotiator loaded from site-packages, arena_kit was unavailable, and all three packaged demo cases were present. |
+| Installed commands | tacto, tacto-sim, tacto-compete and python -m tacto_negotiator help checks passed. Ten local scenarios completed with valid outcomes from the installed wheel. |
+| Behavior comparison | 150 offline paired matches across five waves reproduced the previous report's economic results, validity and routes exactly. Timing is a new local measurement, not expected to match byte-for-byte. |
+| Static checks | Ruff over src, tests and docs, plus Git whitespace checks, passed. |
+| Original-kit archive | All 319 original tracked files are restored under materials/starter_kit. Its tracked Git tree matches 0166e6948f53ecbf629ab371135f69ec3243f998:starter_kit exactly: 4af48d9f151551f985a0e8819f1896f4287fc0ef. See [the archive verification instructions](../materials/README.md). |
+| Container execution | Docker was unavailable, so the image was not built or run. |
+
+These checks validate packaging and retained local behavior. They do not repeat the historical paid model experiment or establish performance against the hosted arena.
 
 ## What the base simulator really proves
 
@@ -56,4 +73,4 @@ The competition subclass replaces this fixed concession script with seeded reser
 
 Inspection also finds differences from the hosted specification: create_app has no /v1/data or ZIP-download routes; its practice leaderboard ignores the requested final set; its best-score benchmark does not implement the full hidden supplier economics/alternative calculation; and request-field validation is not complete parity with every documented limit. The source calls it an exact contract simulator, but these boundaries are visible in code. Do not extend offline assertions into claims about hosted behavior.
 
-Sources: [sim.py](../starter_kit/starter-kit/arena_kit/sim.py), [test fixture](../starter_kit/starter-kit/tests/conftest.py), [API](../starter_kit/brief/api.md).
+Sources: [sim.py](../src/tacto_negotiator/sim.py), [test fixture](../tests/conftest.py), [API](../materials/starter_kit/brief/api.md).

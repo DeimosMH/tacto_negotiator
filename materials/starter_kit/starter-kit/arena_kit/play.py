@@ -15,8 +15,6 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 
-import httpx
-
 from .client import ArenaError
 from .cost import must_haves_ok, total_cost
 from .docs import read_document, standard_terms
@@ -26,7 +24,6 @@ log = logging.getLogger("arena")
 ENDED = {"walked_away", "no_bid"}
 # A message later than this after the supplier's last one counts as a timeout.
 MOVE_LIMIT_S = 60
-SEND_MARGIN_S = 5  # leave time for validation, shared pacing and submitting the move
 # In the Live Final, close this long before the wave's cap - or the slowest round of the case so far
 # (your decision plus a supplier reply of up to about a minute) plus a margin, if that is longer.
 CLOSE_BEFORE_CAP_S, ROUND_MARGIN_S = 90, 15
@@ -71,47 +68,8 @@ class RemoteTable:
         reply = self.client.send_message(self.session_id, supplier_id, message)
         return reply.get("result", reply)  # the supplier's last e-mail carries the result
 
-    def attachment(self, attachment_id, **options):
-        return self.client.attachment(self.session_id, attachment_id, **options)
-
-    def thread_deadlines(self, threads, deadline=None):
-        """Read authoritative timers, including after resume; use monotonic time locally."""
-        requested = time.monotonic()
-        read_deadline = min(deadline, requested + SEND_MARGIN_S) if deadline is not None else requested + SEND_MARGIN_S
-
-        def remaining():
-            left = read_deadline - time.monotonic()
-            if left <= 0:
-                raise TimeoutError("no budget for a timer refresh")
-            return left
-
-        try:
-            state = self.client.session(self.session_id, timeout=remaining(), retries=0)
-            if state.get("status") == "ended":
-                self.done = state.get("result") or {"deal": False, "end_reason": state.get("end_reason")}
-                return {}
-            deadlines = {}
-            for sid, thread in state["threads"].items():
-                if thread.get("closed"):
-                    if sid in live_threads(threads):
-                        threads[sid].append({"from": "arena", "status": "walked_away", "term_sheets": [],
-                                             "body": f"Thread ended: {thread['closed']}"})
-                    continue
-                if sid in threads and (thread.get("offer_id") != standing(threads[sid])[0]
-                                       or thread.get("status") != latest(threads[sid]).get("status")):
-                    threads[sid] = self.client.thread(self.session_id, sid, timeout=remaining(), retries=0)["messages"]
-                    for message in threads[sid]:
-                        fetch_documents(self, message, deadline=read_deadline)
-                left = thread.get("seconds_left")
-                deadlines[sid] = requested + max(0, left if left is not None else MOVE_LIMIT_S)
-            return deadlines
-        except (httpx.TransportError, TimeoutError):
-            log.warning("timer refresh failed; closing without model work")
-        except ArenaError as error:
-            if error.status not in {429, 500, 502, 503, 504}:
-                raise
-            log.warning("timer refresh returned %s; closing without model work", error.status)
-        return dict.fromkeys(live_threads(threads), requested)
+    def attachment(self, attachment_id):
+        return self.client.attachment(self.session_id, attachment_id)
 
     def missed(self, supplier_id, error):
         """After a 409: the result if the case has ended (e.g. at a wave's cap), else what the
@@ -157,27 +115,11 @@ def moves_left(case, events):
     return case.get("round_limit", 10) - sum(m.get("from") == "buyer" for m in events)
 
 
-def fetch_documents(table, message, *, deadline=None):
-    """Extract attachment text; timed readers mark unavailable documents for conservative routing."""
+def fetch_documents(table, message):
+    """Download every attachment of a supplier message and add its text."""
     for att in message.get("attachments") or []:
-        if not att.get("attachment_id") or "text" in att or att.get("read_failed"):
-            continue
-        try:
-            options = {}
-            if deadline is not None:
-                left = deadline - time.monotonic()
-                if left <= 0:
-                    raise TimeoutError("no budget for an attachment read")
-                options = {"timeout": left, "retries": 0}
-            parsed = read_document(att["name"], table.attachment(att["attachment_id"], **options))
-            if deadline is not None and time.monotonic() >= deadline:
-                raise TimeoutError("attachment exceeded its read budget")
-            att["text"] = parsed
-        except Exception as error:
-            if deadline is None or isinstance(error, ArenaError) and error.status in {401, 403}:
-                raise
-            att["read_failed"] = True
-            log.warning("attachment unavailable (%s); defaults must not be assumed", type(error).__name__)
+        if att.get("attachment_id") and "text" not in att:
+            att["text"] = read_document(att["name"], table.attachment(att["attachment_id"]))
     return message
 
 
@@ -203,59 +145,20 @@ def play(table, case_id, agent, deadline=None):
     case, threads = table.open(case_id)
     if getattr(table, "done", None):  # resumed a case that had already ended
         return table.done
-    received = dict.fromkeys(threads, time.monotonic())
-    timed_decide = getattr(agent, "decide_timed", None)
-    close = getattr(agent, "closing_move", closing_move)
-
-    def read_deadline():
-        expires = min(received[sid] + MOVE_LIMIT_S for sid in live_threads(threads)) - SEND_MARGIN_S
-        cap = deadline() if callable(deadline) else deadline
-        if cap is not None:
-            expires = min(expires, time.monotonic() + cap - time.time() - SEND_MARGIN_S)
-        return min(expires, time.monotonic() + SEND_MARGIN_S)
-
-    def read(message):
-        return fetch_documents(table, message, deadline=read_deadline() if timed_decide else None)
-
     for events in threads.values():
         for m in events:
-            read(m)
+            fetch_documents(table, m)
     slowest = 0.0  # the longest round so far: decision + the supplier's reply
     while live_threads(threads):
-        decision_deadline = None
-        if timed_decide:
-            if get_deadlines := getattr(table, "thread_deadlines", None):
-                thread_deadlines = get_deadlines(threads, deadline=read_deadline())
-                received.update({sid: expires - MOVE_LIMIT_S for sid, expires in thread_deadlines.items()})
-                if getattr(table, "done", None):
-                    return table.done
-                if not live_threads(threads):
-                    break
-            else:
-                thread_deadlines = {sid: received[sid] + MOVE_LIMIT_S for sid in live_threads(threads)}
-            decision_deadline = min(thread_deadlines.get(sid, time.monotonic())
-                                    for sid in live_threads(threads)) - SEND_MARGIN_S
         t0 = time.monotonic()
         cap = deadline() if callable(deadline) else deadline
-        reserve = max(CLOSE_BEFORE_CAP_S, slowest + ROUND_MARGIN_S)
-        if cap and time.time() > cap - reserve:
+        if cap and time.time() > cap - max(CLOSE_BEFORE_CAP_S, slowest + ROUND_MARGIN_S):
             log.info("%s: the wave's cap is near - closing", case_id)
-            decision = close(case, threads)
-        elif timed_decide:
-            wave_left = cap - time.time() if cap is not None else None
-            if wave_left is not None:
-                decision_deadline = min(decision_deadline, time.monotonic() + wave_left - reserve)
-            decision = timed_decide(case, threads, deadline=decision_deadline, wave_seconds_left=wave_left)
+            decision = closing_move(case, threads)
         else:
             decision = agent.decide(case, threads)
         if (took := time.monotonic() - t0) > MOVE_LIMIT_S * 0.75:
             log.warning("decision took %.1fs - the limit is %ss per message", took, MOVE_LIMIT_S)
-        # The decision itself may consume the closing reserve; the host may also extend the cap.
-        cap = deadline() if callable(deadline) else deadline
-        if (cap and time.time() > cap - max(CLOSE_BEFORE_CAP_S, slowest + ROUND_MARGIN_S)) or (
-            decision_deadline is not None and time.monotonic() >= decision_deadline
-        ):
-            decision = close(case, threads)
         sid, msg = decision["supplier_id"], decision["message"]
         try:
             if msg.get("action"):
@@ -267,14 +170,12 @@ def play(table, case_id, agent, deadline=None):
                 raise
             log.info("%s: %s", sid, e.detail)
             reply = table.missed(sid, e)  # e.g. late, or the thread or the case has ended
-            received[sid] = time.monotonic()
             if msg.get("action") and "result" not in reply:  # the case goes on: decide again
-                threads[sid].append(read(reply))
+                threads[sid].append(fetch_documents(table, reply))
                 continue
         if "result" in reply:  # the reply ended the case, e.g. the last supplier walked away
             return reply["result"]
-        received[sid] = time.monotonic()
-        threads[sid] += [{**msg, "from": "buyer"}, read(reply)]
+        threads[sid] += [{**msg, "from": "buyer"}, fetch_documents(table, reply)]
         slowest = max(slowest, time.monotonic() - t0)
         log.info("%s %s %s", sid, reply.get("status"), standing(threads[sid])[1])
     return table.result()

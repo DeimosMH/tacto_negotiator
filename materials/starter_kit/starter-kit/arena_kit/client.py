@@ -57,25 +57,20 @@ class ArenaClient:
         if wait > 0:
             time.sleep(wait)
 
-    def _call(self, method, path, body=None, params=None, raw=False, *, timeout=None, retries=None):
-        """Optional overrides affect this call only; timeout is an HTTP phase timeout."""
-        if retries is not None and (type(retries) is not int or retries < 0):
-            raise ValueError("retries must be a nonnegative integer")
-        attempts = self.retries if retries is None else retries
-        options = {} if timeout is None else {"timeout": timeout}
+    def _call(self, method, path, body=None, params=None, raw=False):
         headers = {MOVE_ID_HEADER: uuid.uuid4().hex} if method == "POST" else {}
-        for attempt in range(attempts + 1):
+        for attempt in range(self.retries + 1):
             self._pace()
             try:
-                r = self.http.request(method, path, json=body, params=params, headers=headers, **options)
+                r = self.http.request(method, path, json=body, params=params, headers=headers)
             except httpx.TransportError:
-                if attempt == attempts:
+                if attempt == self.retries:
                     raise
                 wait = None
             else:
                 wait = r.headers.get("Retry-After", "")
                 short = wait.isdigit() and int(wait) <= MAX_RETRY_AFTER_S
-                if r.status_code not in RETRY_STATUS or attempt == attempts or (r.status_code == 429 and not short):
+                if r.status_code not in RETRY_STATUS or attempt == self.retries or (r.status_code == 429 and not short):
                     break
             time.sleep(float(wait) if wait and wait.isdigit() else 0.5 * 2**attempt)
         if (left := r.headers.get(REMAINING_HEADER, "")).isdigit():
@@ -108,13 +103,12 @@ class ArenaClient:
         path = f"/sessions/{session_id}/threads/{supplier_id}/messages"
         return self._call("POST", path, {"message": message})
 
-    def thread(self, session_id, supplier_id, *, timeout=None, retries=None):
-        return self._call("GET", f"/sessions/{session_id}/threads/{supplier_id}", timeout=timeout, retries=retries)
+    def thread(self, session_id, supplier_id):
+        return self._call("GET", f"/sessions/{session_id}/threads/{supplier_id}")
 
-    def attachment(self, session_id, attachment_id, *, timeout=None, retries=None):
+    def attachment(self, session_id, attachment_id):
         """The bytes of a document a supplier attached."""
-        return self._call("GET", f"/sessions/{session_id}/attachments/{attachment_id}", raw=True,
-                          timeout=timeout, retries=retries)
+        return self._call("GET", f"/sessions/{session_id}/attachments/{attachment_id}", raw=True)
 
     def backoffice(self, session_id):
         return self._call("GET", f"/sessions/{session_id}/backoffice")
@@ -129,8 +123,8 @@ class ArenaClient:
     def walk_away(self, session_id):
         return self._call("POST", f"/sessions/{session_id}/walk_away")
 
-    def session(self, session_id, *, timeout=None, retries=None):
-        return self._call("GET", f"/sessions/{session_id}", timeout=timeout, retries=retries)
+    def session(self, session_id):
+        return self._call("GET", f"/sessions/{session_id}")
 
     def sessions(self, set_="practice"):
         return self._call("GET", "/sessions", params={"set": set_})

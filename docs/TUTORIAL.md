@@ -2,7 +2,7 @@
 
 Start here if the project is new to you. You will follow one negotiation, run it on your own computer, change the buyer's behavior and check the result. Basic Python knowledge is enough for the coding steps. You do not need an AI model, a paid account or an arena API key.
 
-The first two sections explain the system. Steps 1–6 are a local exercise. Step 7 explains how to move your experiment into the starter kit. Step 8 shows how to update this documentation site. The exercise creates a temporary Python file. After it, the [routing guide](ROUTING.md) introduces the implemented script/fast/strong buyer; the full evidence buyer in the Implementation guide remains further work.
+The first two sections explain the system. Steps 1–6 are a local exercise. Step 7 explains how to move your experiment into Tacto Negotiator. Step 8 shows how to update this documentation site. The exercise creates a temporary Python file. After it, the [routing guide](ROUTING.md) introduces the default script/fast/strong buyer; [the architecture guide](IMPLEMENTATION.md) explains the implemented blocks and remaining work.
 
 ## What are we trying to do?
 
@@ -23,7 +23,7 @@ The agent is the Python object making those decisions. The runner repeatedly ask
 | Total cost, C | The cost of covering the required quantity and period, including payment, freight and other case-specific costs. |
 | Evidence ID | A reference such as sc:70270@2026Q3 that connects an argument to a recorded fact. |
 
-A lower price is only one way to improve a deal. Paying later can reduce financing cost. A short contract can leave expensive uncovered demand. Read [the cost evaluator](../starter_kit/starter-kit/arena_kit/cost.py) when you need the exact arithmetic.
+A lower price is only one way to improve a deal. Paying later can reduce financing cost. A short contract can leave expensive uncovered demand. Read [the cost evaluator](../src/tacto_negotiator/cost.py) when you need the exact arithmetic.
 
 ## Follow one decision through the code
 
@@ -47,7 +47,7 @@ Case + conversation history
 
 For the naive example buyer, a decision is ordinary Python logic. The LLM example buyer asks a language model for a proposed decision, then applies some checks. Both implement the same decide(case, threads) method. You can change the decision policy without rewriting HTTP, PDF reading or the negotiation loop.
 
-RoutedAgent implements that same method and also accepts timing information from the runner through decide_timed. It chooses a known script, the fast model or an optional stronger model for the current decision. The [routing walkthrough](ROUTING.md) follows those branches and shows how to test them without a provider.
+RoutedAgent is the default policy for tacto play and tacto run. It implements that same method and also accepts timing information from the runner through decide_timed. It chooses a known script, the fast model or an optional stronger model for the current decision. The [routing walkthrough](ROUTING.md) follows those branches and shows how to test them without a provider. This tutorial deliberately starts with the simpler NaiveAgent so one policy change is easy to observe.
 
 The returned dictionary has supplier_id and message. For example, a buyer proposing a price and payment period in case S01 returns this shape:
 
@@ -66,19 +66,19 @@ The returned dictionary has supplier_id and message. For example, a buyer propos
 
 This is an example shape, not a saved offer you should accept. The simulator chooses its reply from the live session. Later the buyer accepts the current term_sheet_id, or returns a walk_away action. Even if the supplier says agreed, the buyer must still accept. Walking away ends the entire case, including any other supplier threads.
 
-Use the atlas to see this flow: search for naive.py, select it, and read Classes & functions. Follow its outgoing link to cost.py. Next open play.py and client.py. The graph shows relationships between files; the arrows are not a chronological execution trace. Incoming means another file uses or references the selected file. Outgoing means the selected file uses or references another file or system. Dashed links mark proposed work.
+Use the atlas to see this flow: search for naive.py, select it, and read Classes & functions. Follow its outgoing link to cost.py. Next open play.py and client.py. The graph shows actual source relationships; the arrows are not a chronological execution trace. Incoming means another file uses or references the selected file. Outgoing means the selected file uses or references another file or system. Remaining design work is described in the guides rather than drawn as implemented modules.
 
 ## Step 1 — Get your bearings
 
-Open the Project map tab. Expand starter_kit → starter-kit → arena_kit in the tree. There are two similarly named directories: starter_kit is the supplied repository; starter-kit inside it is the installable Python package. The public procurement data lives at starter_kit/data, beside that inner package.
+Open the Project map tab. Expand src → tacto_negotiator in the tree. This is the active application package. Tests live in tests, the procurement snapshot in data, and project configuration in the root pyproject.toml. The original supplied kit is archived in materials/starter_kit and excluded from the active project map. Edit src and tests when changing the application.
 
 | Start with | What to look for |
 | --- | --- |
-| [S01.json](../starter_kit/starter-kit/arena_kit/sim_cases/S01.json) | One supplier, 6,650 parts for one year, unit_price and payment_days negotiable. |
-| [agents/naive.py](../starter_kit/starter-kit/arena_kit/agents/naive.py) | decide chooses a thread, proposes a price or accepts. |
-| [play.py](../starter_kit/starter-kit/arena_kit/play.py) | play opens the session, reads documents and repeats decisions until closure. |
-| [cost.py](../starter_kit/starter-kit/arena_kit/cost.py) | complete_offer fills allowed fields; total_cost evaluates the resulting deal. |
-| [data.py](../starter_kit/starter-kit/arena_kit/data.py) | DataPackage gives read-only access to facts, SQL and document text. |
+| [S01.json](../src/tacto_negotiator/sim_cases/S01.json) | One supplier, 6,650 parts for one year, unit_price and payment_days negotiable. |
+| [agents/naive.py](../src/tacto_negotiator/agents/naive.py) | decide chooses a thread, proposes a price or accepts. |
+| [play.py](../src/tacto_negotiator/play.py) | play opens the session, reads documents and repeats decisions until closure. |
+| [cost.py](../src/tacto_negotiator/cost.py) | complete_offer fills allowed fields; total_cost evaluates the resulting deal. |
+| [data.py](../src/tacto_negotiator/data.py) | DataPackage gives read-only access to facts, SQL and document text. |
 
 In S01, payment_days may be 14, 30, 45, 60 or 90. Freight, duration, volume and lead time are fixed. Changing a negotiable field is our first experiment; changing the case file would change the problem being measured.
 
@@ -86,22 +86,22 @@ Click View source or Read document to inspect a file inside the site. Full expla
 
 ## Step 2 — Start the local supplier
 
-Open a terminal in the repository root, the directory containing docs, materials and starter_kit. The existing starter-kit virtual environment supplies Python 3.12 and the simulator dependencies. A .venv is an installed Python environment; it is separate from ./env or .env credential files.
+Open a terminal in the repository root, the directory containing pyproject.toml, src, tests, data and docs. Install the project using the [root README](../README.md) if this is a fresh checkout. The root .venv supplies Python 3.12 and the simulator dependencies. A .venv is an installed Python environment; it is separate from ./env or .env credential files.
 
 Run these commands in terminal A:
 
 ```sh
 TACTO_ROOT="$PWD"
-TACTO_PYTHON="$TACTO_ROOT/starter_kit/starter-kit/.venv/bin/python"
+TACTO_PYTHON="$TACTO_ROOT/.venv/bin/python"
 "$TACTO_PYTHON" --version
 cd /tmp
 env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 \
-  "$TACTO_ROOT/starter_kit/starter-kit/.venv/bin/arena-sim" serve \
+  "$TACTO_ROOT/.venv/bin/tacto-sim" serve \
   --host 127.0.0.1 --port 8001 --no-clock \
-  --data "$TACTO_ROOT/starter_kit/data"
+  --data "$TACTO_ROOT/data"
 ```
 
-Leave this terminal running. Expect a message explaining that no-clock is enabled and a server listening at http://127.0.0.1:8001. That address means your own computer. env -i starts the process without inherited arena or model credentials. Using the arena-sim command also avoids the buyer arena CLI's automatic .env loading. Use the executable shown: this snapshot's sim.py does not start its server when invoked with python -m arena_kit.sim.
+Leave this terminal running. Expect a message explaining that no-clock is enabled and a server listening at http://127.0.0.1:8001. That address means your own computer. env -i starts the process without inherited arena or model credentials. Using tacto-sim also avoids the buyer tacto command's automatic .env loading. Use the executable shown: sim.py does not start its server when invoked with python -m tacto_negotiator.sim. The --data argument supplies evidence IDs; the demo cases themselves are packaged in src/tacto_negotiator/sim_cases.
 
 The no-clock option lets you pause while learning. The normal protocol has a 60-second response window per supplier thread; re-enable the clock when testing timing. If Python or a module is missing, see the troubleshooting section below rather than copying credentials from another setup.
 
@@ -111,7 +111,7 @@ Open terminal B in the repository root and set these variables there too. Shell 
 
 ```sh
 TACTO_ROOT="$PWD"
-TACTO_PYTHON="$TACTO_ROOT/starter_kit/starter-kit/.venv/bin/python"
+TACTO_PYTHON="$TACTO_ROOT/.venv/bin/python"
 ```
 
 In your editor, create /tmp/tacto_first_buyer.py with the following contents:
@@ -120,8 +120,8 @@ In your editor, create /tmp/tacto_first_buyer.py with the following contents:
 import json
 import uuid
 
-from arena_kit import ArenaClient, RemoteTable, play
-from arena_kit.agents import NaiveAgent
+from tacto_negotiator import ArenaClient, RemoteTable, play
+from tacto_negotiator.agents import NaiveAgent
 
 BASE_URL = "http://127.0.0.1:8001"
 client = ArenaClient(BASE_URL, api_key="local-registration-only")
@@ -164,8 +164,8 @@ Checkpoint: you have successfully exercised the buyer, runner, client, local sup
 Keep the baseline code. Append the following block to the same temporary Python file:
 
 ```python
-from arena_kit.cost import complete_offer
-from arena_kit.play import closing_move
+from tacto_negotiator.cost import complete_offer
+from tacto_negotiator.play import closing_move
 
 PREFERRED_PAYMENT_DAYS = 90
 
@@ -189,7 +189,7 @@ class TutorialBuyer(NaiveAgent):
 
 TutorialBuyer inherits the baseline's price strategy. super().decide gets that strategy's next decision. The new code changes payment_days only when the case permits negotiation of that field. complete_offer keeps the case's required negotiable fields and allowed option values. An unsupported numeric wish may be snapped to the nearest allowed option, so choose a value from S01's list for this exercise.
 
-When the baseline wants to accept, closing_move compares live standing offers using their standard terms, must-haves and the alternative. This is a useful existing closing check for this demo. It does not estimate supplier health, and the inherited price strategy is still simplistic. See the shared-guard proposal in [the implementation plan](IMPLEMENTATION.md) before extending this into a competition buyer.
+When the baseline wants to accept, closing_move compares live standing offers using their standard terms, must-haves and the alternative. This is a useful existing closing check for this demo. It does not estimate supplier health, and the inherited price strategy is still simplistic. The default RoutedAgent already provides a broader shared validator; inspect [its routing guide](ROUTING.md) before extending this experiment into a competition buyer.
 
 Notice that changing payment_days in the structured term sheet matters even though we did not change the email wording. For a realistic buyer, make the email describe the same proposed trade.
 
@@ -217,15 +217,15 @@ Change PREFERRED_PAYMENT_DAYS from 90 to 30 and rerun. The reports print before 
 
 For a different price strategy, change TutorialBuyer() in the modified call to TutorialBuyer(anchor=0.05), keeping the baseline unchanged. The anchor is the fraction below the supplier's price used for the first proposal. Compare the result and number of exchanges, and restore the default before relying on this guide's exact figures. The comparison check may fail if your new strategy costs more. Change one variable at a time so you know what caused the result.
 
-Read [S02](../starter_kit/starter-kit/arena_kit/sim_cases/S02.json) before trying a two-supplier RFQ, and [S03](../starter_kit/starter-kit/arena_kit/sim_cases/S03.json) before experimenting with contract duration and freight. Their allowed fields, alternatives and expected results differ; update case-specific assertions accordingly. Stop the supplier server with Ctrl+C in terminal A when finished.
+Read [S02](../src/tacto_negotiator/sim_cases/S02.json) before trying a two-supplier RFQ, and [S03](../src/tacto_negotiator/sim_cases/S03.json) before experimenting with contract duration and freight. Their allowed fields, alternatives and expected results differ; update case-specific assertions accordingly. Stop the supplier server with Ctrl+C in terminal A when finished.
 
 ## Step 7 — Move a useful experiment into the project
 
 The following edits are instructions for your next change. This tutorial itself leaves the existing buyer source untouched.
 
-1. Create starter_kit/starter-kit/arena_kit/agents/tutorial.py. Copy only PREFERRED_PAYMENT_DAYS and the TutorialBuyer class from Step 4, plus imports of NaiveAgent, complete_offer and closing_move. Leave registration, the reports and the two play calls in the temporary experiment. Importing an agent module should not start a negotiation.
-2. In [agents/__init__.py](../starter_kit/starter-kit/arena_kit/agents/__init__.py), add from .tutorial import TutorialBuyer and include the string "TutorialBuyer" in __all__. This makes the new buyer available through arena_kit.agents.
-3. In [cli.py](../starter_kit/starter-kit/arena_kit/cli.py), add the branch below inside agent_factory before the model setup. Return the class, as the naive branch does, so each case gets a separate agent instance.
+1. Create src/tacto_negotiator/agents/tutorial.py. Copy only PREFERRED_PAYMENT_DAYS and the TutorialBuyer class from Step 4, plus imports of NaiveAgent, complete_offer and closing_move. Leave registration, the reports and the two play calls in the temporary experiment. Importing an agent module should not start a negotiation.
+2. In [agents/__init__.py](../src/tacto_negotiator/agents/__init__.py), add from .tutorial import TutorialBuyer and include the string "TutorialBuyer" in __all__. This makes the new buyer available through tacto_negotiator.agents.
+3. In [cli.py](../src/tacto_negotiator/cli.py), add the branch below inside agent_factory before the model setup. Return the class, as the naive branch does, so each case gets a separate agent instance.
 
 ```python
     if name == "tutorial":
@@ -234,9 +234,9 @@ The following edits are instructions for your next change. This tutorial itself 
 ```
 
 4. In the same CLI file, add tutorial to both allowed --agent choice lists: one for play and one for run. Registering the factory alone does not make argparse accept the new name. Keep the existing default until you intentionally want to change it.
-5. In the temporary exercise, import TutorialBuyer from arena_kit.agents and remove its local class/constant/import block. Rerun the comparison. This checks the repository's implementation instead of an old copy in /tmp.
-6. Add a regression test beside [test_kit.py](../starter_kit/starter-kit/tests/test_kit.py) or [test_sim.py](../starter_kit/starter-kit/tests/test_sim.py). Test the behavior you changed: complete allowed fields, the intended payment term, must-have/alternative handling and no change to a fixed payment term. Use the existing local sim fixture or plain dictionaries; inject a completion function if your change involves the LLM buyer.
-7. Run the clean-environment kit suite from [Local checks](LOCAL_TESTING.md). Then add catalogue explanations for your new source/test files and rebuild the atlas as in Step 8. Commit the implementation, tests and regenerated documentation together when you are ready to review the change.
+5. In the temporary exercise, import TutorialBuyer from tacto_negotiator.agents and remove its local class/constant/import block. Rerun the comparison. This checks the repository's implementation instead of an old copy in /tmp.
+6. Add a regression test beside [test_kit.py](../tests/test_kit.py) or [test_sim.py](../tests/test_sim.py). Test the behavior you changed: complete allowed fields, the intended payment term, must-have/alternative handling and no change to a fixed payment term. Use the existing local sim fixture or plain dictionaries; inject a completion function if your change involves the LLM buyer.
+7. Run the clean-environment project suite from [Local checks](LOCAL_TESTING.md). Then add catalogue explanations for your new source/test files and rebuild the atlas as in Step 8. Commit the implementation, tests and regenerated documentation together when you are ready to review the change.
 
 Use this table when your next change has a different goal:
 
@@ -245,7 +245,7 @@ Use this table when your next change has a different goal:
 | Price or term-selection policy | The agent's decide method | Message shape, allowed terms, alternatives and the final deal. |
 | Evidence given to the model | LLMAgent.prepare and DataPackage | Exact IDs, units, relevance and preparation time. Preparation currently starts after opening the session. |
 | Email wording | SYSTEM and rendering in agents/llm.py | Model output still passes the guard and says the same thing as its term sheets. |
-| Acceptance or fallback behavior | LLMAgent.guard, fallback path and play.closing_move | LLMAgent fallback closure now uses closing_move; direct NaiveAgent acceptance still lacks those checks. Full validation and supplier-health estimates remain work. |
+| Acceptance or fallback behavior | RoutedAgent.validate and _closing | Scripts, model proposals and fallback share this gate. Preserve current-offer, default, numeric, must-have and alternative checks; supplier-health estimates remain work. |
 | Script/fast/strong choice | RoutedAgent in agents/routed.py | The rule matches complete data, leaves time to send, and every resulting action passes routed validation. |
 | Routed model execution | CompletionClient in agents/completion.py | Queue wait, output reading and cancellation share one deadline; incomplete output falls back locally. |
 | Document interpretation | docs.py | Quote defaults survive extraction; add a fixture demonstrating the change. |
@@ -259,20 +259,21 @@ For evidence work, read [the data guide](DATA_GUIDE.md) next. The package separa
 The documentation website has no backend. Its small update pipeline is:
 
 ```text
-Public source files + docs/catalog.py
-                  |
-            docs/build.py
-                  |
-             docs/data.js
-                  |
-       index.html + app.js + styles.css
+src + tests + data + root project files  ---> active tree and graph
+docs guides + compact report summaries ---> guide pages
+                         |
+              docs/build.py + catalog.py
+                         |
+                    docs/data.js
+                         |
+              index.html + app.js + styles.css
 ```
 
 1. To improve a written explanation, edit the relevant Markdown guide or the file's FILES entry in [catalog.py](catalog.py). Each FILES entry records group, subgroup, role and why it exists. A new ordinary source file needs an entry too; the generator reports its path if it has none.
 2. To explain a function more clearly, add its qualified name to SYMBOLS in catalog.py. Python definitions, signatures, class attributes and import edges are extracted automatically; the catalogue supplies the explanation behind them.
-3. To add an interaction that imports cannot reveal, add a tuple to LINKS: source ID, target ID, relationship description and evidence label. Both IDs must exist. Mark inferred or proposed relationships honestly. Use ENTITIES for a real external system or a clearly labelled proposal, rather than pretending it is an existing file.
+3. To add an interaction that imports cannot reveal, add a tuple to LINKS: source ID, target ID, relationship description and evidence label. Both IDs must exist. Use ENTITIES for a real external system or library. Keep proposed components in the written implementation guide until they exist; they are not nodes in the active source map.
 4. To change a logical group, edit the file's group/subgroup assignment and, if necessary, GROUPS in catalog.py. This changes the graph grouping; it does not move the file on disk. CSV table groups live in TABLES, and correspondence/contract records are derived from their metadata.
-5. To change navigation or appearance, edit [index.html](index.html) or [styles.css](styles.css). Interaction behavior lives in [app.js](app.js). A new docs/*.md guide needs a FILES entry; the existing guide route can display it. Add a visible navigation link if you want newcomers to find it.
+5. To change navigation or appearance, edit [index.html](index.html) or [styles.css](styles.css). Interaction behavior lives in [app.js](app.js). Register a new guide basename in catalog.py's GUIDES tuple and add a visible navigation link. Guides are embedded separately; they do not need FILES entries and do not become graph nodes. The archived materials are excluded too.
 6. Regenerate data.js and run the checks below from the repository root. Do not hand-edit data.js: the generator will replace it.
 
 ```sh
@@ -289,8 +290,8 @@ Refresh the browser after rebuilding. An HTML/CSS change is served directly, whi
 
 | Symptom | What to do |
 | --- | --- |
-| The .venv Python path does not exist | Confirm you started in the repository root. A fresh checkout needs Python 3.12 and the dependencies declared in the inner pyproject.toml, including the sim extra and dev group. Installing them may require network access; no arena key is needed. This exercise uses the already installed environment. |
-| No module named arena_kit, fastapi or uvicorn | Use the inner .venv interpreter, not a different system Python; check that the project and simulator dependencies were installed there. |
+| The .venv Python path does not exist | Confirm you started in the repository root. Follow the installation steps in the root README for Python 3.12 and the root pyproject.toml dependencies. Installing packages may require network access; no arena key is needed. |
+| No module named tacto_negotiator, fastapi or uvicorn | Use the root .venv interpreter and install the root project there. The archived starter kit is not the active Python package. |
 | Connection refused | Keep terminal A running. Both server and script must use port 8001. The documentation website's port 8000 is a separate service. |
 | Address already in use | Choose another free localhost port and change it in both commands and BASE_URL. Leave the host as 127.0.0.1 for this exercise. |
 | A timeout while reading the code | Confirm the simulator started with --no-clock for the learning exercise. |
@@ -298,6 +299,6 @@ Refresh the browser after rebuilding. An HTML/CSS change is served directly, whi
 | The changed deal is worse | Inspect cost_breakdown and fixed/standard terms. A lower unit price or a valid message does not guarantee lower total cost. |
 | The atlas reports a missing explanation or stale snapshot | Add the named FILES entry if needed, run docs/build.py, then rerun --check. |
 
-You have now traced a complete case, changed one decision, observed its cost effect and learned where that change belongs. Continue with [the implementation plan](IMPLEMENTATION.md) for the proposed evidence preparation, shared action guard, supplier-health estimates and timing improvements.
+Continue with [the architecture guide](IMPLEMENTATION.md) to trace the current modules, shared action guard, state ownership and runtime flow. It separates remaining evidence preparation, supplier-health estimates and scheduling work from the implementation already in use.
 
 Next, use [the routing guide](ROUTING.md) to inspect and change script/fast/strong decisions, and [the Sunday final guide](FINAL_READINESS.md) to rehearse five eight-minute waves. [Model selection](MODEL_SELECTION.md) explains the provider qualification still needed before deployment.

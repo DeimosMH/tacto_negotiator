@@ -9,7 +9,7 @@ import unittest
 from pathlib import Path
 
 import build
-from catalog import CODE, DATA, FILES
+from catalog import CODE, DATA, FILES, GUIDES
 
 
 class AtlasTests(unittest.TestCase):
@@ -34,15 +34,15 @@ class AtlasTests(unittest.TestCase):
     def test_secret_paths_and_symlinks_are_excluded_before_reading(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            paths = ["materials/slides.pdf", "starter_kit/public.py", "starter_kit/.env.example", "starter_kit/.env", "starter_kit/.env.backup", "starter_kit/env/key.txt", "starter_kit/.venv/private.py", "docs/.aws/credentials", "docs/secret.key", "docs/node_modules/pkg/index.js", "docs/__pycache__/cached.pyc"]
+            paths = ["README.md", ".env.example", "src/tacto_negotiator/public.py", "tests/test_public.py", "data/public.md", "materials/starter_kit/private.py", "docs/guide.md", "starter_kit/old.py", "src/.env", "src/.env.backup", "src/env/key.txt", "src/.venv/private.py", "src/.aws/credentials", "src/secret.key", "src/node_modules/pkg/index.js", "src/__pycache__/cached.pyc"]
             for path in paths:
                 file = root / path
                 file.parent.mkdir(parents=True, exist_ok=True)
                 file.write_text("fixture")
-            (root / "docs/link.py").symlink_to(root / "starter_kit/.env")
-            (root / "docs/linked-dir").symlink_to(root / "starter_kit/env", target_is_directory=True)
+            (root / "src/link.py").symlink_to(root / "src/.env")
+            (root / "src/linked-dir").symlink_to(root / "src/env", target_is_directory=True)
             found = {p.relative_to(root).as_posix() for p in build.inventory(root)}
-            self.assertEqual(found, {"materials/slides.pdf", "starter_kit/public.py", "starter_kit/.env.example"})
+            self.assertEqual(found, {"README.md", ".env.example", "src/tacto_negotiator/public.py", "tests/test_public.py", "data/public.md"})
 
     def test_graph_edges_have_valid_endpoints_and_provenance(self):
         self.assertEqual(len(self.nodes), len(self.data["nodes"]))
@@ -57,13 +57,16 @@ class AtlasTests(unittest.TestCase):
         self.assertTrue(any(e["source"] == CODE + "agents/llm.py" and e["target"] == CODE + "cost.py" and "AST line" in e["evidence"] for e in self.edges))
         self.assertTrue(any(e["source"] == CODE + "play.py" and e["target"] == CODE + "docs.py" for e in self.edges))
 
-    def test_proposed_components_cannot_be_mistaken_for_files(self):
-        proposals = [node for node in self.nodes.values() if node["status"] == "proposed"]
-        self.assertEqual(len(proposals), 6)
-        self.assertTrue(all(node["kind"] == "proposal" and node["id"].startswith("proposal:") for node in proposals))
-        for edge in self.edges:
-            if edge["source"].startswith("proposal:"):
-                self.assertEqual(edge["evidence"], "proposed")
+    def test_overview_is_active_source_and_runtime_dependencies(self):
+        self.assertFalse(any(path.startswith(("docs/", "materials/", "starter_kit/", "proposal:")) for path in self.nodes))
+        mapped = [self.nodes[path] for path in self.data["map_ids"]]
+        source = {path for path in self.nodes if path.startswith(CODE) and path.endswith(".py")}
+        self.assertEqual({node["id"] for node in mapped if node["kind"] == "file"}, source)
+        self.assertTrue(all(node["kind"] == "file" or node["kind"] in {"system", "library"} for node in mapped))
+        self.assertTrue({"system:model", "system:arena", "system:suppliers", "system:data", "lib:httpx"}.issubset(self.data["map_ids"]))
+        self.assertFalse(any(path.startswith(("data/", "tests/")) for path in self.data["map_ids"]))
+        self.assertEqual(self.data["stats"]["modules"], len(source))
+        self.assertEqual(build.module_name(CODE + "agents/routed.py"), "tacto_negotiator.agents.routed")
 
     def test_every_python_class_and_function_is_listed(self):
         def collect(parent, scope=""):
@@ -126,11 +129,11 @@ class AtlasTests(unittest.TestCase):
         self.assertEqual(len(summary["sample_matches"]), 3)
         self.assertEqual(summary["budget"], {"committed_usd": 0.5})
         self.assertNotIn("omitted", json.dumps(summary))
-        for path, node in self.nodes.items():
-            if path.startswith("docs/results/"):
-                self.assertNotIn("content", node)
-                self.assertLessEqual(len(node["sample"]), 3)
-                self.assertLess(len(json.dumps(node)), 50_000)
+        for path, report in self.data["reports"].items():
+            self.assertNotIn(path, self.nodes)
+            self.assertNotIn("matches", report)
+            self.assertLessEqual(len(report["sample_matches"]), 3)
+            self.assertLess(len(json.dumps(report)), 50_000)
 
     def test_app_loads_only_local_assets_and_guides_exist(self):
         html = (build.ROOT / "docs/index.html").read_text()
@@ -141,8 +144,9 @@ class AtlasTests(unittest.TestCase):
             self.assertFalse(path.startswith(("http:", "https:", "//")))
             self.assertTrue((build.ROOT / "docs" / path).is_file())
         self.assertIn("connect-src 'none'", html)
-        for guide in ("README.md", "TUTORIAL.md", "IMPLEMENTATION.md", "DATA_GUIDE.md", "LOCAL_TESTING.md", "FINAL_READINESS.md", "MODEL_SELECTION.md", "ROUTING.md", "COMPETITION.md"):
-            text = self.nodes["docs/" + guide]["content"]
+        for guide in GUIDES:
+            self.assertNotIn("docs/" + guide, self.nodes)
+            text = self.data["guides"]["docs/" + guide]["content"]
             for target in re.findall(r"\]\(([^)]+)\)", text):
                 if "://" in target or target.startswith("#"):
                     continue

@@ -2,15 +2,15 @@
 
 The routed buyer chooses how to make the next decision from the information and time available. It uses tested scripts for supported quantitative decisions; a fast model for ordinary interpretation; and an optional stronger model for consequential complexity when enough time remains. The choice is made again after each supplier reply.
 
-Run it through --agent routed. The existing naive and llm agents remain available. This guide explains the new implementation; [the beginner tutorial](TUTORIAL.md) explains the surrounding negotiation loop.
+It is the default for tacto play and tacto run; --agent routed selects it explicitly. The naive and llm policies remain available for comparison. The active implementation lives in src/tacto_negotiator/agents; [the beginner tutorial](TUTORIAL.md) explains the surrounding negotiation loop.
 
 ## The three implementation blocks
 
 | Block | Files | Responsibility and boundary |
 | --- | --- | --- |
-| Routing and validation | [routed.py](../starter_kit/starter-kit/arena_kit/agents/routed.py), [policy tests](../starter_kit/starter-kit/tests/test_routed.py), [script coverage tests](../starter_kit/starter-kit/tests/test_script_coverage.py) | Select script/fast/strong, enumerate bounded complete packages, prepare the same context for either model, validate every action and choose a deterministic fallback. It does not send arena requests. |
-| Deadline-aware model execution | [completion.py](../starter_kit/starter-kit/arena_kit/agents/completion.py), [adapter tests](../starter_kit/starter-kit/tests/test_completion.py) | Apply one absolute deadline across concurrency queueing and HTTP response reading. Send effort and output limits to OpenAI Responses; cancel expired work, with no automatic retries. |
-| Runner and configuration | [play.py](../starter_kit/starter-kit/arena_kit/play.py), [cli.py](../starter_kit/starter-kit/arena_kit/cli.py), [integration tests](../starter_kit/starter-kit/tests/test_routing_integration.py) | Pass remaining thread/wave time to the router, use its closing guard, and construct shared completion clients with a separate agent instance for each case. |
+| Routing and validation | [routed.py](../src/tacto_negotiator/agents/routed.py), [policy tests](../tests/test_routed.py), [script coverage tests](../tests/test_script_coverage.py) | Select script/fast/strong, enumerate bounded complete packages, prepare the same context for either model, validate every action and choose a deterministic fallback. It does not send arena requests. |
+| Deadline-aware model execution | [completion.py](../src/tacto_negotiator/agents/completion.py), [adapter tests](../tests/test_completion.py) | Apply one absolute deadline across concurrency queueing and HTTP response reading. Send effort and output limits to OpenAI Responses; cancel expired work, with no automatic retries. |
+| Runner and configuration | [play.py](../src/tacto_negotiator/play.py), [cli.py](../src/tacto_negotiator/cli.py), [integration tests](../tests/test_routing_integration.py) | Pass remaining thread/wave time to the router, use its closing guard, and construct shared completion clients with a separate agent instance for each case. |
 
 These blocks were implemented as separate work assignments. They run as one buyer application; there is no extra coordinator model and no group of competing buyer agents at runtime.
 
@@ -117,8 +117,8 @@ An injected completion used with RoutedAgent must honor deadline itself. Python 
 From the repository root, run the policy, transport and integration checks:
 
 ```sh
-TACTO_PYTHON="$PWD/starter_kit/starter-kit/.venv/bin/python"
-TACTO_TESTS="$PWD/starter_kit/starter-kit/tests"
+TACTO_PYTHON="$PWD/.venv/bin/python"
+TACTO_TESTS="$PWD/tests"
 cd /tmp
 env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 \
   "$TACTO_PYTHON" -m pytest -q -p no:cacheprovider \
@@ -133,13 +133,13 @@ The completions and HTTP transports are injected. The command clears inherited c
 To see routing without a server, start again from the repository root:
 
 ```sh
-TACTO_PYTHON="$PWD/starter_kit/starter-kit/.venv/bin/python"
+TACTO_PYTHON="$PWD/.venv/bin/python"
 cd /tmp
 env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 "$TACTO_PYTHON" - <<'PY'
 import json
-from arena_kit.agents.routed import RoutedAgent
-from arena_kit.cost import complete_offer
-from arena_kit.sim import load_cases
+from tacto_negotiator.agents.routed import RoutedAgent
+from tacto_negotiator.cost import complete_offer
+from tacto_negotiator.sim import load_cases
 
 case = load_cases()["case:S03"]
 case["buyer"]["category_goal"] = "secure_supply"  # deliberately require semantic reasoning in this demo
@@ -174,7 +174,7 @@ This fixture deliberately gives S03 a relationship-sensitive goal. The first two
 
 ## Configure the hosted adapter
 
-The CLI selects this implementation with --agent routed. These are process-environment settings consumed by routed_completions_from_env; the factory does not read files. The CLI's existing main entry point still loads .env from its working directory, so keep local tests on the injected path above.
+The tacto CLI uses this implementation by default or with --agent routed. These are process-environment settings consumed by routed_completions_from_env; the factory does not read files. Normal CLI commands load .env from the working directory after argument parsing. Help exits before loading it. Keep local tests on the injected path above; the root .env.example documents configuration without real credentials.
 
 | Variable | Default / meaning |
 | --- | --- |
@@ -200,4 +200,4 @@ These settings select behavior; they do not establish model latency, quota or qu
 5. Run the focused suite above, then the full local suite. Compare route choice, decision duration, fallback rate and valid outcomes before judging any score change.
 6. Rebuild the atlas with python3 -B docs/build.py and run its checks. Update this guide when the routing conditions or configuration changes.
 
-RoutedAgent.last_decision records case_id, route, reason, elapsed_s, budget_s and fallback. Logs include the case ID so concurrent decisions can be distinguished. If the runner invokes closing_move after a model fallback in the same case, that attempted-route record is preserved and closure is set to deadline_close. This keeps a timeout visible instead of relabelling the whole turn as a successful script. Use verbose logging or inspect the dictionary in local experiments. Keep raw prompts, supplier text and credentials out of routing telemetry. The complete negotiation journal proposed in [the implementation plan](IMPLEMENTATION.md) remains a separate task.
+RoutedAgent.last_decision records case_id, route, reason, elapsed_s, budget_s and fallback. Logs include the case ID so concurrent decisions can be distinguished. If the runner invokes closing_move after a model fallback in the same case, that attempted-route record is preserved and closure is set to deadline_close. This keeps a timeout visible instead of relabelling the whole turn as a successful script. Use verbose logging or inspect the dictionary in local experiments. Keep raw prompts, supplier text and credentials out of routing telemetry. The complete negotiation journal listed in [remaining architecture work](IMPLEMENTATION.md#9-remaining-work) is still a separate task.

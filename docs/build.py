@@ -22,8 +22,8 @@ from catalog import (
     FIELD_NOTES,
     FILES,
     GROUPS,
+    GUIDES,
     INTERNALS,
-    KIT,
     LINKS,
     SYMBOLS,
     TABLES,
@@ -33,6 +33,7 @@ ROOT = Path(__file__).resolve().parent.parent
 OUTPUT = "docs/data.js"
 SKIP = {".git", ".venv", "venv", "env", ".agents", ".codex", ".aws", "node_modules", "__pycache__", ".pytest_cache", ".ruff_cache"}
 TEXT_TYPES = {".py", ".js", ".mjs", ".html", ".css", ".md", ".toml"}
+ROOT_FILES = ("README.md", ".gitignore", ".dockerignore", ".env.example", "pyproject.toml", "uv.lock", "Dockerfile", "LICENSE", "LICENSE-data", "NOTICE.md")
 
 
 def allowed(path):
@@ -46,8 +47,8 @@ def allowed(path):
 
 def inventory(root=ROOT):
     """Only these source roots belong in the published atlas; never crawl the user's home."""
-    paths = [p for p in (root / "readme.md", root / ".gitignore") if p.is_file() and not p.is_symlink()]
-    for base in ("materials", "starter_kit", "docs"):
+    paths = [root / name for name in ROOT_FILES if (root / name).is_file() and not (root / name).is_symlink()]
+    for base in ("src", "tests", "data"):
         if (root / base).is_symlink():
             continue
         for directory, dirs, names in os.walk(root / base, followlinks=False):
@@ -128,7 +129,7 @@ def python_details(text, path):
 
 
 def module_name(path):
-    path = path.removeprefix(KIT)
+    path = path.removeprefix("src/")
     return path.removesuffix(".py").replace("/", ".").removesuffix(".__init__")
 
 
@@ -152,7 +153,7 @@ def imports(tree, path, modules):
                 targets.add(modules[name])
             elif name.split(".")[0] in DEPENDENCIES:
                 targets.add("lib:" + name.split(".")[0])
-            elif name and name.split(".")[0] not in {"arena_kit", "docs", "catalog", "build"}:
+            elif name and name.split(".")[0] not in {"tacto_negotiator", "tests"}:
                 targets.add("system:python")
         for target in sorted(targets):
             if target != path:
@@ -160,9 +161,20 @@ def imports(tree, path, modules):
 
 
 def generate(root=ROOT):
-    """Assemble the single graph used by tree navigation, file explanations and all map views."""
+    """Explain active project files; keep guides and reports outside the source dependency graph."""
     paths = inventory(root)
-    names = {p.relative_to(root).as_posix() for p in paths} | {OUTPUT}
+    names = {p.relative_to(root).as_posix() for p in paths}
+    guides = {}
+    for name in GUIDES:
+        file = root / "docs" / name
+        if file.is_symlink():
+            raise ValueError(f"Guide must be a regular local file: {name}")
+        guides["docs/" + name] = {"id": "docs/" + name, "content": file.read_text(encoding="utf-8")}
+    reports = {}
+    for file in sorted((root / "docs/results").glob("*.json")):
+        if not file.is_symlink() and allowed(file.relative_to(root)):
+            raw = file.read_bytes()
+            reports[file.relative_to(root).as_posix()] = {**report_summary(json.loads(raw)), "sha256": hashlib.sha256(raw).hexdigest()}
     schema = json.loads((root / DATA / "datapackage.json").read_text())
     resources = {r["name"]: r for r in schema["resources"]}
     rows = {}
@@ -171,7 +183,7 @@ def generate(root=ROOT):
             rows[name] = list(csv.DictReader(stream))
     documents = {DATA + row["file"]: (table, row) for table in ("documents", "contracts") for row in rows[table]}
     modules = {module_name(p): p for p in names if p.endswith(".py")}
-    modules.update({"build": "docs/build.py", "catalog": "docs/catalog.py"})
+    modules.update({Path(p).stem: p for p in names if p.startswith("tests/") and p.endswith(".py")})
     nodes, edges = [], []
 
     def link(source, target, relation, evidence):
@@ -215,13 +227,9 @@ def generate(root=ROOT):
             raise ValueError(f"Add a reviewed explanation to docs/catalog.py for {path}")
         node.update(group=group, subgroup=subgroup, role=role, why=why)
         node["fields"].extend(field(name, description) for name, description in INTERNALS.get(path, []))
-        if path == OUTPUT:
-            node["fields"] = [field("nodes", "File, system, library and proposed component records"), field("edges", "Directed source/target/relation/evidence records"), field("groups", GROUPS), field("stats", "Counts derived from the current source snapshot")]
-            nodes.append(node)
-            continue
         raw = file.read_bytes()
         node.update(bytes=len(raw), sha256=hashlib.sha256(raw).hexdigest())
-        if file.suffix in TEXT_TYPES or file.name in {"LICENSE", "LICENSE-data", "Dockerfile", ".gitignore", ".env.example"}:
+        if file.suffix in TEXT_TYPES or file.name in {"LICENSE", "LICENSE-data", "Dockerfile", ".gitignore", ".dockerignore", ".env.example"}:
             text = raw.decode("utf-8")
             node["content"] = text
             if file.suffix == ".py":
@@ -245,7 +253,7 @@ def generate(root=ROOT):
                         link(path, DATA + f"data/{prefixes[prefix]}.csv", "cites " + prefix + " identifiers", "document text")
             elif file.suffix in {".js", ".mjs"}:
                 node["symbols"] = [{"name": m.group(1), "signature": m.group(1) + "(" + m.group(2) + ")", "kind": "function", "line": text[:m.start()].count("\n") + 1, "description": SYMBOLS.get(m.group(1), "Operation: " + re.sub(r"([A-Z])", r" \1", m.group(1)).lower() + ". See source for the exact behavior.")} for m in re.finditer(r"^(?:async )?function (\w+)\(([^)]*)\)", text, re.MULTILINE)]
-            if path == KIT + "pyproject.toml":
+            if path == "pyproject.toml":
                 project = tomllib.loads(text)
                 node["fields"] = [field(k, v) for k, v in project.items()]
                 for dep in DEPENDENCIES:
@@ -263,16 +271,7 @@ def generate(root=ROOT):
                 link(path, target, relation, "declared foreign key")
         elif file.suffix == ".json":
             data = json.loads(raw)
-            if path.startswith("docs/results/"):
-                summary = report_summary(data)
-                node["fields"] = [field(k, v, "Sanitized report summary; open the JSON file for full traces.")
-                                  for k, v in summary.items() if k != "sample_matches"]
-                node["sample"] = summary["sample_matches"]
-                node["rows"] = summary["match_count"]
-                link(path, CODE + "competition.py", "records paired simulation outcomes", "report format")
-                if data.get("budget"):
-                    link(path, CODE + "benchmark.py", "records provider usage accounting", "report budget")
-            elif file.name == "facts.json":
+            if file.name == "facts.json":
                 buckets = {}
                 for key, value in data.items():
                     bucket = buckets.setdefault(key.split(":")[0], {"count": 0, "example": {key: value}})
@@ -291,7 +290,7 @@ def generate(root=ROOT):
             with closing(sqlite3.connect(file.resolve().as_uri() + "?mode=ro", uri=True)) as db:
                 db.execute("PRAGMA query_only = ON")
                 for table in resources:
-                    columns = [dict(zip(("cid", "name", "type", "notnull", "default", "pk"), row)) for row in db.execute(f'PRAGMA table_info("{table}")')]
+                    columns = [dict(zip(("cid", "name", "type", "notnull", "default", "pk"), row, strict=True)) for row in db.execute(f'PRAGMA table_info("{table}")')]
                     count = db.execute(f'SELECT count(*) FROM "{table}"').fetchone()[0]
                     node["fields"].append(field(table, {"rows": count, "columns": columns}, "SQLite table; CSV is the master copy"))
         elif file.suffix == ".lock":
@@ -308,8 +307,7 @@ def generate(root=ROOT):
         nodes.append(node)
 
     for id_, label, group, subgroup, role in ENTITIES:
-        proposed = group == "proposed"
-        nodes.append({"id": id_, "label": label, "group": group, "subgroup": subgroup, "role": role, "why": "Design proposal; no implementation file exists yet." if proposed else "Explicit boundary outside the documented repository files.", "kind": "proposal" if proposed else "system", "status": "proposed" if proposed else "external", "fields": [], "symbols": []})
+        nodes.append({"id": id_, "label": label, "group": group, "subgroup": subgroup, "role": role, "why": "Explicit boundary outside the active project files.", "kind": "system", "status": "external", "fields": [], "symbols": []})
     for name, role in DEPENDENCIES.items():
         nodes.append({"id": "lib:" + name, "label": name, "group": "systems", "subgroup": "Libraries", "role": role, "why": "Declared in pyproject.toml; imported edges show consumers. Versions are recorded in uv.lock.", "kind": "library", "status": "external", "fields": [], "symbols": []})
     for edge in LINKS:
@@ -327,7 +325,20 @@ def generate(root=ROOT):
     ids = {n["id"] for n in nodes}
     assert len(ids) == len(nodes), "Duplicate node ID"
     assert all(e["source"] in ids and e["target"] in ids for e in edges), "Dangling dependency"
-    return {"groups": GROUPS, "nodes": nodes, "edges": edges, "stats": {"files": len(names), "tables": len(resources), "rows": sum(map(len, rows.values())), "facts": next(n["rows"] for n in nodes if n["id"] == DATA + "facts.json"), "edges": len(edges)}, "scope": "Public materials, starter_kit, root orientation files and docs. Env files/directories, installed packages, Git internals, caches and symlinks are excluded. Source imports and declared joins are extracted; other edges are reviewed, inferred or proposed as labelled."}
+    source_ids = {path for path in names if path.startswith(CODE) and path.endswith(".py")}
+    external_ids = {node["id"] for node in nodes if node["kind"] in {"system", "library"}}
+    map_ids = set(source_ids)
+    while True:
+        neighbors = {edge["target"] for edge in edges if edge["source"] in map_ids and edge["target"] in external_ids}
+        if neighbors.issubset(map_ids):
+            break
+        map_ids.update(neighbors)
+    map_edges = sum(edge["source"] in map_ids and edge["target"] in map_ids for edge in edges)
+    return {"groups": GROUPS, "nodes": nodes, "edges": edges, "map_ids": sorted(map_ids), "guides": guides,
+            "reports": reports, "stats": {"files": len(names), "modules": len(source_ids), "map_edges": map_edges,
+            "tables": len(resources), "rows": sum(map(len, rows.values())),
+            "facts": next(n["rows"] for n in nodes if n["id"] == DATA + "facts.json"), "edges": len(edges)},
+            "scope": "The overview maps active source modules and their runtime systems/libraries. The explorer also explains tests, configuration and public data; select a file for its direct relationships. Guides are separate. Archived materials, credentials, environments, caches and symlinks are not inventoried."}
 
 
 def serialize(data):

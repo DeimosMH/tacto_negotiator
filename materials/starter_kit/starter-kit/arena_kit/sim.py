@@ -8,12 +8,11 @@ final offer from round 5 and walks away if you push after that. It checks cited 
 whether the ID exists. The simulator teaches the contract; the real suppliers think for themselves.
 
     arena-sim serve [--port 8000] [--data <data package>] [--event-code sim] [--no-clock]
-                    [--final-rehearsal [--rehearsal-waves 2] [--rehearsal-wait 60]
-                     [--rehearsal-cap 240] [--rehearsal-break 30]]
+                    [--final-rehearsal [--rehearsal-wait 60] [--rehearsal-cap 240] [--rehearsal-break 30]]
 
 --no-clock switches the 60-second rule off (threads wait forever) to try the API by hand.
---final-rehearsal plays the Live Final's mechanics on the demo cases: a wait (403), then configurable
-waves with a cap and a break between them. Use --rehearsal-waves 5 --rehearsal-cap 480 for Sunday.
+--final-rehearsal plays the Live Final's mechanics on the demo cases: a wait (403), then two waves
+with a cap and a break between them, as on the arena.
 """
 
 import argparse
@@ -118,18 +117,13 @@ class Sim:
         self.teams, self.sessions, self.replies, self.calls = {}, {}, {}, {}
         self.ids, self.lock = itertools.count(1), threading.Lock()
         self.final, self.rehearsal = {}, None  # final case_id -> (wave, case); (start, cap, break)
-        self.rehearsal_waves = 2
 
     # -- the Live Final rehearsal --------------------------------------------------------------
-    def rehearse(self, wait=60, cap=240, brk=30, *, waves=2):
-        """Repeat the demo cases as final cases: the first after `wait` seconds, each open
+    def rehearse(self, wait=60, cap=240, brk=30):
+        """Two waves of the demo cases as final cases: the first after `wait` seconds, each open
         for `cap` seconds, `brk` seconds apart. Returns the waves."""
-        if waves < 1 or cap <= 0 or wait < 0 or brk < 0:
-            raise ValueError("waves and cap must be positive; wait and break must be nonnegative")
         self.rehearsal = (self.clock() + wait, cap, brk)
-        self.rehearsal_waves = waves
-        self.final.clear()
-        for n, (cid, case) in itertools.product(range(1, waves + 1), self.cases.items()):
+        for n, (cid, case) in itertools.product((1, 2), self.cases.items()):
             fid = f"case:R{n}-{cid[5:]}"
             self.final[fid] = (n, {**case, "case_id": fid, "set": "hidden"})
         return self.waves()
@@ -138,7 +132,7 @@ class Sim:
         if not self.rehearsal:
             return []
         (start, cap, brk), now, out = self.rehearsal, self.clock(), []
-        for n in range(1, self.rehearsal_waves + 1):
+        for n in (1, 2):
             opens = start + (n - 1) * (cap + brk)
             closes = opens + cap
             left = max(0, round(closes - now)) if now >= opens else None
@@ -776,8 +770,7 @@ def main(argv=None):
     ap.add_argument("--data", help="data package folder: cited IDs are checked against it")
     ap.add_argument("--event-code", default="sim")
     ap.add_argument("--no-clock", action="store_true", help="no 60-second rule: threads wait forever (by hand)")
-    ap.add_argument("--final-rehearsal", action="store_true", help="rehearse the Live Final on demo cases")
-    ap.add_argument("--rehearsal-waves", type=int, default=2, help="number of waves (5 for the Live Final)")
+    ap.add_argument("--final-rehearsal", action="store_true", help="rehearse the Live Final: a wait, then 2 waves")
     ap.add_argument("--rehearsal-wait", type=float, default=60, help="seconds until wave 1 starts")
     ap.add_argument("--rehearsal-cap", type=float, default=240, help="seconds each wave runs")
     ap.add_argument("--rehearsal-break", type=float, default=30, help="seconds between the waves")
@@ -797,11 +790,10 @@ def main(argv=None):
     if a.final_rehearsal:
         at = lambda t: time.strftime("%H:%M:%S", time.localtime(t))  # noqa: E731
         print("arena-sim: --final-rehearsal - the Live Final's mechanics on the demo cases:", flush=True)
-        for w in sim.rehearse(a.rehearsal_wait, a.rehearsal_cap, a.rehearsal_break, waves=a.rehearsal_waves):
+        for w in sim.rehearse(a.rehearsal_wait, a.rehearsal_cap, a.rehearsal_break):
             ids = ", ".join(c for c, (n, _) in sim.final.items() if n == w["n"])
             print(f"  until {at(w['opens'])}  {'403, no wave yet' if w['n'] == 1 else 'break'}", flush=True)
             print(f'  {at(w["opens"])}  wave {w["n"]} "{w["theme"]}" starts: {ids}', flush=True)
             print(f"  {at(w['closes'])}  its cap: open sessions end without a deal (wave_cap)", flush=True)
-        print(f"  then the rehearsal is over: `arena run --set final --waves {a.rehearsal_waves}` stops there",
-              flush=True)
+        print("  then the rehearsal is over: `arena run --set final --waves 2` stops there", flush=True)
     uvicorn.run(create_app(sim), host=a.host, port=a.port)

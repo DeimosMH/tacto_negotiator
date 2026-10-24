@@ -1,6 +1,6 @@
 # Sunday: finish five eight-minute waves reliably
 
-Build the deadline controller and deterministic deal checks first. Use a hosted model for choosing useful arguments and writing concise messages. A stronger model does not compensate for missing a thread deadline or leaving a case open at the wave cap.
+Tacto Negotiator already has a routed deadline controller and shared deterministic action checks. Preserve those controls and prioritize the remaining RFQ scheduling and evidence gaps below. A stronger model does not compensate for missing a thread deadline or leaving a case open at the wave cap.
 
 The recommended initial model is **GPT-6.1 Sol with low reasoning effort**, subject to a representative latency and validity evaluation. The implemented [routed buyer](ROUTING.md) combines tested scripts, Sol and optional Astra with deadline-aware execution and deterministic fallback. [Model selection](MODEL_SELECTION.md) compares the requested candidates and gives the qualification procedure. This recommendation prioritizes hosted API reliability and latency, as requested.
 
@@ -23,7 +23,7 @@ The clocks are different:
 | 10 arena calls/second per key | Shared allowance across case workers | Reuse one ArenaClient, which paces at nine; separate processes do not share its limiter. |
 | Provider RPM/TPM/concurrency | Separate from arena limits | Bound model calls and queue time as part of each decision deadline. |
 
-Sources: [participant brief](../starter_kit/brief/brief.md), [final and timing API contract](../starter_kit/brief/api.md), [runner](../starter_kit/starter-kit/arena_kit/play.py), [client](../starter_kit/starter-kit/arena_kit/client.py).
+Sources: [participant brief](../materials/starter_kit/brief/brief.md), [final and timing API contract](../materials/starter_kit/brief/api.md), [runner](../src/tacto_negotiator/play.py), [client](../src/tacto_negotiator/client.py).
 
 ## Implementation order
 
@@ -48,7 +48,7 @@ Use these as initial engineering targets, not measured provider guarantees:
 2. When a wave appears, read the case and prepare its local dossier before opening. Fetch quote defaults immediately after opening, with their time charged to the thread.
 3. Target model p95 at or below 20 seconds under ten concurrent cases. Bound the complete decision, including provider queueing and retries, to an initial 25-second target when enough thread time remains. Shorten this when a thread already waited.
 4. Keep at least five seconds for validation, arena pacing and submission. Derive the actual budget from the earliest live thread deadline and current wave cap, not a fresh 60 seconds on every call.
-5. Start closure at least 90 seconds before the cap, or sooner when the slowest observed round plus 15 seconds is longer. Recheck after each decision; this change adds that second check.
+5. Start closure at least 90 seconds before the cap, or sooner when the slowest observed round plus 15 seconds is longer. The current runner rechecks after each decision as well as before it.
 6. If the model fails or the remaining budget is insufficient, use a deterministic legal move or close on the best valid standing offer. Do not start a second provider call merely because the first timed out.
 
 A rough planning example: 20 seconds to decide + 60 seconds for the supplier + 5 seconds of overhead gives an 85-second round. Reserving 90 of 480 seconds leaves room for about four such rounds, before setup costs. This is a budgeting example, not a promise of four rounds for every RFQ. Multiple simultaneously waiting suppliers require scheduling, not simply a faster model.
@@ -57,7 +57,7 @@ The routed CompletionClient cancels expired async HTTP work and rejects late out
 
 ## What the local simulations prove
 
-[test_final.py](../starter_kit/starter-kit/tests/test_final.py) adds 25 local scenarios. All model failures and delays are injected; no provider or hosted arena is contacted.
+[test_final.py](../tests/test_final.py) adds 25 local scenarios. All model failures and delays are injected; no provider or hosted arena is contacted.
 
 | Scenario | Observed/asserted outcome | Boundary |
 | --- | --- | --- |
@@ -82,8 +82,8 @@ The suite does not reproduce hidden supplier reasoning, all competing teams, act
 From the repository root, run the focused suite without inherited credentials:
 
 ```sh
-TACTO_PYTHON="$PWD/starter_kit/starter-kit/.venv/bin/python"
-TACTO_FINAL_TESTS="$PWD/starter_kit/starter-kit/tests/test_final.py"
+TACTO_PYTHON="$PWD/.venv/bin/python"
+TACTO_FINAL_TESTS="$PWD/tests/test_final.py"
 cd /tmp
 env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 \
   "$TACTO_PYTHON" -m pytest -q -p no:cacheprovider "$TACTO_FINAL_TESTS"
@@ -94,7 +94,7 @@ Expected: 25 passed. Virtual time advances across all five waves without waiting
 To watch a real-time local rehearsal, start this server from the repository root. It uses no data download and no model:
 
 ```sh
-TACTO_SIM="$PWD/starter_kit/starter-kit/.venv/bin/arena-sim"
+TACTO_SIM="$PWD/.venv/bin/tacto-sim"
 cd /tmp
 env -i PATH=/usr/bin:/bin "$TACTO_SIM" serve --host 127.0.0.1 --port 8000 \
   --final-rehearsal --rehearsal-waves 5 --rehearsal-cap 480 \
@@ -104,13 +104,13 @@ env -i PATH=/usr/bin:/bin "$TACTO_SIM" serve --host 127.0.0.1 --port 8000 \
 In a second terminal, start from the repository root and run a local-only buyer:
 
 ```sh
-TACTO_PYTHON="$PWD/starter_kit/starter-kit/.venv/bin/python"
+TACTO_PYTHON="$PWD/.venv/bin/python"
 cd /tmp
 env -i PATH=/usr/bin:/bin "$TACTO_PYTHON" - <<'PY'
 import uuid
-from arena_kit.agents.naive import NaiveAgent
-from arena_kit.client import ArenaClient
-from arena_kit.play import closing_move, play_waves
+from tacto_negotiator.agents.naive import NaiveAgent
+from tacto_negotiator.client import ArenaClient
+from tacto_negotiator.play import closing_move, play_waves
 
 class LocalBuyer(NaiveAgent):
     def decide(self, case, threads):
@@ -141,4 +141,4 @@ To extend the tests step by step:
 4. Run the focused suite, then the full suite. Rebuild the atlas so file explanations and dependency edges reflect the change.
 5. For any new public file, add its role and rationale to catalog.py. The tree and map then include it automatically.
 
-Before treating the agent as ready, require zero unintended thread timeouts, zero invalid acceptances, no unaccounted cases, successful restart/resume, and every action within both clocks under the chosen delay and failure scenarios. Provider latency and task-quality qualification are still pending; follow [model selection](MODEL_SELECTION.md).
+Before treating the agent as ready, require zero unintended thread timeouts, zero invalid acceptances, no unaccounted cases, successful restart/resume, and every action within both clocks under the chosen delay and failure scenarios. The recorded OpenAI comparison covers synthetic policies; medium-semantic quality, real shared-wave capacity and venue/provider conditions still need qualification. Follow [model selection](MODEL_SELECTION.md).

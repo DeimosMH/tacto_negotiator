@@ -76,8 +76,11 @@ try {
   await command("Page.navigate", {url});
   await until("document.querySelectorAll('.map-node').length > 10");
   assert.equal(await evaluate("document.querySelectorAll('[data-file]').length"), await evaluate("window.ATLAS.stats.files"));
-  assert.equal(await evaluate("document.querySelector('#graph-title').textContent"), "The whole project");
-  assert.equal(await evaluate("document.querySelectorAll('.map-cluster').length"), 7);
+  assert.equal(await evaluate("document.querySelector('#graph-title').textContent"), "Project source map");
+  assert.equal(await evaluate("document.querySelectorAll('.map-node').length"), await evaluate("window.ATLAS.map_ids.length"));
+  assert.ok(await evaluate("[...document.querySelectorAll('.map-node')].every(node => window.ATLAS.map_ids.includes(node.dataset.node))"));
+  assert.ok(await evaluate("window.ATLAS.nodes.every(node => !['docs/', 'materials/', 'starter_kit/'].some(prefix => node.id.startsWith(prefix)))"));
+  assert.ok(await evaluate("window.ATLAS.nodes.filter(node => window.ATLAS.map_ids.includes(node.id) && node.kind === 'file').every(node => node.id.startsWith('src/tacto_negotiator/') && node.id.endsWith('.py'))"));
   await evaluate("document.querySelector('#collapse-all').click()");
   assert.equal(await evaluate("document.querySelectorAll('#tree details[open]').length"), 0);
   await evaluate("document.querySelector('#expand-all').click()");
@@ -85,7 +88,7 @@ try {
 
   await evaluate("document.querySelector('#search').value = 'ArenaClient'; document.querySelector('#search').dispatchEvent(new Event('input'))");
   assert.ok(await evaluate("document.querySelectorAll('[data-file]').length < window.ATLAS.stats.files"));
-  const client = "starter_kit/starter-kit/arena_kit/client.py";
+  const client = "src/tacto_negotiator/client.py";
   await evaluate(`document.querySelector('[data-file="${client}"]').click()`);
   await until("document.querySelector('#inspector h2')?.textContent === 'client.py'");
   assert.ok(await evaluate("document.querySelector('#inspector').textContent.includes('Stored attributes:')"));
@@ -112,26 +115,22 @@ try {
   await evaluate("history.back()");
   await until("document.querySelector('#inspector h2')?.textContent === 'client.py'");
 
-  await select("starter_kit/data/data/invoices.csv");
+  await select("data/data/invoices.csv");
   assert.ok(await evaluate("document.querySelector('#inspector').textContent.includes('paid_date')"));
   assert.ok(await evaluate("document.querySelector('#relationships').textContent.includes('declared foreign key')"));
-  await select("starter_kit/data/correspondence/20260911-70110-P01.md");
+  await select("data/correspondence/20260911-70110-P01.md");
   assert.ok(await evaluate("document.querySelector('#inspector').textContent.includes('doc:20260911-70110-P01')"));
-  await select("proposal:guard");
-  assert.ok(await evaluate("document.querySelector('#inspector').textContent.includes('no implementation file exists')"));
 
   await evaluate("location.hash = 'home'");
-  await until("document.querySelector('#graph-title').textContent === 'The whole project'");
-  await evaluate("document.querySelector('#show-proposed').click()");
-  assert.equal(await evaluate("document.querySelectorAll('.map-node.proposal').length"), 0);
-  await evaluate("document.querySelector('#show-proposed').click()");
+  await until("document.querySelector('#graph-title').textContent === 'Project source map'");
+  await evaluate("document.querySelector('#map-mode').value = 'groups'; document.querySelector('#map-mode').dispatchEvent(new Event('change'))");
   await evaluate("document.querySelector('.map-node').dispatchEvent(new MouseEvent('click'))");
   await until("location.hash.startsWith('#group=')");
   assert.ok(await evaluate("document.querySelector('#inspector').textContent.includes('LOGICAL SUBGROUP')"));
   await evaluate("document.querySelector('#reset-map').click()");
   await until("location.hash === '#home'");
-  await evaluate("document.querySelector('#map-mode').value = 'all'; document.querySelector('#map-mode').dispatchEvent(new Event('change'))");
-  assert.equal(await evaluate("document.querySelectorAll('.map-node').length"), await evaluate("window.ATLAS.nodes.length"));
+  await evaluate("document.querySelector('#map-mode').value = 'source'; document.querySelector('#map-mode').dispatchEvent(new Event('change'))");
+  assert.equal(await evaluate("document.querySelectorAll('.map-node').length"), await evaluate("window.ATLAS.map_ids.length"));
 
   await evaluate("document.querySelector('[data-tab=\"TUTORIAL.md\"]').click()");
   await until("document.querySelector('#guide h1')?.textContent === 'Your first negotiation, step by step'");
@@ -153,12 +152,11 @@ try {
   await until("location.hash === '#guide=COMPETITION.md' && document.querySelector('#guide h1') !== null");
   assert.equal(await evaluate("document.querySelector('[data-tab=\"COMPETITION.md\"]').getAttribute('aria-current')"), "page");
   assert.ok(await evaluate("document.querySelector('#guide').textContent.includes('scenario')"));
-  await select("docs/results/offline.json");
-  assert.ok(await evaluate("document.querySelector('#inspector').textContent.includes('match_count')"));
+  assert.ok(await evaluate("document.querySelector('#guide a[href=\"results/offline.json\"]') !== null"));
+  assert.ok(await evaluate("window.ATLAS.reports['docs/results/offline.json'].match_count > 0"));
   await evaluate("document.querySelector('[data-tab=\"IMPLEMENTATION.md\"]').click()");
   await until("!document.querySelector('#guide').hidden");
-  await until("document.querySelector('#guide').textContent.includes('One guard for every action')");
-  assert.ok(await evaluate("document.querySelector('#guide').textContent.includes('One guard for every action')"));
+  await until("location.hash === '#guide=IMPLEMENTATION.md' && document.querySelector('#guide').textContent.includes('src/tacto_negotiator')");
   assert.ok(await evaluate("document.querySelectorAll('#guide table').length > 0"));
   assert.ok(await evaluate("!document.querySelector('#guide').innerHTML.includes('<script')"));
   await command("Page.reload");
@@ -166,7 +164,7 @@ try {
 
   await command("Emulation.setDeviceMetricsOverride", {width: 390, height: 844, deviceScaleFactor: 1, mobile: true});
   await evaluate("location.hash = 'home'; document.querySelector('#search').value=''; document.querySelector('#search').dispatchEvent(new Event('input')); document.querySelector('#full-explanations').click(); document.querySelector('#collapse-all').click()");
-  await until("document.querySelector('#graph-title').textContent === 'The whole project'");
+  await until("document.querySelector('#graph-title').textContent === 'Project source map'");
   assert.ok(await evaluate("document.documentElement.scrollWidth <= innerWidth"), "Mobile page must not overflow horizontally");
   await evaluate("document.querySelector('#search').value='no-match-xyz'; document.querySelector('#search').dispatchEvent(new Event('input'))");
   assert.ok(await evaluate("document.querySelector('#tree').textContent.includes('No matching files')"));
@@ -183,7 +181,7 @@ try {
     const screenshot = await command("Page.captureScreenshot", {format: "png"});
     await writeFile(process.env.ATLAS_SCREENSHOT, Buffer.from(screenshot.data, "base64"));
   }
-  console.log("Browser checks passed: tree, search, file details, schemas, graph neighborhoods/groups, all nodes, pan/zoom, keyboard, history, guides, saved settings, mobile and no remote requests.");
+  console.log("Browser checks passed: tree, search, file details, schemas, graph neighborhoods/groups, source-focused overview, pan/zoom, keyboard, history, guides, saved settings, mobile and no remote requests.");
 } finally {
   if (socket?.readyState === WebSocket.OPEN) {
     try { await command("Browser.close", {}, false); } catch { /* Browser may close the socket before its reply. */ }

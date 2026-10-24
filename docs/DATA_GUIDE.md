@@ -2,7 +2,9 @@
 
 The package is a frozen procurement world, not a live ERP connection. CSVs are the master copy; world.sqlite mirrors their 24 tables. facts.json contains 10,356 citable fact IDs with the values the arena checks. There are 447 supplier records, including spend-only vendors and an old alias; 46 detailed suppliers; 60 parts; 46 contract texts; and 208 correspondence documents. The atlas derives table row counts and schemas from the actual files.
 
-Sources: [data inventory](../starter_kit/data/README.md), [machine-readable schema](../starter_kit/data/datapackage.json), [known issues](../starter_kit/data/KNOWN_ISSUES.md), [company policies](../starter_kit/data/company.md).
+The active snapshot is the root data directory, read by tacto_negotiator.data.DataPackage. Pass --data data to tacto from the project root, or configure ARENA_DATA=data. The original supplied copy remains archived in materials/starter_kit/data. Use the active copy for application queries and keep the archive as reference material.
+
+Sources: [data inventory](../data/README.md), [machine-readable schema](../data/datapackage.json), [known issues](../data/KNOWN_ISSUES.md), [company policies](../data/company.md).
 
 ## Three representations, three jobs
 
@@ -28,7 +30,7 @@ The map's solid declared-join edges come directly from datapackage.json. Extra l
 
 ## Worked recipe: a price-increase case
 
-First identify the part and supplier from the case. For Brandlhuber's casing situation, start with part:310010 and sup:70110, then read [the trigger letter](../starter_kit/data/correspondence/20260911-70110-P01.md), [the agreement](../starter_kit/data/contracts/4600070110.md) and recent supplier notes. Do not assume the presentation's example prices are the actual case's inputs.
+First identify the part and supplier from the case. For Brandlhuber's casing situation, start with part:310010 and sup:70110, then read [the trigger letter](../data/correspondence/20260911-70110-P01.md), [the agreement](../data/contracts/4600070110.md) and recent supplier notes. Do not assume the presentation's example prices are the actual case's inputs.
 
 ```sql
 SELECT d.id, d.date, d.kind, d.subject, d.file
@@ -49,7 +51,7 @@ ORDER BY month;
 
 Compute change = (later_value / earlier_value − 1) × 100 in code, preserve both IDs and place the number next to them in the email. The documented check requires one series, endpoints at most 12 months apart and a recent ending period. Select dates using the available observations; different indices end in different months.
 
-The [August price-discussion note](../starter_kit/data/correspondence/20260824-70110-M1.md) says the supplier works from an old spreadsheet. That supports asking to review the calculation; it is not a guarantee of a lower offer. The [payment email](../starter_kit/data/correspondence/20260902-70110-M2.md) suggests faster payment might be valuable. Price a payment trade with total_cost before sending it. Other suppliers have forward purchases or frozen prices, so the same market fact may have little effect.
+The [August price-discussion note](../data/correspondence/20260824-70110-M1.md) says the supplier works from an old spreadsheet. That supports asking to review the calculation; it is not a guarantee of a lower offer. The [payment email](../data/correspondence/20260902-70110-M2.md) suggests faster payment might be valuable. Price a payment trade with total_cost before sending it. Other suppliers have forward purchases or frozen prices, so the same market fact may have little effect.
 
 ## Claims are not arbitrary citations
 
@@ -57,7 +59,7 @@ The supplied API checks at most three arguments per message. Relevant index pair
 
 The response reports verified, contradicted, irrelevant or duplicate. Verified means the checked data matches, not that the supplier must concede. A factual statement can be irrelevant to that supplier's current economics. Unknown IDs and wrong figures can cost trust. Keep both the numerical calculation and the reason the claim matters. Do not repeatedly spend the message's argument slots on IDs already used; rival quotes have a separate per-supplier reuse rule.
 
-Source: [API “What counts”](../starter_kit/brief/api.md#what-counts).
+Source: [API “What counts”](../materials/starter_kit/brief/api.md#what-counts).
 
 ## Common mistakes to avoid
 
@@ -65,7 +67,7 @@ Price_unit is part of the number. ERP line value is qty × price / price_unit; s
 
 Join at the right grain. A PO line can have more than one receipt and invoice. Joining both one-to-many tables before summing duplicates money or quantities. Aggregate each at the PO-line grain first, or use the published rolling scorecard for its intended comparison.
 
-Requested-date OTD measures a different commitment from first-confirmed-date OTD. Partial receipts count as separate lines, and calendar effects are intentional. PPM on tiny lots is volatile. The [scorecard methodology](../starter_kit/data/SCORECARD.md) defines the rolling calculation.
+Requested-date OTD measures a different commitment from first-confirmed-date OTD. Partial receipts count as separate lines, and calendar effects are intentional. PPM on tiny lots is volatile. The [scorecard methodology](../data/SCORECARD.md) defines the rolling calculation.
 
 Canonicalize the old sup:71999 record to sup:70210 only in analysis views. Preserve original source IDs in evidence and avoid claiming that every one of the 447 vendors has detailed operational data. Generic should-cost estimates use a German cost base with stated uncertainty; selected strategic estimates are supplier-plant-specific. Treat weights and cost estimates as estimates, not hidden supplier facts.
 
@@ -73,4 +75,4 @@ Sunday data is an overlay. Release facts and CSV lookups are added by DataPackag
 
 ## Public source provenance
 
-The company and counterparties are fictional. Indices are frozen real public series from Eurostat, World Bank, ECB and SMARD; see [ATTRIBUTION.md](../starter_kit/data/ATTRIBUTION.md). Derived copper and alloy series have explicit formulas and are not independent publisher observations. This documentation does not refresh the snapshot from the internet.
+The company and counterparties are fictional. Indices are frozen real public series from Eurostat, World Bank, ECB and SMARD; see [ATTRIBUTION.md](../data/ATTRIBUTION.md). Derived copper and alloy series have explicit formulas and are not independent publisher observations. This documentation does not refresh the snapshot from the internet.

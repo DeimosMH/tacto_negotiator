@@ -20,7 +20,7 @@ import httpx
 
 from ..cost import complete_offer, must_haves_ok, total_cost
 from ..docs import standard_terms
-from ..play import closing_move, latest, live_threads, moves_left, standing
+from ..play import latest, live_threads, moves_left, standing
 from .naive import NaiveAgent
 
 log = logging.getLogger("arena")
@@ -101,11 +101,7 @@ class LLMAgent:
         except Exception as e:  # a slow or broken LLM must not cost the case
             log.warning("LLM failed (%s) - falling back to the naive move", e)
             checked = None
-        if checked:
-            return checked
-        fallback = self.fallback.decide(case, threads)
-        # The baseline may accept a final offer without checking defaults or must-haves.
-        return closing_move(case, threads) if fallback["message"].get("action") else fallback
+        return checked or self.fallback.decide(case, threads)
 
     def prepare(self, case):
         """Before the clock matters: the case, the letter, the data rows the case points to."""

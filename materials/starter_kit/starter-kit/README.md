@@ -152,11 +152,6 @@ Own client: point it at the same URL. It checks the `403` wait (60 s), the wave 
 per case, `seconds_left` and the cap (4 minutes, a 30-second break, then wave 2); `--waves 2` stops
 the runner after the rehearsal's two waves (the final has five, the default).
 
-For five eight-minute waves, add `--rehearsal-waves 5 --rehearsal-cap 480` to the
-simulator command and use `--waves 5` on the runner. The two-wave defaults remain unchanged.
-The repository's [Sunday readiness guide](../../docs/FINAL_READINESS.md) provides
-credential-free local commands, failure simulations and implementation priorities.
-
 ## Your own agent
 
 An agent is any object with `decide(case, threads) -> {"supplier_id": …, "message": {…}}`.
@@ -205,8 +200,6 @@ print(play(RemoteTable(ArenaClient()), "case:P01", Haggler()))
 | `data.py` | the data package and the Sunday release: `facts.json`, read-only SQL, lookup by ID, documents, cases |
 | `agents/naive.py` | anchors 10 % low, splits the difference, accepts early - the baseline |
 | `agents/llm.py` | the model writes the e-mail and the term sheets from the case and the data it points to; code computes C, reads the documents, removes IDs that do not exist, and refuses bad accepts |
-| `agents/routed.py` | tested script, fast model or optional stronger model per decision; common action validation and local fallback |
-| `agents/completion.py` | OpenAI Responses adapter with effort/output limits, shared concurrency and one absolute deadline for queueing and HTTP |
 | `sim.py` | `arena-sim`: the public API on your machine, with one plain scripted supplier (below) |
 | `mcp_server.py` | the MCP server below |
 
@@ -261,23 +254,12 @@ supplier, which window, and what else in the data speaks for you - that is up to
 
 ## Choosing a model
 
-The new `--agent routed` option uses scripts for narrow known situations, `gpt-6.1-sol`
-with low effort by default, and an optional strong route enabled by `LLM_STRONG_MODEL`.
-It makes at most one provider request per decision and uses deterministic fallback on
-timeout or rejected output. Its Responses adapter sends effort/output limits explicitly,
-counts concurrency queueing inside the deadline and cancels expired cooperative HTTP work.
-See the [routing guide](../../docs/ROUTING.md) for the decision tree, configuration,
-local no-key examples and how to change a rule. The model choices still need real latency
-and quality qualification; RFQ supplier requests remain sequential.
-
-The legacy `--agent llm` configuration remains available:
 `LLM_PROVIDER=anthropic` uses the Anthropic SDK (`ANTHROPIC_API_KEY`); `LLM_PROVIDER=openai` talks
 to any OpenAI-compatible endpoint (`LLM_BASE_URL`, `LLM_API_KEY`) - OpenAI, Mistral, Groq, a local
 Ollama (`http://localhost:11434/v1`) and many more. Or pass your own `complete(system, user) -> str`
 to `LLMAgent`. Each message must arrive within **60 seconds** of the supplier's reply: prefer a
-fast model or low effort, and do heavy research before you open a session. On a returned error,
-the legacy agent uses naive offers and checked closing actions. It cannot interrupt an arbitrary
-blocked completion; use the routed adapter for a provider request deadline.
+fast model or low effort, and do heavy research before you open a session. If the model fails or times out, the agent falls
+back to the naive move instead of losing the case.
 
 ## Offline: arena-sim, the contract simulator
 
