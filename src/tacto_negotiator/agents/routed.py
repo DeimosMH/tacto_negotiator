@@ -207,8 +207,12 @@ class RoutedAgent:
         """An open offer, with moves left, still above our last ask (both top teams accepted only final
         offers and agreements; hosted P01/P02 accepted open offers 3 % above our ask in round 2)."""
         events = threads[sid]
-        if latest(events).get("status") != "open" or moves_left(case, events) <= 1:
+        if latest(events).get("status") != "open" or moves_left(case, events) <= 3:
             return False
+        counters = [standing(events[:i + 1])[1].get("unit_price") for i, e in enumerate(events)
+                    if e.get("from") != "buyer" and e.get("term_sheets")]
+        if len(counters) >= 3 and counters[-1] == counters[-2]:
+            return False  # a stalled supplier: further counters only risk a walk-away (hosted P02 v4/v5)
         accepted = acceptable_offer(case, events, sid)
         sent = [e for e in events if e.get("from") == "buyer" and e.get("term_sheets")]
         if not accepted or not sent:

@@ -343,3 +343,15 @@ def test_an_unreadable_agreement_keeps_the_earlier_quote_defaults(scenario):
     agreed.update(status="agreed", attachments=[{"name": "quote.pdf", "read_failed": True}])
     threads[sid].append(agreed)  # sandbox D01 walked away from exactly this
     assert RoutedAgent(None).closing_move(case, threads)["message"]["action"]["type"] == "accept"
+
+
+def test_a_stalled_supplier_lets_the_model_accept_an_open_offer(scenario):
+    case, threads, sid = scenario
+    for price in (19, 19):  # we moved, the supplier did not: hosted P02 walked after more counters
+        threads[sid] += [{"from": "buyer", "body": "Our package.", "term_sheets": [
+                             {"terms": {"unit_price": 16, "payment_days": 30}}]},
+                         {"from": "supplier", "status": "open", "body": "Counter, subject to approval.",
+                          "term_sheets": [{"term_sheet_id": f"offer:{len(threads[sid])}",
+                                           "terms": {"unit_price": price, "payment_days": 30}}]}]
+    agent = RoutedAgent(completion(sid, [], json.dumps({"supplier_id": sid, "action": "accept"})))
+    assert agent.decide(case, threads)["message"]["action"]["type"] == "accept"
