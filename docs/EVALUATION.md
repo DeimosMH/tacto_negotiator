@@ -81,3 +81,31 @@ The fixes between the high runs:
 | [v17](results/live-practice-2026-10-25-opus-high-fast-v17.json) | **0.789** | **15.8 s** | Opus fast mode; index-clause sheet on the longest payment term |
 
 One 10-case run varies by about ±0.02, so v13, v16 and v17 are close; fast mode's measured effect is the time. After v17, the shared gate stopped offering one RFQ bidder a sheet dearer than another bidder's standing acceptable offer (hosted P05 v17: 0.699, about 0.77 with the cheaper offer). Every session is readable in the [deal journal](DEALS.md).
+
+## The out-of-sample bench (25 October)
+
+The final plays each case once, on cases that never appeared in practice. So the question that matters is how the agent does on cases it was never tuned on. Hosted practice means cannot answer it: every hosted score comes from the same 10 cases the policy was tuned against.
+
+`tacto-compete --bench oos` plays the 9 practice cases that were never hosted (P06, P09, P12–P17, P19) against the local supplier model. Their case files are saved in `tests/fixtures/practice_cases.json`. What a session would reveal is synthesized from the data package, by the rules the hosted cases show:
+
+- **Opening price:** a price letter's own asked price (P01 and P02 match exactly); otherwise today's price times the hosted opening ratio of the case type.
+- **Standard terms:** payment and Incoterm from the supplier master, lead time from its standard lead time, the ppm commitment from its scorecard.
+- **Opening terms:** the supplier's own, as hosted openings show: the shortest contract, the earliest effective date, no index clause, a capacity supplier's reduced volume.
+- **C_open and C_best:** the cheapest eligible opening, and every valid package at each supplier's floor.
+
+`--bench synth` rebuilds the 10 hosted cases the same way. Its gaps between C_open and C_best track the recorded ones on 9 of the 10 cases, and its scores rank policies like the recorded replica (`--bench replica`). `--timing final` uses 25–60 s supplier replies instead of 15–40 s. `--strategies routed --live` plays the final's Claude Opus setup against these local suppliers; it reads only `LLM_*` settings, never an arena key.
+
+| Mean score | Scripts, 225 runs | Claude Opus, 45 runs |
+|---|---|---|
+| v1.0.1 on the never-hosted cases | 0.680 (4 zeros) | 0.667 |
+| After the bench fixes | 0.796 (0 zeros) | 0.782 |
+| Hosted replica (recorded openings) | 0.830 → 0.830 | |
+
+The fixes are general, not case-specific:
+- A fallback no longer walks away while any thread has rounds left.
+- No opening sheet asks more than 5 points below the anchor.
+- No ask goes above the cheapest opening in the case.
+- Supplier-health estimates keep the case's price unit.
+- News that a supplier needs work becomes a checked argument.
+
+**Limits:** the bench supplier is a fitted model. Its lead-time and index-clause valuations are extrapolated from one or two hosted cases, so treat gains that come only from those trades with caution.
