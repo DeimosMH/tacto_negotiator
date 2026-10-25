@@ -126,8 +126,8 @@ def test_out_of_sample_bench_fixes_hold():
     import json as _json
     from pathlib import Path as _Path
 
-    from tacto_negotiator.competition import run_competition
     from tacto_negotiator.compete import make_factories
+    from tacto_negotiator.competition import run_competition
     from tacto_negotiator.data import DataPackage as _Package
     from tacto_negotiator.hosted_like import build_oos_scenarios
 
