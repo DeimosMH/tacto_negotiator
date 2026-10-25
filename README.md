@@ -6,6 +6,47 @@ semantics, and a shared validator before any message or acceptance reaches the a
 
 New here? Start with [the beginner guide](docs/BEGINNER_GUIDE.md): open the example results, run your first local experiment, and understand one negotiation. No API key is needed.
 
+## Run the Live Final
+
+After the commit is submitted, start this from the repository root before 13:30 and leave it running. `.env` holds `ARENA_URL`, `ARENA_API_KEY` and `LLM_API_KEY_ANTHROPIC`:
+
+```sh
+systemd-inhibit --what=idle:sleep --why="Tacto final" \
+  env LLM_PROVIDER=anthropic LLM_MODEL=claude-opus-5-5 LLM_EFFORT=high LLM_SPEED=fast \
+  .venv/bin/tacto run --set final --agent routed --data data --parallel 10 --waves 5 2>&1 | tee final.log
+```
+
+- **Before wave 1:** the case list answers 403 and the runner keeps waiting. That is expected.
+- **During each wave:** it plays all of the wave's cases in parallel and closes each case before the 8-minute cap.
+- **If it crashes:** run the same command again. It resumes its open sessions; the arena allows one session per case, and a second attempt returns a 409.
+- **To watch:** open `docs/index.html#deals` and tick **Auto-refresh**. Every case appears as it runs, with its messages and decision path.
+
+[The final runbook](docs/FINAL_RUNBOOK.md) has the full timeline and pre-flight.
+
+## Useful commands
+
+| Purpose | Command |
+|---|---|
+| Download the data package and the Sunday release | `.venv/bin/tacto data --out data` |
+| Check that the Sunday release is merged | `.venv/bin/python -c "from tacto_negotiator.data import DataPackage; print(DataPackage('data').release)"` |
+| Pre-flight: one hosted practice case on the final settings | `env LLM_PROVIDER=anthropic LLM_MODEL=claude-opus-5-5 LLM_EFFORT=high .venv/bin/tacto play case:P04 --agent routed --data data` |
+| Free sandbox case (no quota) | `.venv/bin/tacto play case:D01 --agent routed --data data` |
+| All hosted practice cases at once | `env LLM_PROVIDER=anthropic LLM_MODEL=claude-opus-5-5 LLM_EFFORT=high .venv/bin/tacto run --set practice --agent routed --data data --parallel 10` |
+| Your quota and best scores | `.venv/bin/tacto me` |
+| Leaderboard | `.venv/bin/tacto board --set final` |
+| Practice cases you can play | `.venv/bin/tacto cases --set practice` |
+| Stop leftover practice runs (they block final sessions) | `pgrep -af tacto` |
+| Deal journal: rebuild the index / backfill saved hosted results | `.venv/bin/tacto deals` / `.venv/bin/tacto deals docs/results/live-practice-*.json` |
+| Docs and deal journal in the browser | open `docs/index.html` (deals: `#deals`, decision tree: `#tree`) |
+| Results dashboard | `.venv/bin/tacto-ui`, then [localhost:1234](http://localhost:1234) |
+| Out-of-sample bench, scripts only (local, free) | `.venv/bin/tacto-compete --strategies scripts --bench oos --timing final --seeds 0 1 2 3 4 --workers 10 --output /tmp/oos.json` |
+| Same bench on the hosted cases | `--bench replica` (recorded openings) or `--bench synth` (synthesized like `oos`) |
+| Bench with the real model against local suppliers | `env LLM_PROVIDER=anthropic LLM_EFFORT=high LLM_API_KEY_ANTHROPIC=... .venv/bin/tacto-compete --strategies routed --live --bench oos --timing final --waves 1 --seeds 0 1 2 --workers 10 --decision-seconds 40 --output /tmp/oos-model.json` |
+| Tests | `.venv/bin/python docs/build.py && .venv/bin/python -m pytest -q docs/test_docs.py tests` |
+| Lint | `.venv/bin/ruff check src tests` |
+
+Claude runs in fast mode by default; `LLM_SPEED=standard` turns it off. Commands that name `--set practice`, `final` or `sandbox` contact the arena configured in `.env`. The bench and the tests never do.
+
 ## Project structure
 
 ```text
@@ -89,10 +130,11 @@ Use `.env.example` as a configuration reference. Put actual values in an ignored
 arguments; process variables win. Help and offline competitions do not load it.
 
 Set `ARENA_URL` and `ARENA_API_KEY` for the intended arena, `ARENA_DATA=data`, and
-`LLM_API_KEY` for model calls. The measured configuration is Sol low for the ordinary
-tier and Astra low for the optional strong tier. `tacto play CASE_ID --agent routed`
-plays a supplied case; `tacto run --set final --waves 5 --parallel 10 --agent routed`
-waits for and plays final waves. These commands contact the configured arena.
+`LLM_API_KEY_ANTHROPIC` for model calls. The final runs Claude Opus 5.5 at high effort
+in fast mode (`LLM_PROVIDER=anthropic LLM_MODEL=claude-opus-5-5 LLM_EFFORT=high`).
+`tacto play CASE_ID --agent routed` plays one case;
+`tacto run --set final --waves 5 --parallel 10 --agent routed` waits for and plays final
+waves. These commands contact the configured arena.
 
 Explicit `--agent naive` and `--agent llm` select comparison/legacy policies.
 The legacy LLM path does not have the routed adapter's total deadline guarantees.
@@ -144,13 +186,6 @@ not change those boundaries. [Sunday readiness](docs/FINAL_READINESS.md) priorit
 
 See [NOTICE.md](NOTICE.md) for source/data attribution and the restored upstream snapshot.
 
----
-
-
-At 08:00 the Sunday release goes live: new market news, supplier letters and a memo. Some final cases cite it.
-
-Get it: run uv run arena data again. It adds data/release-sunday next to your package, and the kit’s DataPackage merges it automatically.
-
-Own client? GET https://arena.tacto.ai/v1/data → download /v1/data/release-sunday.zip.
-
-The data package itself doesn’t change. Make sure your final agent reads the release before the code freeze at 13:00.
+The Sunday release (news, supplier letters and a memo from 08:00 on Sunday) goes into
+`data/release-sunday`: `tacto data --out data` downloads it, and `DataPackage` merges its
+facts automatically. Some final cases cite it.
