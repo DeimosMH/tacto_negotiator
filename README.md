@@ -165,6 +165,13 @@ See [local verification](docs/LOCAL_TESTING.md) for the complete workflow.
 
 ## Results and remaining work
 
+**Live Final submission, v1.1.2 (25 October):**
+- **Unseen cases:** on the 9 practice cases never hosted (real model, local suppliers) it scores 0.797, against 0.667 for v1.0.1, with no zeros.
+- **Hosted practice:** 0.787–0.797 per pass, with every deal closed in the last 30 sessions.
+- **Final rehearsal:** the kit's rehearsal closed 6 of 6 deals in 2 waves.
+
+See [the runbook](docs/FINAL_RUNBOOK.md) and [EVALUATION.md](docs/EVALUATION.md). The older figures below are kept as history.
+
 All nine findings in the [project review](docs/reviews/README.md) are addressed; the
 [resolution record](docs/reviews/FIXES.md) links fixes, 244 passing tests and 900 new
 offline matches. The guarded policies had 600/600 valid outcomes. Delayed RFQs

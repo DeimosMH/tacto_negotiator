@@ -108,4 +108,6 @@ The fixes are general, not case-specific:
 - Supplier-health estimates keep the case's price unit.
 - News that a supplier needs work becomes a checked argument.
 
+**Round 3 review and live check (25 October).** The review found the clause sheet for any goal switched off the held-sheet rule, whose hosted evidence is strong, so clause sheets are for relationship goals again. It also found an opening limit that counted non-compliant quotes, and gaps in 422 handling; all are fixed. Two hosted passes on the result: 0.787 and 0.785, 20 of 20 deals, no errors. The kit's final rehearsal: 6 of 6 deals in 2 waves. See [the runbook](FINAL_RUNBOOK.md) for the readiness table.
+
 **Limits:** the bench supplier is a fitted model, and repeated waves or hosted runs of a deterministic supplier are one sample, not replications (review round 3, L5/L10). The bug fixes transfer; gains that come from the supplier model's own valuations (clause, lead time, supplier health) are replica-only evidence. Its lead-time and index-clause valuations are extrapolated from one or two hosted cases, so treat gains that come only from those trades with caution.

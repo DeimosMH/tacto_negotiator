@@ -34,9 +34,25 @@ The second command must print the `release-sunday` path. The package itself does
 4. Check that the Anthropic account has credit for about 60 cases (roughly $0.40 per case in fast mode, so at least $25).
 5. Stop all practice and experiment processes (`pgrep -af tacto`). Practice sessions count against the 10 open sessions and can block wave 1.
 
+## Readiness on 25 October (v1.1.2)
+
+| Check | Result |
+|---|---|
+| Kit final rehearsal (`arena-sim serve --final-rehearsal`, updated kit; install it with `uv sync --all-extras`, or the simulator lacks uvicorn) with our runner and Claude | 403 wait held; 2 of 2 waves; 6 of 6 deals before the cap; 77.4 points per wave; clean exit after wave 2 |
+| Final runner against arena.tacto.ai for 60 s before wave 1 | Polled every 5 s, 403 each time, kept waiting, opened nothing |
+| Hosted practice on the final settings | v1.1.1: 0.787 and 0.785, 20 of 20 deals; `tacto run --set practice`: 0.793 |
+| Out-of-sample bench (9 never-hosted practice cases, real model, local suppliers) | v1.1 0.797 against v1.0.1 0.667, no zeros |
+| Tests | 363 pass |
+
+Runner safeguards added on 25 October, each found in a live run or a review:
+- An accept of an offer replaced while we decided (422) re-reads the thread and decides again.
+- A 422 on a counter does the same instead of ending the case.
+- A case that fails on a network error, a 5xx or a 429 resumes its session until 10 s before the cap.
+- A failed case-list poll is retried instead of stopping the runner.
+
 ## 3. 13:00: freeze
 
-Commit, note the hash (`git rev-parse HEAD`) and submit it on the organisers' platform. Run exactly that commit.
+Commit, note the hash (`git rev-parse HEAD`) and submit it on the organisers' platform. Run exactly that commit. The submission is tag `v1.1.2` (code identical to `0ebdeec`, plus these notes); the fallback is `v1.1.1` (`6f16a47`).
 
 ## 4. Before 13:30: start and leave running
 
