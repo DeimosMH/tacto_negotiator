@@ -344,14 +344,14 @@ function readRoute() {
   try { hash = decodeURIComponent(location.hash.slice(1)); } catch { hash = "home"; }
   const [route, section] = hash.split("&section=");
   hash = route || "guide=BEGINNER_GUIDE.md";
-  const dealsRoute = hash === "deals" || hash.startsWith("deal=");
+  const dealsRoute = hash === "deals" || hash.startsWith("deal=") || hash === "tree" || hash.startsWith("tree=");
   $("#deals-view").hidden = !dealsRoute;
   if (dealsRoute) {
     for (const id of ["#workspace", "#guide", "#guide-layout", "#stats"]) $(id).hidden = true;
     $("#page-heading").innerHTML = "";
     $("#source-explorer").open = false;
     $(".page-tabs").querySelectorAll("a").forEach(link => {
-      if (link.dataset.tab === "deals") link.setAttribute("aria-current", "page");
+      if (link.dataset.tab === (hash.startsWith("tree") ? "tree" : "deals")) link.setAttribute("aria-current", "page");
       else link.removeAttribute("aria-current");
     });
     window.DealsView.render(hash, false, section);

@@ -87,6 +87,67 @@ TREE = [
      "An accept of a still-open offer becomes one last ask just below it; a supplier often takes it."),
 ]
 NODES = {node[0]: node for node in TREE}
+
+# Where each branch lives: (file, text on the line that implements it). `source_refs` turns them into line
+# numbers when the index is written, so the links follow the code as it changes.
+ROUTED, PLAY = "src/tacto_negotiator/agents/routed.py", "src/tacto_negotiator/play.py"
+SOURCES = {
+    "decide": [(PLAY, "decision = timed_decide(case, threads"), (ROUTED, "def decide_timed(")],
+    "runner_close": [(PLAY, "the wave's cap is near - closing")],
+    "deadline_close": [(ROUTED, 'self._record(case, "script", "deadline_close"')],
+    "scripts": [(ROUTED, "def _script(self, case, threads)")],
+    "terminal": [(ROUTED, 'if all(latest(threads[s]).get("status") in {"agreed", "final_offer"}')],
+    "mirror_alternative": [(ROUTED, "def _mirror_alternative("), (ROUTED, 'return "mirror_alternative", mirror')],
+    "terminal_offers": [(ROUTED, 'return "terminal_offers", closing_move'), (PLAY, "def closing_move(")],
+    "missing_quote_terms": [(ROUTED, 'return "missing_quote_terms", move')],
+    "floor": [(ROUTED, 'answered = any(NEAR_CLOSE_TEXT in')],
+    "named_floor": [(ROUTED, '"near_close_answered" if answered else "named_floor"')],
+    "near_close_answered": [(ROUTED, '"near_close_answered" if answered else "named_floor"')],
+    "simple_opening_counter": [(ROUTED, 'return "simple_opening_counter", move')],
+    "bargain": [(ROUTED, "def _structured_bargain("), (PLAY, "def ask_limit(")],
+    "enumerated_opening": [(ROUTED, 'reason = "bounded_concession" if sent else "enumerated_opening"'),
+                           (ROUTED, "def _opening_sheets(")],
+    "bounded_concession": [(ROUTED, 'reason = "bounded_concession" if sent else "enumerated_opening"'),
+                           (PLAY, "def ask_limit(")],
+    "rfq_package_comparison": [(ROUTED, 'reason = "rfq_package_comparison"')],
+    "must_have_repair": [(ROUTED, 'reason = "must_have_repair"')],
+    "small_cost_gap": [(ROUTED, 'reason = "small_cost_gap" if small_gap else "round_reserve"')],
+    "round_reserve": [(ROUTED, 'reason = "small_cost_gap" if small_gap else "round_reserve"')],
+    "agreed_package": [(ROUTED, 'return "agreed_package", closing_move')],
+    "quote_plateau": [(ROUTED, 'return "quote_plateau", closing_move')],
+    "concurrent": [(ROUTED, "def concurrent_move("), (PLAY, "def send_all(")],
+    "model": [(ROUTED, "if self._semantic_blocker(case, threads):"), (ROUTED, "reply = complete(SYSTEM, prompt")],
+    "semantic_decision": [(ROUTED, 'route, reason = "fast", "semantic_decision"')],
+    "complex_tradeoffs": [(ROUTED, 'route, reason = "strong", "complex_tradeoffs"')],
+    "complex_fast_budget": [(ROUTED, 'reason = "complex_fast_budget" if self.strong')],
+    "strong_unconfigured": [(ROUTED, 'reason = "complex_fast_budget" if self.strong')],
+    "validate": [(ROUTED, "def validate(self, case, threads, decision"), (ROUTED, "def _rival_limit(")],
+    "fallback": [(ROUTED, 'log.warning("decision fallback after')],
+    "near_close": [(ROUTED, "def _before_accept(")],
+}
+ROOT = Path(__file__).resolve().parents[2]
+_REFS = {}
+
+
+def source_refs():
+    """{node: [{"file", "line", "text"}]} - the line of each anchor in the current source (cached per mtime)."""
+    out = {}
+    for node, anchors in SOURCES.items():
+        refs = []
+        for path, needle in anchors:
+            file = ROOT / path
+            try:
+                stamp = file.stat().st_mtime_ns
+                if _REFS.get(path, (None,))[0] != stamp:
+                    _REFS[path] = (stamp, file.read_text(encoding="utf-8").splitlines())
+                lines = _REFS[path][1]
+            except OSError:
+                continue
+            line = next((i for i, text in enumerate(lines, 1) if needle in text), None)
+            if line:
+                refs.append({"file": path, "line": line, "text": needle})
+        out[node] = refs
+    return out
 MODEL_REASONS = {"semantic_decision", "complex_tradeoffs", "complex_fast_budget", "strong_unconfigured"}
 
 
@@ -289,13 +350,25 @@ def summary(record):
             "messages": len(record.get("messages") or []), "decisions": len(decisions),
             "model_calls": sum(d.get("route") in {"fast", "strong"} for d in decisions),
             "fallbacks": sum(bool(d.get("fallback")) for d in decisions),
+            "nodes": _node_steps(decisions),
             "deal": result.get("deal"), "score": result.get("score"), "end_reason": result.get("end_reason"),
             "supplier_id": result.get("supplier_id"), "unit_price": (result.get("terms") or {}).get("unit_price")}
+
+
+def _node_steps(decisions):
+    """{node: [times taken, first step number]} - lets the full tree link to example deals."""
+    out = {}
+    for number, step in enumerate(decisions, 1):
+        for node in step.get("path") or path_of(step):
+            entry = out.setdefault(node, [0, number])
+            entry[0] += 1
+    return out
 
 
 def write_index(folder):
     """docs/deals.js: every record's summary and the decision tree, newest first."""
     with _LOCK:
+        refs = source_refs()
         rows = []
         for file in sorted(folder.glob("*.json")):
             try:
@@ -308,7 +381,8 @@ def write_index(folder):
                 log.warning("deal index skipped %s: %s", file.name, error)
         rows.sort(key=lambda row: (row.get("started_utc") or "", row["id"]), reverse=True)
         data = {"generated_utc": now_iso(), "folder": folder.name, "deals": rows,
-                "tree": [{"id": i, "parent": p, "label": label, "why": why} for i, p, label, why in TREE]}
+                "tree": [{"id": i, "parent": p, "label": label, "why": why, "source": refs.get(i, [])}
+                         for i, p, label, why in TREE]}
         _write(folder.parent / INDEX_NAME, "// Generated by tacto_negotiator.deals. Do not edit.\nwindow.DEALS = "
                + _script_safe(json.dumps(data, ensure_ascii=False, sort_keys=True)) + ";\n")
 

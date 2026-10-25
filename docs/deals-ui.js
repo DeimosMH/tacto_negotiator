@@ -1,12 +1,14 @@
 "use strict";
-// The deal journal view (#deals, #deal=<id>): every hosted negotiation as a dated chat, with the path the
-// buyer program took through its decision tree at each step. Data: deals.js (index, written by
+// The deal journal view (#deals, #deal=<id>) and the full decision tree (#tree, #tree=<node>): every hosted
+// negotiation as a dated chat, with the path the buyer program took through its decision tree at each step,
+// the source lines behind each branch, and the part of the conversation each decision answered. Data: deals.js (index, written by
 // src/tacto_negotiator/deals.py after every move) and deals/<id>.js (one record, loaded on demand).
 
 window.DealsView = (() => {
   const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
   const records = new Map();
-  const view = {route: null, thread: "all", step: null, node: null, query: "", source: "all", auto: false, timer: null};
+  const view = {route: null, thread: "all", step: null, node: null, query: "", source: "all", auto: false, timer: null,
+    panel: "path", full: null, flash: null};
   const el = () => document.querySelector("#deals-view");
   const index = () => window.DEALS || {deals: [], tree: []};
   const tree = () => new Map(index().tree.map(node => [node.id, node]));
@@ -48,6 +50,108 @@ window.DealsView = (() => {
 
   function badge(status) {
     return `<span class="deal-badge ${esc(status)}">${esc(status || "unknown")}</span>`;
+  }
+
+  // ---------- source and conversation references ----------
+  function codeHTML(refs, open = false) {
+    if (!refs?.length) return "";
+    const nodes = new Map((window.ATLAS?.nodes || []).map(node => [node.id, node]));
+    return refs.map(ref => {
+      const file = nodes.get(ref.file);
+      const name = ref.file.split("/").pop();
+      const link = `<a href="#file=${encodeURIComponent(ref.file)}">${esc(name)}:${ref.line} ↗</a>`;
+      if (!file?.content) return `<div class="code-ref">${link}</div>`;
+      const lines = file.content.split("\n"), start = Math.max(0, ref.line - 3), end = Math.min(lines.length, ref.line + 9);
+      const symbol = (file.symbols || []).filter(sym => sym.line <= ref.line).sort((a, b) => b.line - a.line)[0];
+      const body = lines.slice(start, end).map((text, i) => `<span class="${start + i + 1 === ref.line ? "hit" : ""}"><i>${start + i + 1}</i>${esc(text)}</span>`).join("\n");
+      return `<details class="code-ref" ${open ? "open" : ""}><summary><code>${esc(ref.file)}</code> line ${ref.line}${symbol ? ` · in <code>${esc(symbol.name)}</code>` : ""} · ${link}</summary><pre class="code-excerpt">${body}</pre></details>`;
+    }).join("");
+  }
+
+  // step index -> {response, trigger}: indexes into record.messages
+  function stepMessages(record) {
+    const out = record.decisions.map(() => ({response: null, trigger: null}));
+    record.messages.forEach((message, i) => {
+      const step = stepFor(record, message);
+      if (step !== null && step >= 0 && out[step].response === null) out[step].response = i;
+    });
+    out.forEach((entry, step) => {
+      const sid = record.decisions[step].move?.supplier_id;
+      const response = entry.response !== null ? record.messages[entry.response] : null;
+      let best = null;
+      record.messages.forEach((message, i) => {
+        if (message.from !== "supplier" || message.supplier_id !== sid) return;
+        const before = response ? (response.closing ? true : message.index < response.index)
+          : !message.at || !record.decisions[step].at || record.times || message.at <= record.decisions[step].at;
+        if (before) best = i;
+      });
+      entry.trigger = best;
+    });
+    return out;
+  }
+
+  function excerptHTML(record, i, label) {
+    if (i === null || i === undefined) return "";
+    const message = record.messages[i];
+    const who = message.from === "buyer" ? "We" : (record.suppliers?.[message.supplier_id] || message.supplier_id);
+    const prices = (message.term_sheets || []).map(t => t.terms?.unit_price).filter(p => p != null);
+    const text = message.closing ? (message.action?.type === "accept" ? "Accepted " + (message.action.term_sheet_id || "") : message.action?.type)
+      : (message.body || "").replace(/\s+/g, " ").slice(0, 260) + ((message.body || "").length > 260 ? "…" : "");
+    return `<div class="excerpt ${message.from}"><div class="muted">${esc(label)} · ${esc(who)} · ${esc(fmtClock(message.at))}${message.status ? " · " + esc(message.status) : ""}${prices.length ? " · €" + prices.map(esc).join(" / ") : ""}</div>${esc(text)}</div>`;
+  }
+
+  function conversationHTML(record, step, links) {
+    const entry = links[step] || {};
+    const parts = excerptHTML(record, entry.trigger, "Answered") + excerptHTML(record, entry.response, "Sent");
+    return parts ? `${parts}<button type="button" class="link-button" data-show="${step}">Show in chat ›</button>` : '<p class="muted">No message in the conversation for this step.</p>';
+  }
+
+  function treeCounts(record) {
+    const counts = new Map();
+    if (record) record.decisions.forEach(step => step.path.forEach(id => counts.set(id, (counts.get(id) || 0) + 1)));
+    else index().deals.forEach(deal => Object.entries(deal.nodes || {}).forEach(([id, [n]]) => counts.set(id, (counts.get(id) || 0) + n)));
+    return counts;
+  }
+
+  // The whole tree, every branch shown; `selected` is the branch whose details are open.
+  function fullTreeHTML(record, selected) {
+    const nodes = index().tree, counts = treeCounts(record);
+    const branch = parent => {
+      const items = nodes.filter(n => n.parent === parent);
+      return items.length ? `<ul>${items.map(node => `<li class="${counts.get(node.id) ? "visited" : "unvisited"} ${selected === node.id ? "focus on-path" : ""}"><button type="button" class="tree-node" data-full="${esc(node.id)}" title="${esc(node.why)}"><span>${esc(node.label)}</span>${counts.get(node.id) ? `<b>${counts.get(node.id)}</b>` : ""}${node.source?.length ? '<em aria-label="has source">‹/›</em>' : ""}</button>${branch(node.id)}</li>`).join("")}</ul>` : "";
+    };
+    return `<div class="decision-tree full">${branch(null)}</div>`;
+  }
+
+  function nodeDetailHTML(id, record) {
+    const node = tree().get(id);
+    if (!node) return '<p class="muted">Select a branch to see why it exists, the code behind it and the conversation it answered.</p>';
+    const parent = node.parent && tree().get(node.parent);
+    let uses = "";
+    if (record) {
+      const links = stepMessages(record);
+      const steps = record.decisions.map((step, i) => ({step, i})).filter(({step}) => step.path.includes(id));
+      uses = `<h4>In this conversation (${steps.length} step${steps.length === 1 ? "" : "s"})</h4>${steps.length ? steps.map(({step, i}) => `<div class="node-use"><a href="#deal=${encodeURIComponent(record.id)}&step=${i + 1}">Step ${i + 1}</a> <span class="muted">${esc(fmtClock(step.at))} · ${esc(pathLabels(step.path).slice(-1)[0])}</span>${conversationHTML(record, i, links)}</div>`).join("") : '<p class="muted">This deal did not take this branch.</p>'}`;
+    } else {
+      const deals = index().deals.filter(deal => deal.nodes?.[id]);
+      const total = deals.reduce((sum, deal) => sum + deal.nodes[id][0], 0);
+      uses = `<h4>Taken ${total} time${total === 1 ? "" : "s"} in ${deals.length} of ${index().deals.length} deals</h4>${deals.slice(0, 12).map(deal => `<div class="node-use"><a href="#deal=${encodeURIComponent(deal.id)}&step=${deal.nodes[id][1]}">${esc((deal.case_id || "").replace("case:", ""))} · step ${deal.nodes[id][1]}</a> <span class="muted">${esc(fmtTime(deal.started_utc))} · score ${score(deal.score)} · ${esc(deal.run || deal.source || "")}</span></div>`).join("")}${deals.length > 12 ? `<p class="muted">…and ${deals.length - 12} more.</p>` : ""}`;
+    }
+    return `<div class="node-detail"><p class="breadcrumb">${parent ? esc(pathLabels(chainOf(id)).join(" › ")) : "Root"}</p><h3>${esc(node.label)}</h3><p class="why">${esc(node.why)}</p>
+      ${node.source?.length ? `<h4>Source</h4>${codeHTML(node.source, true)}` : ""}${uses}</div>`;
+  }
+
+  function chainOf(id) {
+    const nodes = tree(), out = [];
+    for (let at = id; at; at = nodes.get(at)?.parent) out.unshift(at);
+    return out;
+  }
+
+  function treePageHTML() {
+    const selected = view.full;
+    return `<p class="breadcrumb">DECISION TREE</p><h1>How the buyer chooses every move.</h1>
+      <p class="intro">The complete decision tree of the routed buyer. Every branch links to the code that implements it and to the deals where it was taken; open a deal to read the conversation that led there. Counts are over all ${index().deals.length} stored deals.</p>
+      <div class="tree-page"><section class="deal-path">${fullTreeHTML(null, selected)}</section><section class="deal-path">${nodeDetailHTML(selected, null)}</section></div>`;
   }
 
   // ---------- list ----------
@@ -128,7 +232,8 @@ window.DealsView = (() => {
       const claims = (message.claim_results || []).map(c => `<span class="claim ${esc(c.result)}">claim ${esc(c.index)}: ${esc(c.result)}</span>`).join("");
       const action = message.action ? `<p class="chat-action">${message.action.type === "accept" ? "✔ Accepted " + esc((message.action.term_sheet_id || "").replace("offer:", "offer ")) : message.action.type === "walk_away" ? "✖ Walked away" : esc(message.action.type)}</p>` : "";
       const to = view.thread === "all" && Object.keys(suppliers).length > 1 ? `<span class="chat-thread">${message.from === "buyer" ? "to" : "thread"} ${esc(shortId(message.supplier_id))}</span>` : "";
-      return `${divider}<div class="chat-row ${message.from}"><div class="chat-bubble ${message.closing ? "closing" : ""}">
+      const at = record.messages.indexOf(message);
+      return `${divider}<div class="chat-row ${message.from}" id="msg-${at}"><div class="chat-bubble ${message.closing ? "closing" : ""} ${view.flash?.includes(at) ? "flash" : ""}">
         <div class="chat-meta"><strong>${esc(name)}</strong> ${to} <time datetime="${esc(message.at || "")}">${esc(fmtClock(message.at))}</time>${message.status ? ` ${badge(message.status)}` : ""}${step >= 0 && step !== null ? ` <a class="step-link" href="#deal=${encodeURIComponent(record.id)}&step=${step + 1}">step ${step + 1} ›</a>` : ""}</div>
         ${message.body ? `<div class="chat-body">${esc(message.body).replace(/\n/g, "<br>")}</div>` : ""}${action}
         ${sheetsHTML(message.term_sheets, accepted)}${claims ? `<div class="claims">${claims}</div>` : ""}${message.attachments?.length ? `<div class="muted">📎 ${message.attachments.map(esc).join(", ")}</div>` : ""}
@@ -160,6 +265,7 @@ window.DealsView = (() => {
   }
 
   function stepsHTML(record) {
+    const links = stepMessages(record), nodes = tree();
     const steps = record.decisions.map((step, i) => ({step, i})).filter(({step}) => !view.node || step.path.includes(view.node));
     return `<ol class="steps">${steps.map(({step, i}) => {
       const move = step.move || {};
@@ -173,7 +279,9 @@ window.DealsView = (() => {
         <div class="crumbs">${pathLabels(step.path).map(esc).join(" <span>›</span> ")}</div>
         <p class="why">${esc(leafWhy(step))}</p>
         <div><strong>${what}</strong></div>
-        <div class="muted">${step.decision_s != null ? `decided in ${Number(step.decision_s).toFixed(1)} s` : ""}${step.error ? ` · ${esc(step.error)}` : ""} ${sent}</div>${reply}${proposed}</li>`;
+        <div class="muted">${step.decision_s != null ? `decided in ${Number(step.decision_s).toFixed(1)} s` : ""}${step.error ? ` · ${esc(step.error)}` : ""} ${sent}</div>${reply}${proposed}
+        <details class="step-more" ${view.step === i ? "open" : ""}><summary>Conversation</summary>${conversationHTML(record, i, links)}</details>
+        <details class="step-more"><summary>Code</summary>${codeHTML([...step.path].reverse().map(id => nodes.get(id)?.source || []).find(refs => refs.length) || [])}</details></li>`;
     }).join("")}</ol>`;
   }
 
@@ -187,8 +295,10 @@ window.DealsView = (() => {
       <div class="stats"><div class="stat"><strong>${score(result.score)}</strong><span>Score</span></div><div class="stat"><strong>${result.deal ? esc(record.suppliers?.[result.supplier_id] || shortId(result.supplier_id)) : esc(result.end_reason || (record.status === "live" ? "Negotiating" : "No deal"))}</strong><span>${result.deal ? `Deal${result.terms?.unit_price != null ? " at €" + esc(result.terms.unit_price) : ""}` : "Outcome"}</span></div><div class="stat"><strong>${euro(result.cost_eur ?? result.c_deal)}</strong><span>Total cost C (opening ${euro(result.opening_cost_eur ?? result.c_open)}, best ${euro(result.reference_cost_eur ?? result.c_best)})</span></div><div class="stat"><strong>${record.decisions.length}</strong><span>Decisions (${record.decisions.filter(d => d.route === "fast" || d.route === "strong").length} by the model)</span></div></div>
       ${breakdown ? `<div class="chips">${breakdown}</div>` : ""}${record.error ? `<p class="warn">${esc(record.error)}</p>` : ""}
       <div class="deal-layout"><section class="deal-chat" aria-label="Conversation">${chatHTML(record)}</section>
-      <aside class="deal-path" aria-label="Decision path"><h2>Decision path</h2><p class="muted">How the program chose each move. Counts show how often each branch was taken in this deal; select a branch to filter the steps, or a step to trace its path.</p>${treeHTML(record)}
-      ${view.node ? `<p class="muted">Steps through <strong>${esc(tree().get(view.node)?.label || view.node)}</strong> · <button type="button" class="link-button" data-node="">show all</button></p>` : ""}${stepsHTML(record)}</aside></div>
+      <aside class="deal-path" aria-label="Decision path"><div class="thread-tabs" role="group" aria-label="Decision views"><button type="button" class="thread-tab" data-panel="path" aria-pressed="${view.panel === "path"}">Path in this deal</button><button type="button" class="thread-tab" data-panel="full" aria-pressed="${view.panel === "full"}">Full decision tree</button></div>
+      ${view.panel === "full" ? `<h2>Full decision tree</h2><p class="muted">Every branch the buyer program has. Counts are this deal's; select a branch for its code and the messages it answered here.</p>${fullTreeHTML(record, view.full)}${nodeDetailHTML(view.full, record)}`
+        : `<h2>Decision path</h2><p class="muted">How the program chose each move. Counts show how often each branch was taken in this deal; select a branch to filter the steps, or a step to trace its path and its messages.</p>${treeHTML(record)}
+      ${view.node ? `<p class="muted">Steps through <strong>${esc(tree().get(view.node)?.label || view.node)}</strong> · <button type="button" class="link-button" data-node="">show all</button> · <button type="button" class="link-button" data-panel="full" data-full-pick="${esc(view.node)}">code ›</button></p>` : ""}${stepsHTML(record)}`}</aside></div>
       <p class="muted"><label class="setting"><input id="deal-auto" type="checkbox" ${view.auto ? "checked" : ""}> Auto-refresh every 5 s</label></p>`;
   }
 
@@ -199,7 +309,30 @@ window.DealsView = (() => {
     root.querySelector("#deal-auto")?.addEventListener("change", event => setAuto(event.target.checked));
     root.querySelectorAll("[data-thread]").forEach(button => button.addEventListener("click", () => { view.thread = button.dataset.thread; render(view.route, true); }));
     root.querySelectorAll("[data-node]").forEach(button => button.addEventListener("click", () => { view.node = button.dataset.node && view.node !== button.dataset.node ? button.dataset.node : null; render(view.route, true); }));
-    root.querySelectorAll("[data-step]").forEach(button => button.addEventListener("click", () => { const i = Number(button.dataset.step); view.step = view.step === i ? null : i; render(view.route, true); }));
+    root.querySelectorAll("[data-step]").forEach(button => button.addEventListener("click", () => { const i = Number(button.dataset.step); view.step = view.step === i ? null : i; if (view.step !== null) flash(view.step); render(view.route, true); }));
+    root.querySelectorAll("[data-panel]").forEach(button => button.addEventListener("click", () => { view.panel = button.dataset.panel; if (button.dataset.fullPick) view.full = button.dataset.fullPick; render(view.route, true); }));
+    root.querySelectorAll("[data-full]").forEach(button => button.addEventListener("click", () => {
+      if (view.route.startsWith("tree")) { location.hash = "tree=" + encodeURIComponent(button.dataset.full); return; }
+      view.full = view.full === button.dataset.full ? null : button.dataset.full; render(view.route, true);
+    }));
+    root.querySelectorAll("[data-show]").forEach(button => button.addEventListener("click", () => { flash(Number(button.dataset.show)); render(view.route, true); scrollToFlash(); }));
+  }
+
+  function flash(step) {
+    const record = records.get(view.route?.slice(5));
+    if (!record) return;
+    const entry = stepMessages(record)[step] || {};
+    view.flash = [entry.trigger, entry.response].filter(i => i !== null && i !== undefined);
+    const thread = record.decisions[step]?.move?.supplier_id;
+    if (view.thread !== "all" && view.thread !== thread) view.thread = "all";
+  }
+
+  function scrollToFlash() {
+    const first = view.flash?.length && document.getElementById(`msg-${Math.min(...view.flash)}`);
+    if (!first) return;
+    const chat = first.closest(".chat");
+    chat.scrollTop = first.offsetTop - chat.offsetTop - 12;
+    first.scrollIntoView({block: "nearest"});
   }
 
   function render(route, keepScroll = false, section = null) {
@@ -208,11 +341,15 @@ window.DealsView = (() => {
     if (stepPart) section = "step=" + stepPart;
     const changed = route !== view.route;
     view.route = route;
-    if (changed) { view.thread = "all"; view.node = null; view.step = null; }
+    if (changed) { view.thread = "all"; view.node = null; view.step = null; view.flash = null; view.full = null; view.panel = "path"; }
     const stepMatch = /(?:^|&)step=(\d+)/.exec(section || "");
-    if (stepMatch) view.step = Number(stepMatch[1]) - 1;
+    if (stepMatch) { view.step = Number(stepMatch[1]) - 1; view.pending = true; }
     const root = el();
-    if (route === "deals") {
+    if (route === "tree" || route.startsWith("tree=")) {
+      view.full = route.startsWith("tree=") ? decodeURIComponent(route.slice(5)) : null;
+      root.innerHTML = treePageHTML();
+      document.title = "Decision tree · Tacto";
+    } else if (route === "deals") {
       root.innerHTML = listHTML();
       document.title = "Deals · Tacto";
     } else {
@@ -223,6 +360,8 @@ window.DealsView = (() => {
         root.innerHTML = `<p class="breadcrumb"><a href="#deals">DEAL JOURNAL</a></p><h1>${known ? esc(known.title || id) : "Deal not found"}</h1><p class="empty">${known ? "Loading the conversation…" : "This deal is not in the journal index."}</p>`;
         if (known) load(`deals/${encodeURIComponent(id)}.js`);
       } else {
+        const arrived = view.pending && view.step !== null;
+        if (arrived) { view.pending = false; flash(view.step); keepScroll = false; }
         root.innerHTML = dealHTML(record);
         document.title = `${(record.case_id || "").replace("case:", "")} deal · Tacto`;
       }
@@ -231,6 +370,7 @@ window.DealsView = (() => {
     if (!keepScroll) {
       const target = view.step != null && document.getElementById(`step-${view.step + 1}`);
       if (target) target.scrollIntoView({block: "center"}); else window.scrollTo(0, 0);
+      scrollToFlash();
     }
   }
 

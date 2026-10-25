@@ -167,6 +167,18 @@ try {
   await evaluate("document.querySelector('.step-head').click()");
   await until("document.querySelectorAll('.decision-tree li.on-path').length >= 2");
   assert.ok(await evaluate("[...document.querySelectorAll('.chat-meta time')].every(t => t.dateTime)"), "Every message has a time");
+  await evaluate("[...document.querySelectorAll('[data-panel]')].find(b => b.dataset.panel === 'full').click()");
+  await until("document.querySelector('.decision-tree.full') !== null");
+  await evaluate("document.querySelector('.decision-tree.full li.visited [data-full]').click()");
+  await until("document.querySelector('.node-detail h3') !== null && document.querySelector('.node-detail .code-excerpt .hit') !== null");
+  await evaluate("document.querySelector('.node-detail [data-show]')?.click()");
+  await evaluate("document.querySelector('[data-tab=\"tree\"]').click()");
+  await until("document.querySelector('#deals-view h1')?.textContent === 'How the buyer chooses every move.'");
+  await evaluate("[...document.querySelectorAll('[data-full]')].find(b => b.dataset.full === 'bounded_concession').click()");
+  await until("location.hash === '#tree=bounded_concession' && document.querySelector('.node-detail h3')?.textContent === 'Bounded concession'");
+  assert.ok(await evaluate("document.querySelector('.node-detail .code-ref a').getAttribute('href').startsWith('#file=src%2Ftacto_negotiator')"));
+  await evaluate("document.querySelector('.node-use a').click()");
+  await until("document.querySelectorAll('.chat-bubble.flash').length > 0");
   await evaluate("document.querySelector('[data-tab=\"DEALS.md\"]').click()");
   await until("document.querySelector('#deals-view').hidden && document.querySelector('#guide h1')?.textContent === 'Reading a deal'");
   await evaluate("document.querySelector('[data-tab=\"COMPETITION.md\"]').click()");

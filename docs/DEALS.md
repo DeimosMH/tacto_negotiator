@@ -38,6 +38,16 @@ The top of the page shows the score, the deal, and its total cost C next to the 
 
 Branches this deal used are solid and carry how often they were taken; unused branches are faded. Select a branch to list only the steps that went through it, or select a step to highlight its whole path. Each step shows its route (script, fast, fallback, concurrent), the path in words, why that branch exists, what was sent at what prices, how long the decision took, and the supplier's reply. A step marked **not sent** was decided too late: the runner let that thread time out once instead of sending a stale move.
 
+## The full decision tree
+
+**Negotiations → Decision tree** (`#tree`) shows every branch the buyer program has, with how often each was taken across all stored deals. Select a branch to see:
+
+- **why it exists**, in one sentence;
+- **its source**: the lines that implement it, with the anchor line highlighted, the function it is in, and a link to the file in the source browser. The line numbers are found again every time the index is written, so they follow the code; a test fails if a branch loses its anchor;
+- **where it was taken**: the deals that went through it, each linking straight to that step of the conversation.
+
+Inside a deal, the decision panel has the same view as a second tab, **Full decision tree**. Its counts are that deal's, and a selected branch lists the messages it answered in this conversation: the supplier message the decision replied to and the message it sent, with **Show in chat** to highlight both. Each step in **Path in this deal** has the same two links: **Conversation** (what it answered and what it sent) and **Code** (the source of the branch that decided it). A link to a step (`#deal=<id>&step=<n>`) opens the deal with that step's messages highlighted.
+
 ## Reading a deal to improve the agent
 
 - **A low score with few rounds:** look for an accept step early in the path, and for which branch made it (`small_cost_gap`, `round_reserve`, `terminal_offers`).
