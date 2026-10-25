@@ -61,6 +61,10 @@ CONDITIONAL_WORDING = ("subject to", "provided that", "only if", "pending approv
 # value, often far above ours. Contract length, volume and index clauses are security instead.
 SUPPLIER_CASH_TERMS = {"payment_days", "chargeback_eur_per_complaint", "ppm_commitment", "lead_time_days",
                        "tooling_eur", "incoterm"}
+# Terms that cost us nothing and are worth more to the supplier in this direction (`_free_terms`): a slower
+# delivery up to our need (hosted P10 priced 54 -> 42 days at +6.5 %). Not contract length: hosted P07 picked
+# 24 months over 36 at the same price in every run, and a cheaper 36-month sheet drew an earlier final offer.
+SUPPLIER_FAVOURS = {"lead_time_days": 1}
 # An index-clause sheet needs a series rise this many times its expected cost to us and (relationship goals)
 # must close this share of the gap from the standing offer to our cheapest sheet (`_clause_sheet`).
 CLAUSE_RISE_RATIO, CLAUSE_GAP_SHARE = 3.0, 0.5
@@ -161,6 +165,8 @@ class RoutedAgent:
                     return None
                 if not must_haves_ok(case, complete, std) or not math.isfinite(decision_cost(case, complete, std, sid)):
                     return None
+                if reprice:  # before pricing, so repeat and package checks see the terms we send
+                    complete = self._free_terms(case, complete, std, sid)
                 if complete not in clean:
                     clean.append(complete)
             # The shared concession schedule binds scripts and models: a sheet above the ask limit (or an
@@ -228,6 +234,9 @@ class RoutedAgent:
                 # term priced against uncovered demand) next to 4.57 and countered 6.00 instead of 5.40.
                 top = max(t["unit_price"] for t in clean)
                 clean = [t for t in clean if t["unit_price"] >= 0.9 * top] or clean[:1]
+                if reprice:  # added sheets (`_toward_sheets`, clause sheet) carry the free terms too
+                    lifted = [self._free_terms(case, t, std, sid) for t in clean]
+                    clean = [t for i, t in enumerate(lifted) if t not in lifted[:i]]
             body = self._grounded_body(case, threads, sid, body, clean)
             move = {"supplier_id": sid, "message": {
                 "subject": subject, "body": body, "term_sheets": [{"terms": t} for t in clean]}}
@@ -268,6 +277,30 @@ class RoutedAgent:
                     and total_cost(case, variant, std) <= limit)
             if (equal or near) and variant not in sheets + out:
                 out.append(variant)
+        return out
+
+    @staticmethod
+    def _free_terms(case, sheet, std, sid):
+        """`sheet` with every term that costs us nothing moved the supplier's way (`SUPPLIER_FAVOURS`), as
+        far as the options allow at exactly our cost (C and cash cost within a cent): a lead time up to our
+        need (no late cost). A supplier prices
+        what such terms are worth to it (hosted P10: 54 -> 42 days cost +6.5 %); left at its own quote
+        they were value given away for nothing (out-of-sample P12 asked the quoted 21 days, 23 needed).
+        Every sheet carries them, so our package stays the same from round to round."""
+        cost, cash = decision_cost(case, sheet, std, sid), total_cost(case, sheet, std)
+        out = dict(sheet)
+        for field, sign in SUPPLIER_FAVOURS.items():
+            options = [o for o in case.get("term_options", {}).get(field) or [] if type(o) in (int, float)]
+            if field not in case["negotiable"] or type(out.get(field)) not in (int, float):
+                continue
+            for option in sorted(options, key=lambda o: -sign * o):
+                if sign * (option - out[field]) <= 0:
+                    break
+                variant = {**out, field: option}
+                if (must_haves_ok(case, variant, std) and abs(total_cost(case, variant, std) - cash) <= 0.01
+                        and abs(decision_cost(case, variant, std, sid) - cost) <= 0.01):
+                    out = variant
+                    break
         return out
 
     @staticmethod

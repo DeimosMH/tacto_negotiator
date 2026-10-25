@@ -564,3 +564,23 @@ def test_a_failed_model_never_walks_out_of_an_rfq_with_rounds_left():
     move = agent.decide_timed(case, threads, deadline=agent.clock() + 30)
     assert agent.last_decision["fallback"]
     assert (move["message"].get("action") or {}).get("type") != "walk_away"
+
+
+def test_terms_that_cost_us_nothing_go_the_suppliers_way():
+    """Out-of-sample P12 asked the supplier's quoted 21 days with 23 needed: a lead time up to the need costs
+    nothing in C, so a sheet gives it to the supplier; nothing else moves."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parent.parent
+    cases = {c["case_id"]: c for c in json.loads((root / "tests/fixtures/practice_cases.json").read_text())["cases"]}
+    case = cases["case:P12"]
+    first = {f: case["term_options"][f][0] for f in case["negotiable"] if f != "unit_price"}
+    sheet = {**first, "unit_price": 10.0, "lead_time_days": 21}
+    free = RoutedAgent._free_terms(case, sheet, {}, None)
+    assert free == {**sheet, "lead_time_days": case["buyer"]["need_lead_time_days"]}
+    assert total_cost(case, free) == total_cost(case, sheet)
+    case = next(c for c in cases.values() if c["buyer"]["horizon_years"] == 2 and "contract_months" in c["negotiable"])
+    first = {f: case["term_options"][f][0] for f in case["negotiable"] if f != "unit_price"}
+    for months in (12, 24):  # contract length stays ours to choose: hosted P07 preferred 24 months over 36
+        sheet = {**first, "unit_price": 10.0, "contract_months": months}
+        assert RoutedAgent._free_terms(case, sheet, {}, None) == sheet
