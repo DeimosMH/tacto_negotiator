@@ -25,6 +25,7 @@ log = logging.getLogger("arena")
 DEFAULT_DIR = Path(__file__).resolve().parents[2] / "docs" / "deals"
 INDEX_NAME = "deals.js"
 _LOCK = threading.Lock()  # parallel cases share the index
+_SUMMARIES = {}  # record file -> (mtime, index row)
 
 # The routed buyer's decision tree (agents/routed.py `decide_timed`, `_script`, `_structured_bargain`;
 # play.py for the runner). (id, parent, label, why) - the UI draws it and marks each step's path.
@@ -298,7 +299,11 @@ def write_index(folder):
         rows = []
         for file in sorted(folder.glob("*.json")):
             try:
-                rows.append(summary(json.loads(file.read_text(encoding="utf-8"))))
+                stamp = file.stat().st_mtime_ns
+                cached = _SUMMARIES.get(file)
+                if cached is None or cached[0] != stamp:  # read each record once per change, not per move
+                    cached = _SUMMARIES[file] = (stamp, summary(json.loads(file.read_text(encoding="utf-8"))))
+                rows.append(cached[1])
             except (OSError, ValueError, KeyError) as error:
                 log.warning("deal index skipped %s: %s", file.name, error)
         rows.sort(key=lambda row: (row.get("started_utc") or "", row["id"]), reverse=True)
