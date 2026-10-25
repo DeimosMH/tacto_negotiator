@@ -17,6 +17,9 @@ import httpx
 EFFORTS = {"low", "medium", "high", "xhigh", "max"}
 
 
+# Claude models with fast mode (Claude API, research preview); others run at standard speed.
+FAST_MODE_MODELS = ("claude-opus-5-5", "claude-opus-5", "claude-opus-4-8")
+
 def response_metadata(response):
     """Usage-only observation for accounting; never expose response text or request credentials."""
     status = response.get("status") if isinstance(response, dict) else None
@@ -206,7 +209,9 @@ class AnthropicCompletionClient(CompletionClient):
                     try:
                         message = await client.beta.messages.create(
                             speed="fast", betas=["server-side-fallback-2026-07-01", "fast-mode-2026-02-01"], **request)
-                    except anthropic.RateLimitError:  # fast mode has its own rate limit: standard speed instead
+                    except anthropic.APIStatusError as error:  # fast capacity short or not offered: standard speed
+                        if error.status_code not in (400, 429) and error.status_code < 500:
+                            raise
                         message = None
                 if message is None:
                     message = await client.beta.messages.create(betas=["server-side-fallback-2026-07-01"], **request)
@@ -243,12 +248,16 @@ def routed_completions_from_env():
             "base_url": os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1"),
             "semaphore": threading.BoundedSemaphore(maximum),
         }
+    speed = None
     if provider == "anthropic":  # fast mode by default: same model and effort, ~2.3x faster output
         speed = os.environ.get("LLM_SPEED", "fast").strip().lower()
-        if speed not in ("standard", "normal", "off", ""):
-            shared["speed"] = speed
-    fast = client(os.environ.get("LLM_MODEL", default_model), effort=os.environ.get("LLM_EFFORT", "low"), **shared)
+        speed = None if speed in ("standard", "normal", "off", "") else speed
+
+    def tier(model, effort):  # fast mode only for the models that have it (review round 3, B4)
+        extra = {"speed": speed} if speed and model.startswith(FAST_MODE_MODELS) else {}
+        return client(model, effort=effort, **shared, **extra)
+
+    fast = tier(os.environ.get("LLM_MODEL", default_model), os.environ.get("LLM_EFFORT", "low"))
     strong_model = os.environ.get("LLM_STRONG_MODEL", "").strip()
-    strong = (client(strong_model, effort=os.environ.get("LLM_STRONG_EFFORT", "medium"), **shared)
-              if strong_model else None)
+    strong = tier(strong_model, os.environ.get("LLM_STRONG_EFFORT", "medium")) if strong_model else None
     return fast, strong

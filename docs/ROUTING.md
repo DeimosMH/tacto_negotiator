@@ -11,7 +11,7 @@ It is the default for tacto play and tacto run; --agent routed selects it explic
 | Block | Files | Responsibility and boundary |
 | --- | --- | --- |
 | Routing and validation | [routed.py](../src/tacto_negotiator/agents/routed.py), [policy tests](../tests/test_routed.py), [script coverage tests](../tests/test_script_coverage.py) | Select script/fast/strong, enumerate bounded complete packages, prepare the same context for either model, validate every action and choose a deterministic fallback. It does not send arena requests. |
-| Deadline-aware model execution | [completion.py](../src/tacto_negotiator/agents/completion.py), [adapter tests](../tests/test_completion.py) | Apply one absolute deadline across concurrency queueing and HTTP response reading. Send effort and output limits to OpenAI Responses; cancel expired work, with no automatic retries. |
+| Deadline-aware model execution | [completion.py](../src/tacto_negotiator/agents/completion.py), [adapter tests](../tests/test_completion.py) | Apply one absolute deadline across concurrency queueing and HTTP response reading. Send effort and output limits to the Claude Messages API (or OpenAI Responses); cancel expired work, with no automatic retries. |
 | Runner and configuration | [play.py](../src/tacto_negotiator/play.py), [cli.py](../src/tacto_negotiator/cli.py), [integration tests](../tests/test_routing_integration.py) | Pass remaining thread/wave time to the router, use its closing guard, and construct shared completion clients with a separate agent instance for each case. |
 
 These blocks were implemented as separate work assignments. They run as one buyer application; there is no extra coordinator model and no group of competing buyer agents at runtime.
@@ -50,7 +50,7 @@ The code distinguishes a deterministic calculation from a deterministic negotiat
 | Decision time is exhausted or the wave is in its closing reserve | Script closure | Another model call would compete with the time needed to submit the result. |
 | Every live supplier is agreed/final or has no moves left | Script closure | Compare validated standing offers and the alternative; accept an eligible offer or walk away. |
 | A required negotiable quote term is missing from the offer and known defaults | Targeted scripted question, where a move remains | Missing information should be requested rather than invented by a larger model. |
-| Routine/leverage case with one supplier, only price/payment negotiation, no stated alternative and no prior buyer move | One scripted opening counter at 90% of the standing unit price, if valid and cheaper under C | Preserves the initial narrow policy; further structured replies can use bounded package search. |
+| Routine/leverage case with one supplier, only price/payment negotiation, no stated alternative and no prior buyer move | One scripted opening counter at the anchored price by category goal (`ANCHOR_BY_GOAL`: 7–25 % below the standing unit price), if valid and cheaper under C | Preserves the initial narrow policy; further structured replies can use bounded package search. |
 | Complete routine/leverage quote with bounded legal options | Enumerated complete packages | Compare full C, including payment/freight/coverage effects, and submit up to three validated alternatives. |
 | A must-have is currently violated but can be repaired through negotiable fields | Explicit repaired package | A cheaper invalid deal is not accepted; the proposed term sheet must satisfy the requirement. |
 | Several suppliers have complete current quotes | Full-cost package comparison | Service untried and less-visited bidders before repeatedly favoring one; rank candidates by C rather than unit price. |
@@ -66,7 +66,7 @@ Package search applies only to routine/leverage cases with complete known quote 
 
 Legal supplier standards survive completion unchanged, even when absent from term_options. Candidate prices therefore describe the same terms that reach the wire. The inner search checks cost and must-haves; the chosen message receives full validation once, avoiding hundreds of repeated parses of an unchanged quote.
 
-For enumerated opening packages, the anchor is 90% of the current quote's full cost C. After a structured offer, the next cost ceiling is the midpoint between the cheapest prior proposed package's C and the current quote's C, capped at that current cost. A known alternative can lower the ceiling further. Code solves each package's unit price under the same cost ceiling and verifies the rounded result. These are explicit bargaining policies, not inferred supplier floors. The original narrow first price/payment counter retains its 90%-of-unit-price anchor.
+For enumerated opening packages, the unit price is anchored below the quote by category goal (`ANCHOR_BY_GOAL` in play.py), and no opening sheet asks more than 5 points below that anchor (`OPENING_SLACK`). After a structured offer, the next cost ceiling (`ask_limit`) moves our last ask a share of the gap to the supplier's best offer so far: 20 % (40 % for routine), 10 % after the supplier's own large step. It never exceeds a rival's standing acceptable offer or the cheapest compliant opening in the case. A known alternative can lower the ceiling further. Code solves each package's unit price under the same cost ceiling and verifies the rounded result. These are explicit bargaining policies, not inferred supplier floors. The narrow first price/payment counter uses the same goal anchor.
 
 The packages include favorable non-price terms, ranked by their cost at a common reference price, and, when feasible, an alternative retaining the current non-price terms. A third distinct combination can fill the remaining slot. Their final prices compensate for those trade-offs: DAP freight and longer payment may receive a higher unit price than EXW and early payment, while all packages stay under the same buyer-cost ceiling. Offering an identical unit price for both packages would let the supplier choose terms that increase the buyer's total cost. Unit-price rounding can leave small differences below the ceiling. The supplier can consider the complete trades; code does not promise that any package will be accepted.
 
@@ -116,7 +116,7 @@ The runner supplies an absolute monotonic deadline to decide_timed. RemoteTable 
 
 Resume and 409 recovery restore offer IDs together with their own terms and include timeout rounds in the remaining-move count. A rejected request is not appended as a successful buyer message. If the current offer cannot be matched to a supplier message or timeout answer, acceptance is blocked. An all-no-bid opening returns its result without calculating an empty thread deadline.
 
-Routed read calls use a per-call timeout no greater than the remaining five-second read allowance, with retries disabled. This covers session/changed-thread metadata and attachments in opening messages, state refreshes and normal supplier replies. A transient metadata-read failure triggers deterministic closure rather than spending another model call on uncertain timing. Attachment read/parse failures leave explicit missing-evidence markers for the routed guard. These are HTTP phase limits: they do not impose a hard total bound on arena pacing, every read phase or supplier POST retries. The longer supplier-response timeout remains unchanged; legacy untimed document errors still propagate normally.
+Routed read calls use a per-call timeout no greater than the remaining five-second read allowance, with retries disabled. This covers session/changed-thread metadata and attachments in opening messages, state refreshes and normal supplier replies. A transient metadata-read failure falls back to the runner's local deadlines; in the final, a case that fails on a network or server error resumes its session. Attachment read/parse failures leave explicit missing-evidence markers for the routed guard. These are HTTP phase limits: they do not impose a hard total bound on arena pacing, every read phase or supplier POST retries. The longer supplier-response timeout remains unchanged; legacy untimed document errors still propagate normally.
 
 CompletionClient waits for a shared concurrency slot only until that deadline, then runs its HTTP operation with the time still available. It reads the complete response inside the deadline, rejects incomplete responses and cancels timed-out async I/O. It creates no background model-call worker. Only the runner sends arena moves, after the router returns a validated decision. Cancellation is cooperative: an uncooperative resolver or custom transport would require process isolation for a hard operating-system deadline.
 
@@ -133,7 +133,7 @@ From the repository root, run the policy, transport and integration checks:
 ```sh
 TACTO_PYTHON="$PWD/.venv/bin/python"
 TACTO_TESTS="$PWD/tests"
-cd /tmp
+cd "$(mktemp -d)"  # an empty directory: stray modules in /tmp can shadow packages
 env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 \
   "$TACTO_PYTHON" -m pytest -q -p no:cacheprovider \
   "$TACTO_TESTS/test_routed.py" \
@@ -148,7 +148,7 @@ To see routing without a server, start again from the repository root:
 
 ```sh
 TACTO_PYTHON="$PWD/.venv/bin/python"
-cd /tmp
+cd "$(mktemp -d)"  # an empty directory: stray modules in /tmp can shadow packages
 env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 "$TACTO_PYTHON" - <<'PY'
 import json
 from tacto_negotiator.agents.routed import RoutedAgent

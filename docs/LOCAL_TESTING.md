@@ -23,7 +23,7 @@ From the repository root, capture the executable and test path, then run in /tmp
 ```sh
 TACTO_PYTHON="$PWD/.venv/bin/python"
 TACTO_TESTS="$PWD/tests"
-cd /tmp
+cd "$(mktemp -d)"  # an empty directory: stray modules in /tmp can shadow packages
 env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 \
   "$TACTO_PYTHON" -m pytest -q -p no:cacheprovider "$TACTO_TESTS"
 ```

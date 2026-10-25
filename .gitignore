@@ -13,3 +13,5 @@ dist/
 htmlcov/
 data/release-sunday/
 logs/
+# local agent worktrees and settings
+.claude/

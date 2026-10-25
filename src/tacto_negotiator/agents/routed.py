@@ -130,7 +130,7 @@ class RoutedAgent:
             if action != "send" or moves_left(case, events) <= 0 or sid in self.unavailable:
                 return None
             if reprice and decision.get("term_sheets") and latest(events).get("status") in {"final_offer", "agreed"}:
-                return None  # countering a final offer made hosted suppliers walk away (v5: 3 of 3; FLOW.md F4)
+                return None  # countering a final offer made hosted suppliers walk away (3 of 7; FLOW.md F4)
             body, subject = decision.get("body", ""), decision.get("subject", f"Re: {case['title']}")
             if not isinstance(body, str) or len(body) > 8000 or not isinstance(subject, str) or len(subject) > 300:
                 return None
@@ -140,7 +140,7 @@ class RoutedAgent:
                 return None
             try:
                 body = self._paced_body(case, threads, sid, body) if reprice else self._strip_wasted_claims(
-                    case, threads, body)
+                    case, threads, body, sid)
             except Exception:  # a text-filter bug must not turn into an accept (round 2 review R-A1)
                 log.exception("text filter failed; sending the unfiltered body")
             sheets = decision.get("term_sheets", [])
@@ -174,7 +174,7 @@ class RoutedAgent:
             # them sent 8 of 10 hosted v4 openings to the fallback.
             limit = ask_limit(case, events, sid) if reprice else math.inf
             if reprice:  # never ask for a deal dearer than one another supplier already offers (hosted P05 v17)
-                limit = min(limit, self._rival_limit(case, threads, sid), self._opening_limit(case, threads))
+                limit = min(limit, self._rival_limit(case, threads, sid), self._opening_limit(case, threads, sid))
             opening = reprice and not any(e.get("from") == "buyer" and e.get("term_sheets") for e in events)
             cap = opening_price_cap(case, events, sid) if opening else math.inf
             low = opening_price_floor(case, events) if opening else 0.0
@@ -342,7 +342,11 @@ class RoutedAgent:
         gap between the standing offer and our cheapest sheet at its floor (the price-only path's best
         hosted result). Without the series' data or a health estimate there is no clause sheet."""
         clauses = [o for o in case.get("term_options", {}).get("index_clause") or [] if o]
-        if "index_clause" not in case["negotiable"] or not clauses or not sheets:
+        # Relationship goals only (review round 3, L3): offered for any goal, our own clause sheet switched
+        # off the held-sheet rule (`_imposed_clause`), whose hosted evidence is P08 0.67 -> 0.86 and P18
+        # 0.56 -> 0.71; the leverage clause gain was the local supplier model's alone.
+        if (case["buyer"].get("category_goal") not in RELATIONSHIP_GOALS or "index_clause" not in case["negotiable"]
+                or not clauses or not sheets):
             return None
         _, terms, std, missing = known_offer(case, events)
         position = {**std, **case.get("fixed_terms", {}), **terms}
@@ -363,9 +367,14 @@ class RoutedAgent:
             variant = {**base, "index_clause": clause}
             days = [d for d in case.get("term_options", {}).get("payment_days") or [] if isinstance(d, (int, float))]
             if "payment_days" in case["negotiable"] and days:
-                # The supplier agrees to this sheet at once, so its terms are final: hosted P02 scored 0.735 at
-                # 90 days (5 runs), 0.684 at 60 and 0.634 at 30 - our model rates them alike, the arena does not.
-                variant["payment_days"] = max(days)
+                # The supplier agrees to this sheet at once, so its terms are final: take the payment term
+                # cheapest for us at its health floor (hosted P02: 90 days 0.735, 60 0.684, 30 0.634; our C
+                # ranks them the same way there - review round 3, L7).
+                def at_floor(d, variant=variant):
+                    priced = {**variant, "payment_days": d}
+                    price = cheapest_price(case, priced, std, sid)
+                    return decision_cost(case, {**priced, "unit_price": price}, std, sid) if price else math.inf
+                variant["payment_days"] = min(days, key=lambda d: (at_floor(d), -d))
             variant["unit_price"] = cheapest_price(case, variant, std, sid)
             if not variant["unit_price"] or not must_haves_ok(case, variant, std):
                 continue
@@ -449,7 +458,7 @@ class RoutedAgent:
         other checked IDs go (kept for later rounds, or already used), missing assigned sentences are
         added. Without any bank entry for the supplier only wasted IDs are stripped."""
         if not self.bank.has_any(case, threads, sid) and not self.bank.used(threads, sid):
-            return self._strip_wasted_claims(case, threads, body)
+            return self._strip_wasted_claims(case, threads, body, sid)
         return self.bank.enforce(body, self.bank.assign(case, threads, sid))
 
     def _new_fact(self, case, threads, sid, body):
@@ -486,11 +495,13 @@ class RoutedAgent:
         return "\n".join(lines)
 
     @staticmethod
-    def _strip_wasted_claims(case, threads, body):
+    def _strip_wasted_claims(case, threads, body, sid=None):
         """Remove IDs whose check cannot help: hosted replays wasted 18 of 38 claims on already-cited
-        IDs, any second forecast (counted once per case), and quotes outside the case."""
-        cited = {ref for events in threads.values() for message in events if message.get("from") == "buyer"
-                 for ref in ID_RE.findall(message.get("body", ""))}
+        IDs, any second forecast (counted once per case), and quotes outside the case. A rival's quote or
+        offer counts once per supplier (api.md): cited to another bidder it is still new to `sid`."""
+        cited = {ref for other, events in threads.items() for message in events if message.get("from") == "buyer"
+                 for ref in ID_RE.findall(message.get("body", ""))
+                 if sid is None or other == sid or not ref.startswith(("quote:", "offer:"))}
         quotes = set(case.get("refs", [])) | {(case["buyer"].get("alternative") or {}).get("ref")}
         forecast = any(ref.startswith("fc:") for ref in cited)
         # Another window of an index already cited is a duplicate: hosted v6-v12 got "already taken into
@@ -608,7 +619,7 @@ class RoutedAgent:
             self._record(case, "script", "deadline_close", start, start)
         return move
 
-    def _opening_limit(self, case, threads):
+    def _opening_limit(self, case, threads, sid=None):
         """Just below the cheapest opening quote in the case: C_open is the score's zero, so a deal at or
         above it scores nothing. Out-of-sample P06: one bidder raised its price on our no-tooling package,
         the other agreed at 1.968M against a 1.894M opening from the first (score 0)."""
@@ -624,10 +635,17 @@ class RoutedAgent:
                 _, terms, std, missing = known_offer(case, events[:first + 1])
                 if missing:
                     continue
-                with contextlib.suppress(KeyError, TypeError, ValueError):
-                    cache[key] = total_cost(case, terms, std)
+                with contextlib.suppress(KeyError, TypeError, ValueError):  # C_open counts compliant quotes only
+                    cache[key] = total_cost(case, terms, std) if must_haves_ok(case, terms, std) else math.inf
             best = min(best, cache.get(key, math.inf))
-        return best * 0.999 if math.isfinite(best) else math.inf
+        if not math.isfinite(best):
+            return math.inf
+        ours = 0.0  # never below our own last ask in this thread (review round 3, B1)
+        sent = [e for e in threads.get(sid, []) if e.get("from") == "buyer" and e.get("term_sheets")] if sid else []
+        if sent:
+            _, _, std, _ = known_offer(case, threads[sid])
+            ours = min((total_cost(case, t.get("terms", t), std) for t in sent[-1]["term_sheets"]), default=0.0)
+        return max(best * 0.999, ours)
 
     @staticmethod
     def _rival_limit(case, threads, sid):

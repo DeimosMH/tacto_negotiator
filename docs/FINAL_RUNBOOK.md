@@ -61,7 +61,7 @@ Until wave 1 starts, the case list returns 403 and the runner keeps waiting. Tha
 - **Concessions:** 20 % of the gap per round, measured in cash cost.
 - **Supplier-health floor:** never pushes a stabilise or secure_supply supplier below the price where the health charge outweighs the saving.
 - **Offer sheets:** the extra sheets in a message cost us the same, and none is priced far below the rest.
-- **Final offers:** never countered, because hosted suppliers walk away. A cheaper alternative in a final offer is sent back once.
+- **Final offers:** no counter-offer, because hosted suppliers walked away when one was countered (3 of 7). The one exception: a cheaper alternative package the supplier itself attached to its final offer is sent back unchanged, once (hosted: 9 of 9 agreed).
 - **Deadlines:** a slow model falls back to a scripted counter, and idle RFQ threads may lapse instead of forcing the case to close.
 
 Hosted practice on 25 October (v1.1 candidate, Claude Opus fast mode): passes of 0.789, 0.804, 0.789, 0.790, 0.797 and 0.793, plus 0.793 through `tacto run --set practice` itself. On the out-of-sample bench (the 9 practice cases never hosted, real model against local suppliers) v1.1 scores 0.797 against v1.0.1's 0.667 ([EVALUATION.md](EVALUATION.md)). Two live runs lost a case to runner errors that are now fixed: an accept of an offer replaced while we decided (re-read and decide again), and a network error (the runner resumes the session). Every hosted practice session since 23 October is in the [deal journal](DEALS.md).

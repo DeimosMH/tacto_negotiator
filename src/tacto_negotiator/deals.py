@@ -514,7 +514,6 @@ def backfill(client, reports, folder, *, thread_events, skip_existing=True):
     conversation from the arena (read-only), the decision trail from the saved report. Times of
     messages are not known for these: the report's start date is attached instead."""
     written = 0
-    titles = {}
     for report_path in reports:
         report = json.loads(Path(report_path).read_text())
         started = report.get("started_utc") or ""
@@ -535,7 +534,6 @@ def backfill(client, reports, folder, *, thread_events, skip_existing=True):
             deal.record.update(id=ident, started_utc=started, finished_utc=report.get("finished_utc") or started,
                                session_id=session_id, status="ended", title=match.get("scenario"),
                                run=report.get("phase"), times="approximate: report start")
-            titles[match["case_id"]] = match.get("scenario")
             deal.threads = threads
             for sid, events in threads.items():
                 for index, _ in enumerate(events):

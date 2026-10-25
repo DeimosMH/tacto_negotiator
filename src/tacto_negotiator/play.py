@@ -540,7 +540,12 @@ def _play(table, case_id, agent, deadline=None):
         try:
             reply = table.send(supplier, message)
         except ArenaError as e:
-            if e.status != 409:
+            # api.md: a 422 changes nothing and uses no round - re-read the thread and decide again rather
+            # than give the case up (review round 3, B3); a validator gap repeating it still ends play.
+            if e.status == 422 and rejected_sends[0] < 2:
+                rejected_sends[0] += 1
+                log.warning("%s: message refused (%s) - re-reading the thread", supplier, e.detail)
+            elif e.status != 409:
                 raise
             reply = e
         return reply, time.monotonic()
@@ -575,6 +580,7 @@ def _play(table, case_id, agent, deadline=None):
             read(m)
     slowest = 0.0  # the longest round so far: decision + the supplier's reply
     rejected_accepts = 0  # accepts the arena refused as not standing (re-read, at most twice)
+    rejected_sends = [0]  # messages the arena refused with a 422 (re-read, at most twice)
     while live_threads(threads):
         decision_deadline, usable = None, None
         if timed_decide:
@@ -670,7 +676,8 @@ def _play(table, case_id, agent, deadline=None):
             sent = msg if supplier == sid else concurrent_sent[supplier]
             if isinstance(reply, ArenaError):
                 log.info("%s: %s", supplier, reply.detail)
-                late = "late" in str(reply.detail).lower()
+                # a refused accept of a replaced offer means a timeout answer replaced it (review round 3, B2)
+                late = "late" in str(reply.detail).lower() or "not a standing offer" in str(reply.detail).lower()
                 reply = table.missed(supplier, reply)  # e.g. late, or the thread or the case has ended
                 received[supplier] = time.monotonic()
                 lapsed.pop(supplier, None)

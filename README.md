@@ -147,7 +147,7 @@ Run from the repository root after installing dependencies:
 
 ```sh
 TACTO_ROOT="$PWD"
-cd /tmp
+cd "$(mktemp -d)"  # an empty directory: stray modules in /tmp can shadow packages
 env -i PATH=/usr/bin:/bin PYTHONDONTWRITEBYTECODE=1 \
   "$TACTO_ROOT/.venv/bin/python" -m pytest -q -p no:cacheprovider "$TACTO_ROOT/tests"
 cd "$TACTO_ROOT"

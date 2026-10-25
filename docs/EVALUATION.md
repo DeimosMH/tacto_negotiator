@@ -95,7 +95,7 @@ The final plays each case once, on cases that never appeared in practice. So the
 
 `--bench synth` rebuilds the 10 hosted cases the same way. Its gaps between C_open and C_best track the recorded ones on 9 of the 10 cases, and its scores rank policies like the recorded replica (`--bench replica`). `--timing final` uses 25–60 s supplier replies instead of 15–40 s. `--strategies routed --live` plays the final's Claude Opus setup against these local suppliers; it reads only `LLM_*` settings, never an arena key.
 
-| Mean score | Scripts, 225 runs | Claude Opus, 45 runs |
+| Mean score | Scripts (45 distinct runs: 9 cases × 5 seeds; waves repeat) | Claude Opus, 45 runs |
 |---|---|---|
 | v1.0.1 on the never-hosted cases | 0.680 (4 zeros) | 0.667 |
 | After the bench fixes | 0.796 (0 zeros) | 0.782 |
@@ -108,4 +108,4 @@ The fixes are general, not case-specific:
 - Supplier-health estimates keep the case's price unit.
 - News that a supplier needs work becomes a checked argument.
 
-**Limits:** the bench supplier is a fitted model. Its lead-time and index-clause valuations are extrapolated from one or two hosted cases, so treat gains that come only from those trades with caution.
+**Limits:** the bench supplier is a fitted model, and repeated waves or hosted runs of a deterministic supplier are one sample, not replications (review round 3, L5/L10). The bug fixes transfer; gains that come from the supplier model's own valuations (clause, lead time, supplier health) are replica-only evidence. Its lead-time and index-clause valuations are extrapolated from one or two hosted cases, so treat gains that come only from those trades with caution.

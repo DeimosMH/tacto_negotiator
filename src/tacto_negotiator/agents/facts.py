@@ -43,8 +43,9 @@ SHRUG_WORDS = ("not change our calculation", "not alter", "does not change our",
 PRIORITY = {"price_path": 0, "should_cost": 1, "rival_quote": 2, "volume_change": 3, "supplier_news": 3,
             "index_change": 4,
             "quality_record": 5, "delivery_record": 5}
-HEDGED = re.compile(r"(covered|bought|secured|hedged)[^.]{0,40}(fixed prices?|until)|fixed prices? until",
-                    re.IGNORECASE)
+# "secured ... until" alone also matched "secured additional capacity until March" (review round 3, L9).
+HEDGED = re.compile(r"(covered|bought|hedged)[^.]{0,40}(fixed prices?|until)|secured[^.]{0,40}fixed prices?"
+                    r"|fixed prices? until", re.IGNORECASE)
 SENTENCE_END = re.compile(r"((?<=[.!?])\s+)")
 CLOSING = re.compile(r"\n\s*(?:kind regards|best regards|regards|best|sincerely|yours)\b", re.IGNORECASE)
 

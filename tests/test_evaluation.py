@@ -204,11 +204,10 @@ def test_relationship_opening_leads_with_an_index_clause_at_its_health_floor():
     assert agent._clause_sheet(case, held, sid, [plain]) is None
 
 
-def test_small_index_rises_get_no_clause_sheet_and_other_goals_one_at_equal_cost():
-    """Hosted P08/P18 steel rose 5.9 % against a 2 % expected clause cost; clause sheets moved nothing.
-    Without a health floor a paying clause sheet costs us what our cheapest sheet costs."""
+def test_clause_sheets_only_for_relationship_goals_and_large_rises():
+    """Hosted P08/P18 steel rose 5.9 % against a 2 % expected clause cost; clause sheets moved nothing. Other
+    goals get none: our own clause sheet switched off the held-sheet rule there (review round 3, L3)."""
     from tacto_negotiator.agents.routed import RoutedAgent
-    from tacto_negotiator.cost import total_cost
 
     feedback = json.loads((ROOT / "tests/fixtures/practice_feedback.json").read_text())
     agent = RoutedAgent(None, package=DataPackage(ROOT / "data"))
@@ -223,10 +222,7 @@ def test_small_index_rises_get_no_clause_sheet_and_other_goals_one_at_equal_cost
         "unit_price": 370.96, "payment_days": 30, "index_clause": None}}]}]
     sheet = {"unit_price": 361.51, "payment_days": 90, "index_clause": None}
     routine = {**p02, "buyer": {**p02["buyer"], "category_goal": "routine"}}
-    clause = agent._clause_sheet(routine, events, "sup:70510", [sheet])
-    assert clause["index_clause"]["deadband_pct"] == 0 and clause["payment_days"] == 90
-    assert clause["unit_price"] < sheet["unit_price"]
-    assert total_cost(routine, clause) <= total_cost(routine, sheet) < total_cost(routine, clause) * 1.0001  # a cent
+    assert agent._clause_sheet(routine, events, "sup:70510", [sheet]) is None
 
 
 def test_secure_supply_openings_stay_at_the_shallow_anchor():

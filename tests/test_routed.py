@@ -622,3 +622,82 @@ def test_an_accept_of_a_replaced_offer_is_retried_on_the_fresh_thread():
     table = Table()
     assert play(table, "case:T", Accepting())["deal"]
     assert table.closed == ["offer:a-1", "offer:a-2"]
+
+
+def test_review_round3_fixes(monkeypatch):
+    """Round 3 review: B1 opening limit over compliant quotes only, B5 rival offers count per supplier,
+    L9 hedge pattern, B4 fast mode only for models that have it."""
+    from pathlib import Path
+
+    from tacto_negotiator.agents.completion import routed_completions_from_env
+    from tacto_negotiator.agents.facts import HEDGED
+    from tacto_negotiator.cost import total_cost as cost
+
+    root = Path(__file__).resolve().parent.parent
+    case = next(c for c in json.loads((root / "tests/fixtures/practice_cases.json").read_text())["cases"]
+                if c["case_id"] == "case:P05")  # must-have lead_time_days <= 42
+
+    def quote(sid, price, lead):
+        return [{"from": sid, "status": "open", "body": "Quote.", "attachments": [], "term_sheets": [
+            {"term_sheet_id": f"offer:{sid[4:]}-0", "terms": {"unit_price": price, "payment_days": 30,
+                                                            "lead_time_days": lead}}]}]
+
+    threads = {"sup:70210": quote("sup:70210", 36.0, 28), "sup:70240": quote("sup:70240", 31.5, 56)}
+    compliant = cost(case, {"unit_price": 36.0, "payment_days": 30, "lead_time_days": 28})
+    assert RoutedAgent(None)._opening_limit(case, threads, "sup:70210") == compliant * 0.999  # B1
+
+    threads["sup:70210"].append({"from": "buyer", "body": "A rival offers 31.5 (offer:70240-0).", "term_sheets": []})
+    body = "A competing offer is EUR 31.5 (offer:70240-0)."
+    assert "offer:70240-0" in RoutedAgent._strip_wasted_claims(case, threads, body, "sup:70250")  # B5
+    assert "offer:70240-0" not in RoutedAgent._strip_wasted_claims(case, threads, body, "sup:70210")
+
+    assert not HEDGED.search("We have secured additional capacity until March for your parts.")  # L9
+    assert HEDGED.search("we have secured our steel for 2027, bought forward at fixed prices with our mill")
+
+    monkeypatch.setenv("LLM_PROVIDER", "anthropic")  # B4
+    monkeypatch.setenv("LLM_API_KEY_ANTHROPIC", "test-key")
+    monkeypatch.delenv("LLM_SPEED", raising=False)
+    monkeypatch.setenv("LLM_MODEL", "claude-sonnet-5-5")
+    monkeypatch.setenv("LLM_STRONG_MODEL", "claude-opus-5-5")
+    fast, strong = routed_completions_from_env()
+    assert fast.speed is None and strong.speed == "fast"
+
+
+def test_a_refused_counter_is_decided_again_not_the_end_of_the_case():
+    """Round 3 review B3: api.md says a 422 changes nothing and uses no round; the runner re-reads the thread."""
+    from tacto_negotiator.client import ArenaError
+    from tacto_negotiator.play import play, standing
+
+    case = {"case_id": "case:T", "suppliers": ["sup:a"], "negotiable": ["unit_price"], "round_limit": 10,
+            "buyer": {"category_goal": "routine", "alternative": {"kind": "none"}}}
+    opening = {"from": "sup:a", "status": "open", "body": "Offer.", "attachments": [],
+               "term_sheets": [{"term_sheet_id": "offer:a-0", "terms": {"unit_price": 10.0}}]}
+
+    class Table:
+        sent = 0
+
+        def open(self, case_id):
+            return case, {"sup:a": [opening]}
+
+        def send(self, sid, message):
+            self.sent += 1
+            raise ArenaError(422, "term sheet value not allowed")
+
+        def missed(self, sid, error):
+            return {"messages": [opening]}
+
+        def close(self, sid, message):
+            return {"deal": True, "score": 0.4}
+
+    class Agent:
+        calls = 0
+
+        def decide(self, case, threads):
+            self.calls += 1
+            if self.calls == 1:
+                return {"supplier_id": "sup:a", "message": {"body": "Counter.", "term_sheets": [{"unit_price": 9}]}}
+            return {"supplier_id": "sup:a",
+                    "message": {"action": {"type": "accept", "term_sheet_id": standing(threads["sup:a"])[0]}}}
+
+    table = Table()
+    assert play(table, "case:T", Agent())["deal"] and table.sent == 1
