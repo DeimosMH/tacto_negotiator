@@ -9,6 +9,8 @@
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="styles.css">
   <script defer src="data.js"></script>
+  <script defer src="deals.js"></script>
+  <script defer src="deals-ui.js"></script>
   <script defer src="app.js"></script>
 </head>
 <body>
@@ -24,6 +26,9 @@
       <a href="#guide=BEGINNER_GUIDE.md" data-tab="BEGINNER_GUIDE.md">Beginner guide <span>Start here</span></a>
       <a href="#guide=TUTORIAL.md" data-tab="TUTORIAL.md">Your first negotiation</a>
       <a href="#guide=WEB_UI.md" data-tab="WEB_UI.md">Using Run Explorer</a>
+      <p class="nav-heading">Negotiations</p>
+      <a href="#deals" data-tab="deals">Deal journal <span>Live</span></a>
+      <a href="#guide=DEALS.md" data-tab="DEALS.md">Reading a deal</a>
       <p class="nav-heading">Understand the system</p>
       <a href="#home" data-tab="home">Project map</a>
       <a href="#guide=IMPLEMENTATION.md" data-tab="IMPLEMENTATION.md">Architecture</a>
@@ -68,6 +73,7 @@
         </section>
         <section id="inspector" aria-label="Selected file explanation" aria-live="polite"></section>
       </div>
+      <section id="deals-view" class="deals-view" aria-live="polite" hidden></section>
       <div id="guide-layout" class="guide-layout" hidden>
         <article id="guide" class="prose" hidden></article>
         <nav id="guide-toc" class="guide-toc" aria-label="On this page"></nav>

@@ -1,0 +1,168 @@
+{
+ "id": "2026-10-24_P03_452f140bd9f4f656",
+ "case_id": "case:P03",
+ "source": "hosted (backfilled)",
+ "status": "ended",
+ "started_utc": "2026-10-24T16:13:30.734254+00:00",
+ "updated_utc": "2026-10-25T00:07:19+00:00",
+ "finished_utc": "2026-10-24T16:14:53.894780+00:00",
+ "session_id": "452f140bd9f4f656",
+ "title": "Frame agreement renewal for the 7.5 kW frequency converter",
+ "goal": null,
+ "suppliers": {
+  "sup:70530": "Key Account Manager, Selvbrunn Drive Systems GmbH"
+ },
+ "messages": [
+  {
+   "message_id": "msg:70530-0-0",
+   "from": "supplier",
+   "from_name": "Key Account Manager, Selvbrunn Drive Systems GmbH",
+   "subject": "Quote from Selvbrunn Drive Systems GmbH: Frame agreement renewal for the 7.5 kW frequency converter",
+   "body": "Dear Sir or Madam,\n\nThank you for your enquiry. Please find our Angebot below.\n\nWe offer a price of €438.21 per unit, a volume of 4580 pcs per year, a contract term of 12 months, and a Zahlungsziel 30 days net. This offer remains valid for 30 days.\n\nRegarding our cost structure, CU-NOTATION rose 47.7 % in twelve months and is 5 % of our cost. LCI-C rose 2.7 % in twelve months and is 16 % of our cost. Furthermore, PPI-C2611 rose 13.5 % in twelve months and is 42 % of our cost.\n\nMit freundlichen Grüßen\nBirgit Mayrhofer\nKey Account Manager, Selvbrunn Drive Systems GmbH",
+   "status": "open",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70530",
+   "term_sheets": [
+    {
+     "id": "offer:70530-0",
+     "terms": {
+      "unit_price": 438.21,
+      "payment_days": 30,
+      "contract_months": 12,
+      "volume_per_year": 4580
+     }
+    }
+   ],
+   "attachments": [
+    "quote-offer-70530-0.pdf"
+   ],
+   "at": "2026-10-24T16:13:30.734254+00:00",
+   "index": 0
+  },
+  {
+   "from": "buyer",
+   "supplier_id": "sup:70530",
+   "term_sheets": [],
+   "action": {
+    "type": "accept",
+    "term_sheet_id": "offer:70530-0"
+   },
+   "at": "2026-10-24T16:13:30.734254+00:00",
+   "index": 1
+  },
+  {
+   "message_id": "msg:70530-0-2",
+   "from": "supplier",
+   "from_name": "Key Account Manager, Selvbrunn Drive Systems GmbH",
+   "subject": "Re: Quote from Selvbrunn Drive Systems GmbH: Frame agreement renewal for the 7.5 kW frequency converter",
+   "body": "Dear Sir or Madam,\n\nThank you for your order. Our order confirmation is attached. \n\nMit freundlichen Grüßen\nBirgit Mayrhofer\nKey Account Manager, Selvbrunn Drive Systems GmbH",
+   "status": "agreed",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70530",
+   "term_sheets": [
+    {
+     "id": "offer:70530-0",
+     "terms": {
+      "unit_price": 438.21,
+      "payment_days": 30,
+      "contract_months": 12,
+      "volume_per_year": 4580
+     }
+    }
+   ],
+   "attachments": [
+    "order-confirmation-offer-70530-0.pdf"
+   ],
+   "at": "2026-10-24T16:13:30.734254+00:00",
+   "index": 2
+  },
+  {
+   "from": "buyer",
+   "supplier_id": "sup:70530",
+   "at": "2026-10-24T16:14:53.894780+00:00",
+   "action": {
+    "type": "accept",
+    "term_sheet_id": "offer:70530-0"
+   },
+   "closing": true,
+   "term_sheets": [],
+   "index": 10000
+  }
+ ],
+ "decisions": [
+  {
+   "route": "fast",
+   "reason": "TimeoutError",
+   "fallback": true,
+   "budget_s": 25.0,
+   "decision_s": 25.026145853000344,
+   "move": {
+    "supplier_id": "sup:70530",
+    "action": "accept",
+    "term_sheet_id": "offer:70530-0"
+   },
+   "reply": {
+    "supplier_id": "sup:70530",
+    "status": "agreed",
+    "unit_price": 438.21,
+    "term_sheet_id": "offer:70530-0"
+   },
+   "path": [
+    "decide",
+    "model",
+    "fallback",
+    "error:TimeoutError"
+   ]
+  }
+ ],
+ "result": {
+  "deal": true,
+  "score": 0.0,
+  "supplier_id": "sup:70530",
+  "terms": {
+   "payment_days": 30,
+   "lead_time_days": 49,
+   "volume_per_year": 4580,
+   "contract_months": 12,
+   "effective_date": "2027-01-01",
+   "index_clause": null,
+   "incoterm": "DAP",
+   "tooling_eur": 0.0,
+   "ppm_commitment": 350,
+   "chargeback_eur_per_complaint": 0.0,
+   "unit_price": 438.21
+  },
+  "cost_eur": 4246314.02,
+  "reference_cost_eur": 3909043.1,
+  "opening_cost_eur": 4246314.02,
+  "alternative_cost_eur": 4332545.92,
+  "cost_breakdown": {
+   "price": 2007001.8,
+   "uncovered_need": 2022665.4,
+   "fallback_risk": 202266.54,
+   "payment_terms": 13380.01,
+   "freight": 0.0,
+   "late_delivery": 0.0,
+   "quality": 1000.27,
+   "tooling": 0.0,
+   "index_clause": 0.0,
+   "index_risk": 0.0,
+   "relationship": 0.0
+  },
+  "rounds": 1,
+  "end_reason": "accepted",
+  "replay_url": "https://arena.tacto.ai/replay/452f140bd9f4f656"
+ },
+ "run": "2026-10-24-astra-max",
+ "times": "approximate: report start",
+ "closing": {
+  "at": "2026-10-24T16:14:53.894780+00:00",
+  "supplier_id": "sup:70530",
+  "action": {
+   "type": "accept",
+   "term_sheet_id": "offer:70530-0"
+  }
+ }
+}

@@ -1,0 +1,355 @@
+{
+ "id": "2026-10-24_P10_a2062d21c3882b7a",
+ "case_id": "case:P10",
+ "source": "hosted (backfilled)",
+ "status": "ended",
+ "started_utc": "2026-10-24T17:08:12.161572+00:00",
+ "updated_utc": "2026-10-25T00:07:34+00:00",
+ "finished_utc": "2026-10-24T17:12:48.113663+00:00",
+ "session_id": "a2062d21c3882b7a",
+ "title": "Ravensteiner cuts the seal allocation",
+ "goal": null,
+ "suppliers": {
+  "sup:70410": "Segment Manager, Dichtungswerk Ravensteiner GmbH"
+ },
+ "messages": [
+  {
+   "message_id": "msg:70410-0-0",
+   "from": "supplier",
+   "from_name": "Segment Manager, Dichtungswerk Ravensteiner GmbH",
+   "subject": "Quote from Dichtungswerk Ravensteiner GmbH: Ravensteiner cuts the seal allocation",
+   "body": "Dear Sir or Madam,\n\nThank you for your enquiry. Please find our Angebot below.\n\nWe offer a price of €32.20 per unit for a volume of 19890 pcs per year. Our Lieferzeit is 54 days, and the contract term is 12 months. \n\nPlease note that this offer remains valid for 30 days. All deliveries and services are strictly subject to our standard procedure and standard conditions.\n\nMit freundlichen Grüßen\nMonika Zellner\nSegment Manager, Dichtungswerk Ravensteiner GmbH",
+   "status": "open",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70410",
+   "term_sheets": [
+    {
+     "id": "offer:70410-0",
+     "terms": {
+      "unit_price": 32.2,
+      "lead_time_days": 54,
+      "volume_per_year": 19890,
+      "contract_months": 12
+     }
+    }
+   ],
+   "attachments": [
+    "quote-offer-70410-0.pdf"
+   ],
+   "at": "2026-10-24T17:08:12.161572+00:00",
+   "index": 0
+  },
+  {
+   "from": "buyer",
+   "subject": "Part 340010 – firm 23,400 pc/year commitment for secured allocation",
+   "body": "Dear Ms Zellner,\n\nThank you for your offer. You prioritise firm, long-term commitments, and we can offer one: 23,400 pc per year for 24 or 36 months.\n\nThe main cost drivers do not support €32.20. Labour index idx:LCI-C@2026-06 went from 116.5 to 119.6, a change of 2.66%. Producer price index idx:PPI-C2219@2026-08 went from 117.8 to 122.4, a change of 3.9%. Your scorecard sc:70410@2026Q3 shows on-time delivery of only 79.5%, so we need a firm 42-day lead time.\n\nAs this exceeds your 2% authority, please submit our packages to your pricing committee. Could you also share a cost breakdown?\n\nKind regards,\nHollerau Pumpenwerke Purchasing",
+   "supplier_id": "sup:70410",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 29.2,
+      "volume_per_year": 23400,
+      "contract_months": 24,
+      "lead_time_days": 42
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 29.5,
+      "volume_per_year": 23400,
+      "contract_months": 36,
+      "lead_time_days": 42
+     }
+    }
+   ],
+   "at": "2026-10-24T17:08:12.161572+00:00",
+   "index": 1
+  },
+  {
+   "message_id": "msg:70410-1-2",
+   "from": "supplier",
+   "from_name": "Segment Manager, Dichtungswerk Ravensteiner GmbH",
+   "subject": "Re: Part 340010 – firm 23,400 pc/year commitment for secured allocation",
+   "body": "Dear Sir or Madam,\n\nWe have reviewed your offer and can adjust our Angebot as follows. \n\nWe checked the delivery record data you cited; it holds, but it does not change our calculation. As a matter of policy, our calculation is our property, and we do not share a breakdown or provide internal cost breakdowns. We acknowledge your proposal for 23,400 units over 24 months.\n\nOur standard submission remains a price of €33.80 per unit, Lieferzeit 42 days, a volume of 23400 pcs per year, a contract term of 36 months. \n\nAlternatively, to ensure reliable delivery without applying a premium for expedited production, we must maintain the 54-day lead time, which allows us to offer a unit price of €31.90. This alternative option provides a price of €31.90 per unit, Lieferzeit 54 days, a volume of 23400 pcs per year, a contract term of 24 months.\n\nThis offer stays valid for 30 days.\n\nMit freundlichen Grüßen\nMonika Zellner\nSegment Manager, Dichtungswerk Ravensteiner GmbH",
+   "status": "open",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "verified"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70410",
+   "term_sheets": [
+    {
+     "id": "offer:70410-1",
+     "terms": {
+      "unit_price": 33.8,
+      "lead_time_days": 42,
+      "volume_per_year": 23400,
+      "contract_months": 36
+     }
+    },
+    {
+     "id": "offer:70410-1-a",
+     "terms": {
+      "unit_price": 31.9,
+      "lead_time_days": 54,
+      "volume_per_year": 23400,
+      "contract_months": 24
+     }
+    }
+   ],
+   "attachments": [
+    "delivery-schedule.xlsx"
+   ],
+   "at": "2026-10-24T17:08:12.161572+00:00",
+   "index": 2
+  },
+  {
+   "from": "buyer",
+   "subject": "Part 340010 – 36-month firm commitment for pricing committee review",
+   "body": "Dear Ms Zellner,\n\nThank you for the two options. We offer what you prioritise: a firm 36-month commitment for 23,400 pc per year. This exceeds the binding 12-month term you asked for in doc:20260327-70410-M2.\n\nOur latest forecast, fc:340010@2026-09, records a change of 10.1%. That gives you growing, plannable volume.\n\nOur bottom-up estimate, cost:340010, puts your unit cost at €24.31 before margin. We know this is only an estimate, but it leaves a healthy margin at the prices below.\n\nCould you put the attached packages to your pricing committee at its next session? Please also tell us your earliest firm lead time.\n\nKind regards,\nHollerau Pumpenwerke Purchasing",
+   "supplier_id": "sup:70410",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 30.4,
+      "volume_per_year": 23400,
+      "contract_months": 36,
+      "lead_time_days": 42
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 29.7,
+      "volume_per_year": 23400,
+      "contract_months": 36,
+      "lead_time_days": 56
+     }
+    }
+   ],
+   "at": "2026-10-24T17:08:12.161572+00:00",
+   "index": 3
+  },
+  {
+   "message_id": "msg:70410-2-4",
+   "from": "supplier",
+   "from_name": "Segment Manager, Dichtungswerk Ravensteiner GmbH",
+   "subject": "Re: Part 340010 – 36-month firm commitment for pricing committee review",
+   "body": "Dear Sir or Madam,\n\nWe checked the volume change data you cited; it holds, but it does not change our calculation. We also checked the should cost data you cited; it holds and we took it into account. We note your cost estimate; our calculations are proprietary and we do not negotiate based on external bottom-up estimates. Our calculation is our property; we do not share a breakdown.\n\nAccepting your proposed 56-day lead time and 36-month commitment allows us to reduce the price to €31.60 per unit. Our offer stands at a price of €31.60 per unit, Lieferzeit 56 days, a volume of 23400 pcs per year, and a contract term of 36 months. Our Lieferzeit is 56 days. \n\nThis is our final offer (letztes Angebot). Please decide. This offer stays valid for 7 days.\n\nMit freundlichen Grüßen\nMonika Zellner\nSegment Manager, Dichtungswerk Ravensteiner GmbH",
+   "status": "final_offer",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "verified"
+    },
+    {
+     "index": 1,
+     "result": "verified"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70410",
+   "term_sheets": [
+    {
+     "id": "offer:70410-2",
+     "terms": {
+      "unit_price": 31.6,
+      "lead_time_days": 56,
+      "volume_per_year": 23400,
+      "contract_months": 36
+     }
+    }
+   ],
+   "attachments": [
+    "quote-offer-70410-2.pdf",
+    "delivery-schedule.xlsx"
+   ],
+   "at": "2026-10-24T17:08:12.161572+00:00",
+   "index": 4
+  },
+  {
+   "from": "buyer",
+   "supplier_id": "sup:70410",
+   "term_sheets": [],
+   "action": {
+    "type": "walk_away"
+   },
+   "at": "2026-10-24T17:08:12.161572+00:00",
+   "index": 5
+  },
+  {
+   "message_id": "msg:70410-2-6",
+   "from": "supplier",
+   "from_name": "Segment Manager, Dichtungswerk Ravensteiner GmbH",
+   "subject": "Re: Part 340010 – 36-month firm commitment for pricing committee review",
+   "body": "Dear Sir or Madam,\n\nWe regret that we could not reach an agreement during our recent negotiations and remain at your disposal for future requirements. Our standard procedural terms and conditions continue to apply.\n\nMit freundlichen Grüßen\nMonika Zellner\nSegment Manager, Dichtungswerk Ravensteiner GmbH",
+   "status": "final_offer",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "verified"
+    },
+    {
+     "index": 1,
+     "result": "verified"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70410",
+   "term_sheets": [],
+   "attachments": [
+    "delivery-schedule.xlsx"
+   ],
+   "at": "2026-10-24T17:08:12.161572+00:00",
+   "index": 6
+  },
+  {
+   "from": "supplier",
+   "status": "final_offer",
+   "supplier_id": "sup:70410",
+   "term_sheets": [],
+   "at": "2026-10-24T17:08:12.161572+00:00",
+   "index": 7
+  },
+  {
+   "from": "buyer",
+   "supplier_id": "sup:70410",
+   "at": "2026-10-24T17:12:48.113663+00:00",
+   "action": {
+    "type": "walk_away",
+    "term_sheet_id": null
+   },
+   "closing": true,
+   "term_sheets": [],
+   "index": 10000
+  }
+ ],
+ "decisions": [
+  {
+   "route": "fast",
+   "reason": "strong_unconfigured",
+   "fallback": false,
+   "budget_s": 25.0,
+   "decision_s": 12.365489036994404,
+   "move": {
+    "supplier_id": "sup:70410",
+    "action": "send",
+    "term_sheets": [
+     {
+      "unit_price": 29.2,
+      "volume_per_year": 23400,
+      "contract_months": 24,
+      "lead_time_days": 42
+     },
+     {
+      "unit_price": 29.5,
+      "volume_per_year": 23400,
+      "contract_months": 36,
+      "lead_time_days": 42
+     }
+    ]
+   },
+   "reply": {
+    "supplier_id": "sup:70410",
+    "status": "open",
+    "unit_price": 33.8,
+    "term_sheet_id": "offer:70410-1"
+   },
+   "path": [
+    "decide",
+    "model",
+    "strong_unconfigured",
+    "validate"
+   ]
+  },
+  {
+   "route": "fast",
+   "reason": "strong_unconfigured",
+   "fallback": false,
+   "budget_s": 25.0,
+   "decision_s": 14.146776205998322,
+   "move": {
+    "supplier_id": "sup:70410",
+    "action": "send",
+    "term_sheets": [
+     {
+      "unit_price": 30.4,
+      "volume_per_year": 23400,
+      "contract_months": 36,
+      "lead_time_days": 42
+     },
+     {
+      "unit_price": 29.7,
+      "volume_per_year": 23400,
+      "contract_months": 36,
+      "lead_time_days": 56
+     }
+    ]
+   },
+   "reply": {
+    "supplier_id": "sup:70410",
+    "status": "final_offer",
+    "unit_price": 31.6,
+    "term_sheet_id": "offer:70410-2"
+   },
+   "path": [
+    "decide",
+    "model",
+    "strong_unconfigured",
+    "validate"
+   ]
+  },
+  {
+   "route": "script",
+   "reason": "deadline_close",
+   "fallback": false,
+   "budget_s": 0,
+   "decision_s": 9.266900451621041e-05,
+   "move": {
+    "supplier_id": "sup:70410",
+    "action": "walk_away"
+   },
+   "reply": {
+    "supplier_id": "sup:70410",
+    "status": "final_offer",
+    "unit_price": null,
+    "term_sheet_id": null
+   },
+   "path": [
+    "decide",
+    "deadline_close"
+   ]
+  }
+ ],
+ "result": {
+  "deal": false,
+  "score": 0.0,
+  "supplier_id": null,
+  "terms": null,
+  "cost_eur": null,
+  "reference_cost_eur": 1328926.89,
+  "opening_cost_eur": 1932492.18,
+  "alternative_cost_eur": null,
+  "cost_breakdown": null,
+  "rounds": 3,
+  "end_reason": "walked_away",
+  "replay_url": "https://arena.tacto.ai/replay/a2062d21c3882b7a"
+ },
+ "run": "2026-10-24-opus-high",
+ "times": "approximate: report start",
+ "closing": {
+  "at": "2026-10-24T17:12:48.113663+00:00",
+  "supplier_id": "sup:70410",
+  "action": {
+   "type": "walk_away",
+   "term_sheet_id": null
+  }
+ }
+}

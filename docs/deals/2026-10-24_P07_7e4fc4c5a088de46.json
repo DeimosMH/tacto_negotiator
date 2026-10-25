@@ -1,0 +1,496 @@
+{
+ "id": "2026-10-24_P07_7e4fc4c5a088de46",
+ "case_id": "case:P07",
+ "source": "hosted (backfilled)",
+ "status": "ended",
+ "started_utc": "2026-10-24T18:12:45.408881+00:00",
+ "updated_utc": "2026-10-25T00:07:53+00:00",
+ "finished_utc": "2026-10-24T18:19:49.044619+00:00",
+ "session_id": "7e4fc4c5a088de46",
+ "title": "Bundle the fastener kit with one distributor",
+ "goal": null,
+ "suppliers": {
+  "sup:70610": "Inside Sales, Schraubenhandel Leitner & Sohn GmbH"
+ },
+ "messages": [
+  {
+   "message_id": "msg:70610-0-0",
+   "from": "supplier",
+   "from_name": "Inside Sales, Schraubenhandel Leitner & Sohn GmbH",
+   "subject": "Quote from Schraubenhandel Leitner & Sohn GmbH: Bundle the fastener kit with one distributor",
+   "body": "Dear customer,\n\nThank you for your enquiry. Please find our Angebot below.\n\nWe are delighted to submit our offer for your consideration. We can offer you a price of €5.74 per unit, with a Zahlungsziel 30 days net, and a contract term of 12 months.\n\nAs a valued partner, we always strive to support your operations with our extensive inventory and reliable delivery service. Please note that this offer remains valid for 30 days.\n\nWe look forward to continuing our successful business relationship and standing by as your trusted partner for all your supply needs.\n\nMit freundlichen Grüßen\nFranz Stadler\nInside Sales, Schraubenhandel Leitner & Sohn GmbH",
+   "status": "open",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70610",
+   "term_sheets": [
+    {
+     "id": "offer:70610-0",
+     "terms": {
+      "unit_price": 5.74,
+      "payment_days": 30,
+      "contract_months": 12
+     }
+    }
+   ],
+   "attachments": [
+    "quote-offer-70610-0.pdf"
+   ],
+   "at": "2026-10-24T18:12:45.408881+00:00",
+   "index": 0
+  },
+  {
+   "from": "buyer",
+   "subject": "Re: Bundle the fastener kit with one distributor",
+   "body": "Please consider these complete packages for the stated requirement. The forecast for part:360030 increased by 8.7% (fc:360030@2026-09); please reflect this additional business in your price.",
+   "supplier_id": "sup:70610",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 4.71,
+      "payment_days": 90,
+      "contract_months": 24
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 4.71,
+      "payment_days": 90,
+      "contract_months": 36
+     }
+    }
+   ],
+   "at": "2026-10-24T18:12:45.408881+00:00",
+   "index": 1
+  },
+  {
+   "message_id": "msg:70610-1-2",
+   "from": "supplier",
+   "from_name": "Inside Sales, Schraubenhandel Leitner & Sohn GmbH",
+   "subject": "Re: Bundle the fastener kit with one distributor",
+   "body": "Dear customer,\n\nWe have reviewed your offer and can adjust our Angebot as follows. We checked the volume change data you cited; it holds and we took it into account. \n\nWhile we welcome the stability of a 24-month contract, we must maintain our standard 30-day payment terms to support a price reduction. Under these conditions, we can offer a revised price of €5.60 per unit. Our offer stands at a price of €5.60 per unit, Zahlungsziel 90 days net, a contract term of 24 months. \n\nAlternatively, with Zahlungsziel 30 days net: €5.53 per unit. For this option, we can offer a price of €5.53 per unit, Zahlungsziel 30 days net, a contract term of 24 months. \n\nPlease note that this offer remains valid for 30 days. We always appreciate working with you and look forward to serving your needs from our extensive range.\n\nMit freundlichen Grüßen\nFranz Stadler\nInside Sales, Schraubenhandel Leitner & Sohn GmbH",
+   "status": "open",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "verified"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70610",
+   "term_sheets": [
+    {
+     "id": "offer:70610-1",
+     "terms": {
+      "unit_price": 5.6,
+      "payment_days": 90,
+      "contract_months": 24
+     }
+    },
+    {
+     "id": "offer:70610-1-a",
+     "terms": {
+      "unit_price": 5.53,
+      "payment_days": 30,
+      "contract_months": 24
+     }
+    }
+   ],
+   "at": "2026-10-24T18:12:45.408881+00:00",
+   "index": 2
+  },
+  {
+   "from": "buyer",
+   "subject": "Fastener kit bundle - request for pricing committee review",
+   "body": "Dear Mr Stadler,\n\nThank you for the revised offer. The bundle moves all four kit parts to you. Today you supply only the M12 nut, at a 30% quota. That is 30000 kits a year, or 69 parts per kit.\n\nIn our May calls you mentioned free capacity, with the second shift on hold. This volume could help restart it.\n\nAs the change exceeds 2%, could you please take the attached packages to your pricing committee? We offer 24 or 36 months. If 30-day payment helps your financing, one package uses it.\n\nCould you also suggest cheaper variants, such as bulk packaging or a kit consolidated per delivery?\n\nKind regards,\nHollerau Pumpenwerke Purchasing",
+   "supplier_id": "sup:70610",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 4.98,
+      "payment_days": 90,
+      "contract_months": 24
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 4.98,
+      "payment_days": 90,
+      "contract_months": 36
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 4.9,
+      "payment_days": 30,
+      "contract_months": 24
+     }
+    }
+   ],
+   "at": "2026-10-24T18:12:45.408881+00:00",
+   "index": 3
+  },
+  {
+   "message_id": "msg:70610-2-4",
+   "from": "supplier",
+   "from_name": "Inside Sales, Schraubenhandel Leitner & Sohn GmbH",
+   "subject": "Re: Fastener kit bundle - request for pricing committee review",
+   "body": "Dear customer,\n\nWe have reviewed your offer and can adjust our Angebot as follows. Currently, our Angebot is a price of €5.52 per unit, Zahlungsziel 90 days net, a contract term of 24 months. \n\nI have forwarded your inquiry regarding bulk packaging and consolidated deliveries to our technical specialists. To properly evaluate the impact of the proposed volume increase on our production capacity, we kindly request that you provide the exact volume figures. Which volume can you commit to? \n\nIn the meantime, we can revise our offer to a price of €5.45 per unit, Zahlungsziel 30 days net, a contract term of 24 months. From our calculation: a cheaper material grade would save about EUR 0.31 per unit; a wider tolerance would save about EUR 0.12 per unit; doubling the lot size would save about EUR 0.07 per unit. Each needs your engineering approval and a new drawing revision. This proposal remains valid for 30 days.\n\nMit freundlichen Grüßen\nFranz Stadler\nInside Sales, Schraubenhandel Leitner & Sohn GmbH",
+   "status": "open",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70610",
+   "term_sheets": [
+    {
+     "id": "offer:70610-2",
+     "terms": {
+      "unit_price": 5.52,
+      "payment_days": 90,
+      "contract_months": 24
+     }
+    },
+    {
+     "id": "offer:70610-2-a",
+     "terms": {
+      "unit_price": 5.45,
+      "payment_days": 30,
+      "contract_months": 24
+     }
+    }
+   ],
+   "at": "2026-10-24T18:12:45.408881+00:00",
+   "index": 4
+  },
+  {
+   "from": "buyer",
+   "subject": "Kit bundle: committed volume and revised packages",
+   "body": "Dear Mr Stadler,\n\nThank you for the revised offer. Here is our exact commitment: 30000 kits per year, effective 2027-01-01. Each kit has 69 parts: 19 M12 bolts, 6 M16 bolts, 21 M12 nuts and 23 M12 washers. We offer a 24-month term (60000 kits) or a 36-month term (90000 kits).\n\nYour scorecard sc:70610@2026Q3 records on-time delivery of 88.6%. A stable kit schedule should help you improve this figure.\n\nPlease take the attached packages to your pricing committee. Doubling the lot size would suit us. Could you include that saving in your price? Could you also state the earliest lead time you could confirm?\n\nKind regards,\nHollerau Pumpenwerke Purchasing",
+   "supplier_id": "sup:70610",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 5.13,
+      "payment_days": 90,
+      "contract_months": 36
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 5.13,
+      "payment_days": 90,
+      "contract_months": 24
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 5.06,
+      "payment_days": 30,
+      "contract_months": 24
+     }
+    }
+   ],
+   "at": "2026-10-24T18:12:45.408881+00:00",
+   "index": 5
+  },
+  {
+   "message_id": "msg:70610-3-6",
+   "from": "supplier",
+   "from_name": "Inside Sales, Schraubenhandel Leitner & Sohn GmbH",
+   "subject": "Re: Kit bundle: committed volume and revised packages",
+   "body": "Dear customer,\n\nThank you for your ongoing partnership with Schraubenhandel Leitner & Sohn GmbH. We appreciate your commitment to the 30000 kits per year and have factored the saving for doubling the lot size into our revised pricing. We also acknowledge the delivery record you cited; the stable kit schedule will indeed help us optimize our logistics.\n\nOur technical specialists will contact you shortly to confirm the earliest possible lead time. Please note that our price follows our main cost drivers: PPI-C2594, LCI-C.\n\nThis is our final offer (letztes Angebot). Please decide. Our current Angebot is a price of €5.45 per unit, Zahlungsziel 90 days net, a contract term of 36 months. \n\nAlternatively, with Zahlungsziel 30 days net and a contract term of 24 months: €5.38 per unit.\n\nPlease note that this proposal remains valid for 7 days.\n\nMit freundlichen Grüßen\nFranz Stadler\nInside Sales, Schraubenhandel Leitner & Sohn GmbH\n\nLogistics: We have free capacity for your parts. Our Lieferzeit is 5 days. With overtime we can deliver in 5 days, at a premium.\n\nLogistics: We have free capacity for your parts. Our Lieferzeit is 5 days. With overtime we can deliver in 5 days, at a premium.",
+   "status": "final_offer",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "verified"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70610",
+   "term_sheets": [
+    {
+     "id": "offer:70610-3",
+     "terms": {
+      "unit_price": 5.45,
+      "payment_days": 90,
+      "contract_months": 36
+     }
+    },
+    {
+     "id": "offer:70610-3-a",
+     "terms": {
+      "unit_price": 5.38,
+      "payment_days": 30,
+      "contract_months": 24
+     }
+    }
+   ],
+   "attachments": [
+    "quote-offer-70610-3.pdf",
+    "delivery-schedule.xlsx"
+   ],
+   "at": "2026-10-24T18:12:45.408881+00:00",
+   "index": 6
+  },
+  {
+   "from": "buyer",
+   "supplier_id": "sup:70610",
+   "term_sheets": [],
+   "action": {
+    "type": "accept",
+    "term_sheet_id": "offer:70610-3"
+   },
+   "at": "2026-10-24T18:12:45.408881+00:00",
+   "index": 7
+  },
+  {
+   "message_id": "msg:70610-3-8",
+   "from": "supplier",
+   "from_name": "Inside Sales, Schraubenhandel Leitner & Sohn GmbH",
+   "subject": "Re: Kit bundle: committed volume and revised packages",
+   "body": "Dear customer,\n\nThank you for your order. Our order confirmation is attached. We are delighted to continue supporting your business with our extensive range and reliable service, and we look forward to working together on your future requirements.\n\nMit freundlichen Grüßen\nFranz Stadler\nInside Sales, Schraubenhandel Leitner & Sohn GmbH\n\nLogistics: We have free capacity for your parts. Our Lieferzeit is 5 days. With overtime we can deliver in 5 days, at a premium.\n\nLogistics: We have free capacity for your parts. Our Lieferzeit is 5 days. With overtime we can deliver in 5 days, at a premium.",
+   "status": "agreed",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "verified"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70610",
+   "term_sheets": [
+    {
+     "id": "offer:70610-3",
+     "terms": {
+      "unit_price": 5.45,
+      "payment_days": 90,
+      "contract_months": 36
+     }
+    },
+    {
+     "id": "offer:70610-3-a",
+     "terms": {
+      "unit_price": 5.38,
+      "payment_days": 30,
+      "contract_months": 24
+     }
+    }
+   ],
+   "attachments": [
+    "order-confirmation-offer-70610-3.pdf",
+    "delivery-schedule.xlsx"
+   ],
+   "at": "2026-10-24T18:12:45.408881+00:00",
+   "index": 8
+  },
+  {
+   "from": "buyer",
+   "supplier_id": "sup:70610",
+   "at": "2026-10-24T18:19:49.044619+00:00",
+   "action": {
+    "type": "accept",
+    "term_sheet_id": "offer:70610-3"
+   },
+   "closing": true,
+   "term_sheets": [],
+   "index": 10000
+  }
+ ],
+ "decisions": [
+  {
+   "route": "script",
+   "reason": "enumerated_opening",
+   "fallback": false,
+   "budget_s": 25.0,
+   "decision_s": 0.005842596998263616,
+   "move": {
+    "supplier_id": "sup:70610",
+    "action": "send",
+    "term_sheets": [
+     {
+      "unit_price": 4.71,
+      "payment_days": 90,
+      "contract_months": 24
+     },
+     {
+      "unit_price": 4.71,
+      "payment_days": 90,
+      "contract_months": 36
+     }
+    ]
+   },
+   "reply": {
+    "supplier_id": "sup:70610",
+    "status": "open",
+    "unit_price": 5.6,
+    "term_sheet_id": "offer:70610-1"
+   },
+   "path": [
+    "decide",
+    "scripts",
+    "bargain",
+    "enumerated_opening"
+   ]
+  },
+  {
+   "route": "fast",
+   "reason": "semantic_decision",
+   "fallback": false,
+   "budget_s": 25.0,
+   "decision_s": 11.64409593599703,
+   "move": {
+    "supplier_id": "sup:70610",
+    "action": "send",
+    "term_sheets": [
+     {
+      "unit_price": 4.98,
+      "payment_days": 90,
+      "contract_months": 24
+     },
+     {
+      "unit_price": 4.98,
+      "payment_days": 90,
+      "contract_months": 36
+     },
+     {
+      "unit_price": 4.9,
+      "payment_days": 30,
+      "contract_months": 24
+     }
+    ]
+   },
+   "reply": {
+    "supplier_id": "sup:70610",
+    "status": "open",
+    "unit_price": 5.52,
+    "term_sheet_id": "offer:70610-2"
+   },
+   "path": [
+    "decide",
+    "model",
+    "semantic_decision",
+    "validate"
+   ]
+  },
+  {
+   "route": "fast",
+   "reason": "semantic_decision",
+   "fallback": false,
+   "budget_s": 25.0,
+   "decision_s": 11.586732449002739,
+   "move": {
+    "supplier_id": "sup:70610",
+    "action": "send",
+    "term_sheets": [
+     {
+      "unit_price": 5.13,
+      "payment_days": 90,
+      "contract_months": 36
+     },
+     {
+      "unit_price": 5.13,
+      "payment_days": 90,
+      "contract_months": 24
+     },
+     {
+      "unit_price": 5.06,
+      "payment_days": 30,
+      "contract_months": 24
+     }
+    ]
+   },
+   "reply": {
+    "supplier_id": "sup:70610",
+    "status": "final_offer",
+    "unit_price": 5.45,
+    "term_sheet_id": "offer:70610-3"
+   },
+   "path": [
+    "decide",
+    "model",
+    "semantic_decision",
+    "validate"
+   ]
+  },
+  {
+   "route": "script",
+   "reason": "terminal_offers",
+   "fallback": false,
+   "budget_s": 25.0,
+   "decision_s": 0.0002321799984201789,
+   "move": {
+    "supplier_id": "sup:70610",
+    "action": "accept",
+    "term_sheet_id": "offer:70610-3"
+   },
+   "reply": {
+    "supplier_id": "sup:70610",
+    "status": "agreed",
+    "unit_price": 5.45,
+    "term_sheet_id": "offer:70610-3"
+   },
+   "path": [
+    "decide",
+    "scripts",
+    "terminal",
+    "terminal_offers"
+   ]
+  }
+ ],
+ "result": {
+  "deal": true,
+  "score": 0.7210104470283076,
+  "supplier_id": "sup:70610",
+  "terms": {
+   "payment_days": 90,
+   "lead_time_days": 5,
+   "volume_per_year": 30000,
+   "contract_months": 36,
+   "effective_date": "2027-01-01",
+   "index_clause": null,
+   "incoterm": "DAP",
+   "tooling_eur": 0.0,
+   "ppm_commitment": 80,
+   "chargeback_eur_per_complaint": 0.0,
+   "unit_price": 5.45
+  },
+  "cost_eur": 324848.8,
+  "reference_cost_eur": 299241.49,
+  "opening_cost_eur": 391027.4,
+  "alternative_cost_eur": 379916.0,
+  "cost_breakdown": {
+   "price": 327000.0,
+   "uncovered_need": 0.0,
+   "fallback_risk": 0.0,
+   "payment_terms": -2180.0,
+   "freight": 0.0,
+   "late_delivery": 0.0,
+   "quality": 28.8,
+   "tooling": 0.0,
+   "index_clause": 0.0,
+   "index_risk": 0.0,
+   "relationship": 0.0
+  },
+  "rounds": 4,
+  "end_reason": "accepted",
+  "replay_url": "https://arena.tacto.ai/replay/7e4fc4c5a088de46"
+ },
+ "run": "2026-10-24-opus-high-v3",
+ "times": "approximate: report start",
+ "closing": {
+  "at": "2026-10-24T18:19:49.044619+00:00",
+  "supplier_id": "sup:70610",
+  "action": {
+   "type": "accept",
+   "term_sheet_id": "offer:70610-3"
+  }
+ }
+}

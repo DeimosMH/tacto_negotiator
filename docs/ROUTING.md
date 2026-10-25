@@ -1,6 +1,8 @@
-# Choose scripts, Sol or Astra for each decision
+# Choose scripts or the model for each decision
 
 The routed buyer chooses how to make the next decision from the information and time available. It uses tested scripts for supported quantitative decisions; a fast model for ordinary interpretation; and an optional stronger model for consequential complexity when enough time remains. The choice is made again after each supplier reply.
+
+The model is **Claude Opus 5.5 at high effort, in fast mode** (`LLM_SPEED=fast`); the final runs it this way ([runbook](FINAL_RUNBOOK.md)). Every hosted case also records the path each decision took: open a deal in the [deal journal](DEALS.md) to see it next to the conversation.
 
 It is the default for tacto play and tacto run; --agent routed selects it explicitly. The naive and llm policies remain available for comparison. The active implementation lives in src/tacto_negotiator/agents; [the beginner tutorial](TUTORIAL.md) explains the surrounding negotiation loop.
 
@@ -26,9 +28,9 @@ Case and current supplier replies
   |     complete package search, concessions or plateau closure
   |
   +-- Material complexity + configured strong model
-  |   + enough decision time? ----------> strong model (optional Astra)
+  |   + enough decision time? ----------> strong model (optional, LLM_STRONG_MODEL)
   |
-  +-- Otherwise ------------------------> fast model (default Sol)
+  +-- Otherwise ------------------------> model (Claude Opus 5.5, high effort, fast mode)
                                             |
                               common validation
                                             |
@@ -37,7 +39,7 @@ Case and current supplier replies
 Model error, timeout or rejected output ---> deterministic fallback
 ```
 
-There is at most one completion request for a decision. The router does not ask Sol to classify a case and then ask Astra to solve it. A model failure goes to local fallback rather than starting another provider request with the remaining seconds.
+There is at most one completion request for a decision. The router does not ask one model to classify a case and another to solve it. A model failure goes to local fallback rather than starting another provider request with the remaining seconds.
 
 The code distinguishes a deterministic calculation from a deterministic negotiation policy. Knowing which offer is cheapest does not prove that accepting it immediately is optimal. The scripts operate on public case terms and observed negotiations; they do not inspect the simulator's private floors or predict hidden supplier preferences. Compare their actual outcomes using [the local competition guide](COMPETITION.md), rather than treating script coverage alone as success.
 
@@ -53,10 +55,10 @@ The code distinguishes a deterministic calculation from a deterministic negotiat
 | A must-have is currently violated but can be repaired through negotiable fields | Explicit repaired package | A cheaper invalid deal is not accepted; the proposed term sheet must satisfy the requirement. |
 | Several suppliers have complete current quotes | Full-cost package comparison | Service untried and less-visited bidders before repeatedly favoring one; rank candidates by C rather than unit price. |
 | A previous structured offer receives another complete quote | Bounded concession or validated closure | Use observed offers to narrow the price gap; close on sufficient agreement, a small cost gap, a round reserve or a genuine quote plateau. |
-| Ordinary reply or semantic choice outside those rules | Fast model | Sol is the initial default, with low effort and a bounded response. |
+| Ordinary reply or semantic choice outside those rules | Fast model | Claude Opus 5.5 at high effort; the shared gate (`validate`) reprices and checks its proposal. |
 | Structured evidence conflict, relationship-sensitive goal or several negotiable terms, with enough time | Optional strong model | Extra reasoning may help, but neither novelty nor model self-confidence establishes that it is needed. |
 
-When no supported script applies, the model complexity checks are explicit: category_goal is stabilise or secure_supply, at least four fields are negotiable, or a latest supplier reply reports a contradicted claim. Four fields alone no longer force a model call when a bounded quantitative script can handle them. The strong route is disabled unless a strong completion is configured. Its default minimum remaining budget is 20 seconds within a maximum 25-second decision. These are engineering defaults, not measured provider performance promises. If a hard case has less time, it uses the fast route; if there is no usable model budget, it closes deterministically.
+When no supported script applies, the model complexity checks are explicit: category_goal is stabilise or secure_supply, at least four fields are negotiable, or a latest supplier reply reports a contradicted claim. Four fields alone no longer force a model call when a bounded quantitative script can handle them. The strong route is disabled unless a strong completion is configured. Its default minimum remaining budget is 20 seconds within a maximum 40-second decision; no model call starts with less than 15 seconds left (`MIN_MODEL_SECONDS`), a scripted counter is used instead. These are engineering defaults, not measured provider performance promises. If a hard case has less time, it uses the fast route; if there is no usable model budget, it closes deterministically.
 
 ## Supported quantitative scripts
 
@@ -190,10 +192,12 @@ The tacto CLI uses this implementation by default or with --agent routed. These 
 
 | Variable | Default / meaning |
 | --- | --- |
-| LLM_PROVIDER | openai; other values are rejected for the routed Responses adapter. |
-| LLM_MODEL | gpt-6.1-sol, the fast route. |
-| LLM_EFFORT | low, sent explicitly to the API. |
-| LLM_STRONG_MODEL | Unset: strong route disabled. Set gpt-6-astra only when access and qualification are established. |
+| LLM_PROVIDER | `anthropic` for the final (Claude Messages API); `openai` (the default) selects the Responses adapter. |
+| LLM_MODEL | `claude-opus-5-5` for the final. |
+| LLM_EFFORT | `high` for the final (max effort exceeded the decision deadline in every hosted test). |
+| LLM_SPEED | `fast`: Opus fast mode, about 2.3x faster output; a rate-limited call falls back to normal speed. Hosted v17: model time per case 37 s -> 16 s. |
+| LLM_API_KEY_ANTHROPIC / ANTHROPIC_API_KEY | The Anthropic key, read from `.env`. |
+| LLM_STRONG_MODEL | Unset: strong route disabled. |
 | LLM_STRONG_EFFORT | medium when the strong route is configured. |
 | LLM_MAX_CONCURRENT | 10 slots shared by fast and strong calls across case workers. |
 | LLM_BASE_URL | https://api.openai.com/v1; any replacement must implement the Responses interface. |

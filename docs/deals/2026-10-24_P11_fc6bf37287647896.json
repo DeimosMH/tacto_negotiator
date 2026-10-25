@@ -1,0 +1,783 @@
+{
+ "id": "2026-10-24_P11_fc6bf37287647896",
+ "case_id": "case:P11",
+ "source": "hosted (backfilled)",
+ "status": "ended",
+ "started_utc": "2026-10-24T23:16:35.527983+00:00",
+ "updated_utc": "2026-10-25T00:08:22+00:00",
+ "finished_utc": "2026-10-24T23:22:33.637651+00:00",
+ "session_id": "fc6bf37287647896",
+ "title": "Kalwisz: bearing brackets in red",
+ "goal": null,
+ "suppliers": {
+  "sup:70140": "Export Manager, Odlewnia Kalwisz Sp. z o.o."
+ },
+ "messages": [
+  {
+   "message_id": "msg:70140-0-0",
+   "from": "supplier",
+   "from_name": "Export Manager, Odlewnia Kalwisz Sp. z o.o.",
+   "subject": "Quote from Odlewnia Kalwisz Sp. z o.o.: Kalwisz: bearing brackets in red",
+   "body": "Hello,\n\nThank you for your enquiry. Please find our Angebot below. We are very eager to work with you and to prove ourselves as a great long-term partner for your business!\n\nWe are happy to present our offer for a price of €47.00 per unit, along with a quality commitment of 6400 ppm. \n\nPlease note that this offer stays valid for 30 days. We remain flexible and look forward to hearing from you soon so we can start building a strong partnership together.\n\nKind regards\nMarek Lis\nExport Manager, Odlewnia Kalwisz Sp. z o.o.",
+   "status": "open",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70140",
+   "term_sheets": [
+    {
+     "id": "offer:70140-0",
+     "terms": {
+      "unit_price": 47.0,
+      "ppm_commitment": 6400
+     }
+    }
+   ],
+   "attachments": [
+    "quote-offer-70140-0.pdf"
+   ],
+   "at": "2026-10-24T23:16:35.527983+00:00",
+   "index": 0
+  },
+  {
+   "from": "buyer",
+   "subject": "Re: Kalwisz: bearing brackets in red",
+   "body": "Please consider these complete packages for the stated requirement. Your latest scorecard records 2376 ppm (sc:70140@2026Q3).",
+   "supplier_id": "sup:70140",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "ppm_commitment": 1500,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 38.07
+     }
+    }
+   ],
+   "at": "2026-10-24T23:16:35.527983+00:00",
+   "index": 1
+  },
+  {
+   "message_id": "msg:70140-1-2",
+   "from": "supplier",
+   "from_name": "Export Manager, Odlewnia Kalwisz Sp. z o.o.",
+   "subject": "Re: Kalwisz: bearing brackets in red",
+   "body": "Hello,\n\nWe have reviewed your offer and can adjust our Angebot as follows. \n\nWe checked the quality record data you cited; it holds and we took it into account. Thanks for the scorecard info, we can agree to the 1500 ppm target you asked for. We see your figures, but we cannot give up margin right now. Faster payment would help us more than anything. \n\nWe can offer €46.50 for this package, which is a solid step forward. So our Angebot stands at a price of €46.50 per unit, a quality commitment of 1500 ppm, a chargeback of €0.00 per complaint. Please note this offer is valid for 30 days.\n\nKind regards\nMarek Lis\nExport Manager, Odlewnia Kalwisz Sp. z o.o.",
+   "status": "open",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "verified"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70140",
+   "term_sheets": [
+    {
+     "id": "offer:70140-1",
+     "terms": {
+      "unit_price": 46.5,
+      "ppm_commitment": 1500,
+      "chargeback_eur_per_complaint": 0.0
+     }
+    }
+   ],
+   "at": "2026-10-24T23:16:35.527983+00:00",
+   "index": 2
+  },
+  {
+   "from": "buyer",
+   "subject": "Bearing bracket HN (part:310020): revised packages for 2027",
+   "body": "Dear Mr Lis,\n\nThank you for confirming the 1500 ppm target. It is a good basis for the binding improvement plan our escalation letter asks for.\n\nThe forecast for part:310020 increased by 20% (fc:310020@2026-09); please reflect this additional business in your price.\n\nThis is a firm 12-month contract for 15900 pieces per year at the agreed payment terms. That gives your plant and your bank steady, plannable volume. The attached packages also include a variant with a tighter ppm commitment.\n\nWhich quality measures in your improvement plan could support the tighter target? Is there a cheaper process or packaging variant you could propose for this part?\n\nKind regards\nHollerau Pumpenwerke, Purchasing",
+   "supplier_id": "sup:70140",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "ppm_commitment": 1500,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 39.75
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "ppm_commitment": 800,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 40.06
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "ppm_commitment": 1500,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 39.74
+     }
+    }
+   ],
+   "at": "2026-10-24T23:16:35.527983+00:00",
+   "index": 3
+  },
+  {
+   "message_id": "msg:70140-2-4",
+   "from": "supplier",
+   "from_name": "Export Manager, Odlewnia Kalwisz Sp. z o.o.",
+   "subject": "Re: Bearing bracket HN (part:310020): revised packages for 2027",
+   "body": "Hello,\n\nWe have reviewed your offer and can adjust our Angebot as follows. We checked the volume change data you cited; it holds and we took it into account. We see your figures, but we cannot give up margin right now. Faster payment would help us more than anything. As I mentioned before, faster payment is what we really need right now to keep things running smoothly. Our technical team will get back to you on the quality measures and packaging variants. \n\nOur current proposal is a price of €46.50 per unit, a quality commitment of 800 ppm, a chargeback of €0.00 per complaint. Alternatively, with a quality commitment of 1500 ppm, a chargeback of €0.00 per complaint: €46.00 per unit. This offer stays valid for 30 days.\n\nKind regards\nMarek Lis\nExport Manager, Odlewnia Kalwisz Sp. z o.o.\n\nQuality: We take the complaints seriously; our 8D report is attached.\n\nPlant Engineer: From our calculation: a cheaper material grade would save about EUR 1.15 per unit; a wider tolerance would save about EUR 1.15 per unit; doubling the lot size would save about EUR 0.72 per unit. Each needs your engineering approval and a new drawing revision.",
+   "status": "open",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "verified"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70140",
+   "term_sheets": [
+    {
+     "id": "offer:70140-2",
+     "terms": {
+      "unit_price": 46.5,
+      "ppm_commitment": 800,
+      "chargeback_eur_per_complaint": 0.0
+     }
+    },
+    {
+     "id": "offer:70140-2-a",
+     "terms": {
+      "unit_price": 46.0,
+      "ppm_commitment": 1500,
+      "chargeback_eur_per_complaint": 0.0
+     }
+    }
+   ],
+   "attachments": [
+    "8d-report.pdf"
+   ],
+   "at": "2026-10-24T23:16:35.527983+00:00",
+   "index": 4
+  },
+  {
+   "from": "buyer",
+   "subject": "Bearing bracket HN (part:310020) - updated packages",
+   "body": "Dear Mr Lis,\n\nThank you for the 8D report and for committing to 800 ppm. We have built our lead package around that commitment.\n\nPPI-D351 fell from 140.5 (idx:PPI-D351@2025-11) to 123.7 (idx:PPI-D351@2026-04), a change of -11.96%.\n\nThe attached packages cover 15900 pieces per year over a 12-month contract. This gives your plant steady, plannable volume and lets your containment and corrective actions run on a stable schedule. A variant at 300 ppm is included if your corrective actions support it.\n\nWhat is the lowest price at which you can sign these terms today?\n\nKind regards\nHollerau Pumpenwerke, Purchasing",
+   "supplier_id": "sup:70140",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "ppm_commitment": 800,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 41.33
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "ppm_commitment": 1500,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 41.01
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "ppm_commitment": 300,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 41.55
+     }
+    }
+   ],
+   "at": "2026-10-24T23:16:35.527983+00:00",
+   "index": 5
+  },
+  {
+   "message_id": "msg:70140-3-6",
+   "from": "supplier",
+   "from_name": "Export Manager, Odlewnia Kalwisz Sp. z o.o.",
+   "subject": "Re: Bearing bracket HN (part:310020) - updated packages",
+   "body": "Hello,\n\nWe have reviewed your offer and can adjust our Angebot as follows. Our current Angebot is a price of €46.50 per unit, a quality commitment of 300 ppm, a chargeback of €0.00 per complaint. \n\nAs an alternative, I can offer €46.00 for the 800 ppm package to keep things moving: a price of €46.00 per unit, a quality commitment of 800 ppm, a chargeback of €0.00 per complaint.\n\nAs to the index change data you cited, we see your figures, but we cannot give up margin right now. Faster payment would help us more than anything. We checked the index data you cited; it holds and we took it into account, but it barely moves our actual costs. If you want a better price, we really need faster payment terms to help with our cash flow. Our margin and our limits stay internal. Our price follows our main cost drivers: LCI-C, PPI-C241, PPI-D351. Our standard Zahlungsziel is 60 days net. Faster payment is welcome; we can reflect it in the price. This offer is valid for 30 days.\n\nKind regards\nMarek Lis\nExport Manager, Odlewnia Kalwisz Sp. z o.o.",
+   "status": "open",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "verified"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70140",
+   "term_sheets": [
+    {
+     "id": "offer:70140-3",
+     "terms": {
+      "unit_price": 46.5,
+      "ppm_commitment": 300,
+      "chargeback_eur_per_complaint": 0.0
+     }
+    },
+    {
+     "id": "offer:70140-3-a",
+     "terms": {
+      "unit_price": 46.0,
+      "ppm_commitment": 800,
+      "chargeback_eur_per_complaint": 0.0
+     }
+    }
+   ],
+   "at": "2026-10-24T23:16:35.527983+00:00",
+   "index": 6
+  },
+  {
+   "from": "buyer",
+   "subject": "Bearing bracket HN (part:310020) - packages at 800 ppm and 300 ppm",
+   "body": "Dear Mr Lis,\n\nThank you for the 300 ppm and 800 ppm options. Our lead package keeps the 800 ppm commitment from your 8D report.\n\nYour previous scorecard records on-time delivery of 78% (sc:70140@2026Q2).\n\nOn cash: our current contract ctr:4600070140 runs on 90 payment days. These packages pay at 60 days, so your invoices are settled a month earlier than today. That supports your cash flow without changing your margin structure.\n\nBoth packages cover 15900 pieces per year over a 12-month contract. Volume is steady and plannable while your corrective actions take effect.\n\nCould you also confirm the earliest lead time you can hold over the holiday shutdown?\n\nKind regards\nHollerau Pumpenwerke, Purchasing",
+   "supplier_id": "sup:70140",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "ppm_commitment": 800,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 42.31
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "ppm_commitment": 300,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 42.54
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "ppm_commitment": 300,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 42.3
+     }
+    }
+   ],
+   "at": "2026-10-24T23:16:35.527983+00:00",
+   "index": 7
+  },
+  {
+   "message_id": "msg:70140-4-8",
+   "from": "supplier",
+   "from_name": "Export Manager, Odlewnia Kalwisz Sp. z o.o.",
+   "subject": "Re: Bearing bracket HN (part:310020) - packages at 800 ppm and 300 ppm",
+   "body": "Hello,\n\nWe have reviewed your offer and can adjust our Angebot as follows. Our offer is a price of €46.00 per unit, a quality commitment of 300 ppm, a chargeback of €0.00 per complaint. This offer is valid for 30 days.\n\nThanks for confirming the 60 days payment, that really helps our cash flow so I can drop the price to €45.50 for the 800 ppm package. As another option, we can offer a price of €45.50 per unit, a quality commitment of 800 ppm, a chargeback of €0.00 per complaint.\n\nThe delivery record you brought up is old news and we already took it into account. Which figures is that based on? Please send us the data.\n\nKind regards\nMarek Lis\nExport Manager, Odlewnia Kalwisz Sp. z o.o.\n\nFreight Forwarder: Our Lieferzeit is 56 days. With overtime we can deliver in 56 days, at a premium.",
+   "status": "open",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "duplicate"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70140",
+   "term_sheets": [
+    {
+     "id": "offer:70140-4",
+     "terms": {
+      "unit_price": 46.0,
+      "ppm_commitment": 300,
+      "chargeback_eur_per_complaint": 0.0
+     }
+    },
+    {
+     "id": "offer:70140-4-a",
+     "terms": {
+      "unit_price": 45.5,
+      "ppm_commitment": 800,
+      "chargeback_eur_per_complaint": 0.0
+     }
+    }
+   ],
+   "attachments": [
+    "delivery-schedule.xlsx"
+   ],
+   "at": "2026-10-24T23:16:35.527983+00:00",
+   "index": 8
+  },
+  {
+   "from": "buyer",
+   "subject": "Re: Kalwisz: bearing brackets in red",
+   "body": "Please consider these complete packages for the stated requirement. Our quality notifications qn:20004671, qn:20004747, qn:20004756, qn:20004952, qn:20005025 record defective deliveries of part:310020.",
+   "supplier_id": "sup:70140",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "ppm_commitment": 300,
+      "chargeback_eur_per_complaint": 500,
+      "unit_price": 43.17
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "ppm_commitment": 300,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 43.04
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "ppm_commitment": 800,
+      "chargeback_eur_per_complaint": 500,
+      "unit_price": 43.17
+     }
+    }
+   ],
+   "at": "2026-10-24T23:16:35.527983+00:00",
+   "index": 9
+  },
+  {
+   "message_id": "msg:70140-5-10",
+   "from": "supplier",
+   "from_name": "Export Manager, Odlewnia Kalwisz Sp. z o.o.",
+   "subject": "Re: Kalwisz: bearing brackets in red",
+   "body": "Hello,\n\nWe have reviewed your offer and can adjust our Angebot as follows. We received a lot of material; we looked at what bears on this part. We checked the quality notifications you cited, but we already took this kind of data into account.\n\nTo build our partnership and show our flexibility, we can drop the price to €45.50 for the 300 ppm package to keep things moving. So our current Angebot is a price of €45.50 per unit, a quality commitment of 300 ppm, a chargeback of €0.00 per complaint.\n\nThis offer stays valid for 30 days. We really want to work with you and hope this works for your side too!\n\nKind regards\nMarek Lis\nExport Manager, Odlewnia Kalwisz Sp. z o.o.\n\nQuality: We take the complaints seriously; our 8D report is attached.",
+   "status": "open",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "duplicate"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70140",
+   "term_sheets": [
+    {
+     "id": "offer:70140-5",
+     "terms": {
+      "unit_price": 45.5,
+      "ppm_commitment": 300,
+      "chargeback_eur_per_complaint": 0.0
+     }
+    }
+   ],
+   "attachments": [
+    "8d-report.pdf"
+   ],
+   "at": "2026-10-24T23:16:35.527983+00:00",
+   "index": 10
+  },
+  {
+   "from": "buyer",
+   "subject": "Bearing bracket HN (part:310020): revised packages",
+   "body": "Dear Mr Lis,\n\nThank you for the revised offer and the 8D report. We value your 300 ppm commitment, and our lead package is built on it.\n\nWe have moved our price a real step toward yours. Both packages cover 15900 pieces per year over a 12-month contract. The payment terms in this frame settle your invoices earlier than under our current contract ctr:4600070140, which supports your cash position without asking for anything extra from your side.\n\nIs there a production or packaging variant for this bracket that would let you reduce cost further while keeping the 300 ppm commitment?\n\nWe would appreciate it if you could make the 300 ppm package your primary standing offer.\n\nKind regards\nHollerau Pumpenwerke, Purchasing",
+   "supplier_id": "sup:70140",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "ppm_commitment": 300,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 43.5
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "ppm_commitment": 800,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 43.27
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "ppm_commitment": 300,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 43.26
+     }
+    }
+   ],
+   "at": "2026-10-24T23:16:35.527983+00:00",
+   "index": 11
+  },
+  {
+   "message_id": "msg:70140-6-12",
+   "from": "supplier",
+   "from_name": "Export Manager, Odlewnia Kalwisz Sp. z o.o.",
+   "subject": "Re: Bearing bracket HN (part:310020): revised packages",
+   "body": "Hello,\n\nThanks for the new offer, but €45.50 is really the best we can do for the 300 ppm package. We are eager to work with you, but this is our final offer (letztes Angebot). Please decide.\n\nOur current Angebot stands at a price of €45.50 per unit, a quality commitment of 300 ppm, and a chargeback of €0.00 per complaint. We are keeping the 300 ppm package as our main offer at €45.50 and hope we can wrap this up soon!\n\nPlease note that this offer remains valid for 7 days.\n\nKind regards\nMarek Lis\nExport Manager, Odlewnia Kalwisz Sp. z o.o.\n\nPlant Engineer: From our calculation: a cheaper material grade would save about EUR 1.15 per unit; a wider tolerance would save about EUR 1.15 per unit; doubling the lot size would save about EUR 0.72 per unit. Each needs your engineering approval and a new drawing revision.",
+   "status": "final_offer",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70140",
+   "term_sheets": [
+    {
+     "id": "offer:70140-6",
+     "terms": {
+      "unit_price": 45.5,
+      "ppm_commitment": 300,
+      "chargeback_eur_per_complaint": 0.0
+     }
+    }
+   ],
+   "attachments": [
+    "quote-offer-70140-6.pdf"
+   ],
+   "at": "2026-10-24T23:16:35.527983+00:00",
+   "index": 12
+  },
+  {
+   "from": "buyer",
+   "supplier_id": "sup:70140",
+   "term_sheets": [],
+   "action": {
+    "type": "accept",
+    "term_sheet_id": "offer:70140-6"
+   },
+   "at": "2026-10-24T23:16:35.527983+00:00",
+   "index": 13
+  },
+  {
+   "message_id": "msg:70140-6-14",
+   "from": "supplier",
+   "from_name": "Export Manager, Odlewnia Kalwisz Sp. z o.o.",
+   "subject": "Re: Bearing bracket HN (part:310020): revised packages",
+   "body": "Hello,\n\nThank you for your order. Our order confirmation is attached. We are very glad to work together with you and are looking forward to being a strong long-term partner for your company.\n\nKind regards\nMarek Lis\nExport Manager, Odlewnia Kalwisz Sp. z o.o.\n\nPlant Engineer: From our calculation: a cheaper material grade would save about EUR 1.15 per unit; a wider tolerance would save about EUR 1.15 per unit; doubling the lot size would save about EUR 0.72 per unit. Each needs your engineering approval and a new drawing revision.",
+   "status": "agreed",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70140",
+   "term_sheets": [
+    {
+     "id": "offer:70140-6",
+     "terms": {
+      "unit_price": 45.5,
+      "ppm_commitment": 300,
+      "chargeback_eur_per_complaint": 0.0
+     }
+    }
+   ],
+   "attachments": [
+    "order-confirmation-offer-70140-6.pdf"
+   ],
+   "at": "2026-10-24T23:16:35.527983+00:00",
+   "index": 14
+  },
+  {
+   "from": "buyer",
+   "supplier_id": "sup:70140",
+   "at": "2026-10-24T23:22:33.637651+00:00",
+   "action": {
+    "type": "accept",
+    "term_sheet_id": "offer:70140-6"
+   },
+   "closing": true,
+   "term_sheets": [],
+   "index": 10000
+  }
+ ],
+ "decisions": [
+  {
+   "route": "script",
+   "reason": "must_have_repair",
+   "fallback": false,
+   "budget_s": 40.0,
+   "decision_s": 0.050216714007547125,
+   "move": {
+    "supplier_id": "sup:70140",
+    "action": "send",
+    "term_sheets": [
+     {
+      "ppm_commitment": 1500,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 38.07
+     }
+    ]
+   },
+   "reply": {
+    "supplier_id": "sup:70140",
+    "status": "open",
+    "unit_price": 46.5,
+    "term_sheet_id": "offer:70140-1"
+   },
+   "path": [
+    "decide",
+    "scripts",
+    "bargain",
+    "must_have_repair"
+   ]
+  },
+  {
+   "route": "fast",
+   "reason": "semantic_decision",
+   "fallback": false,
+   "budget_s": 40.0,
+   "decision_s": 4.207653482997557,
+   "move": {
+    "supplier_id": "sup:70140",
+    "action": "send",
+    "term_sheets": [
+     {
+      "ppm_commitment": 1500,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 39.75
+     },
+     {
+      "ppm_commitment": 800,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 40.06
+     },
+     {
+      "ppm_commitment": 1500,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 39.74
+     }
+    ]
+   },
+   "reply": {
+    "supplier_id": "sup:70140",
+    "status": "open",
+    "unit_price": 46.5,
+    "term_sheet_id": "offer:70140-2"
+   },
+   "path": [
+    "decide",
+    "model",
+    "semantic_decision",
+    "validate"
+   ]
+  },
+  {
+   "route": "fast",
+   "reason": "semantic_decision",
+   "fallback": false,
+   "budget_s": 40.0,
+   "decision_s": 4.1182589499949245,
+   "move": {
+    "supplier_id": "sup:70140",
+    "action": "send",
+    "term_sheets": [
+     {
+      "ppm_commitment": 800,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 41.33
+     },
+     {
+      "ppm_commitment": 1500,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 41.01
+     },
+     {
+      "ppm_commitment": 300,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 41.55
+     }
+    ]
+   },
+   "reply": {
+    "supplier_id": "sup:70140",
+    "status": "open",
+    "unit_price": 46.5,
+    "term_sheet_id": "offer:70140-3"
+   },
+   "path": [
+    "decide",
+    "model",
+    "semantic_decision",
+    "validate"
+   ]
+  },
+  {
+   "route": "fast",
+   "reason": "semantic_decision",
+   "fallback": false,
+   "budget_s": 40.0,
+   "decision_s": 5.219739776002825,
+   "move": {
+    "supplier_id": "sup:70140",
+    "action": "send",
+    "term_sheets": [
+     {
+      "ppm_commitment": 800,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 42.31
+     },
+     {
+      "ppm_commitment": 300,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 42.54
+     },
+     {
+      "ppm_commitment": 300,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 42.3
+     }
+    ]
+   },
+   "reply": {
+    "supplier_id": "sup:70140",
+    "status": "open",
+    "unit_price": 46.0,
+    "term_sheet_id": "offer:70140-4"
+   },
+   "path": [
+    "decide",
+    "model",
+    "semantic_decision",
+    "validate"
+   ]
+  },
+  {
+   "route": "fast",
+   "reason": "APIConnectionError",
+   "fallback": true,
+   "error": "Connection error.",
+   "budget_s": 40.0,
+   "decision_s": 0.0801470970036462,
+   "move": {
+    "supplier_id": "sup:70140",
+    "action": "send",
+    "term_sheets": [
+     {
+      "ppm_commitment": 300,
+      "chargeback_eur_per_complaint": 500,
+      "unit_price": 43.17
+     },
+     {
+      "ppm_commitment": 300,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 43.04
+     },
+     {
+      "ppm_commitment": 800,
+      "chargeback_eur_per_complaint": 500,
+      "unit_price": 43.17
+     }
+    ]
+   },
+   "reply": {
+    "supplier_id": "sup:70140",
+    "status": "open",
+    "unit_price": 45.5,
+    "term_sheet_id": "offer:70140-5"
+   },
+   "path": [
+    "decide",
+    "model",
+    "fallback",
+    "error:APIConnectionError"
+   ]
+  },
+  {
+   "route": "fast",
+   "reason": "semantic_decision",
+   "fallback": false,
+   "budget_s": 40.0,
+   "decision_s": 5.13882000099693,
+   "move": {
+    "supplier_id": "sup:70140",
+    "action": "send",
+    "term_sheets": [
+     {
+      "ppm_commitment": 300,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 43.5
+     },
+     {
+      "ppm_commitment": 800,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 43.27
+     },
+     {
+      "ppm_commitment": 300,
+      "chargeback_eur_per_complaint": 0,
+      "unit_price": 43.26
+     }
+    ]
+   },
+   "reply": {
+    "supplier_id": "sup:70140",
+    "status": "final_offer",
+    "unit_price": 45.5,
+    "term_sheet_id": "offer:70140-6"
+   },
+   "path": [
+    "decide",
+    "model",
+    "semantic_decision",
+    "validate"
+   ]
+  },
+  {
+   "route": "script",
+   "reason": "terminal_offers",
+   "fallback": false,
+   "budget_s": 40.0,
+   "decision_s": 0.000269665993982926,
+   "move": {
+    "supplier_id": "sup:70140",
+    "action": "accept",
+    "term_sheet_id": "offer:70140-6"
+   },
+   "reply": {
+    "supplier_id": "sup:70140",
+    "status": "agreed",
+    "unit_price": 45.5,
+    "term_sheet_id": "offer:70140-6"
+   },
+   "path": [
+    "decide",
+    "scripts",
+    "terminal",
+    "terminal_offers"
+   ]
+  }
+ ],
+ "result": {
+  "deal": true,
+  "score": 0.7098962346486538,
+  "supplier_id": "sup:70140",
+  "terms": {
+   "payment_days": 60,
+   "lead_time_days": 56,
+   "volume_per_year": 15900,
+   "contract_months": 12,
+   "effective_date": "2027-01-01",
+   "index_clause": null,
+   "incoterm": "FCA",
+   "tooling_eur": 0.0,
+   "ppm_commitment": 300,
+   "chargeback_eur_per_complaint": 0.0,
+   "unit_price": 45.5
+  },
+  "cost_eur": 750082.5,
+  "reference_cost_eur": 722500.02,
+  "opening_cost_eur": 817578.0,
+  "alternative_cost_eur": 894383.19,
+  "cost_breakdown": {
+   "price": 723450.0,
+   "uncovered_need": 0.0,
+   "fallback_risk": 0.0,
+   "payment_terms": 0.0,
+   "freight": 24486.0,
+   "late_delivery": 0.0,
+   "quality": 2146.5,
+   "tooling": 0.0,
+   "index_clause": 0.0,
+   "index_risk": 0.0,
+   "relationship": 0.0
+  },
+  "rounds": 7,
+  "end_reason": "accepted",
+  "replay_url": "https://arena.tacto.ai/replay/fc6bf37287647896"
+ },
+ "run": "2026-10-25-opus-high-fast-v17",
+ "times": "approximate: report start",
+ "closing": {
+  "at": "2026-10-24T23:22:33.637651+00:00",
+  "supplier_id": "sup:70140",
+  "action": {
+   "type": "accept",
+   "term_sheet_id": "offer:70140-6"
+  }
+ }
+}

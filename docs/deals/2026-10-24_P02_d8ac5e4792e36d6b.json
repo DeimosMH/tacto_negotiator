@@ -1,0 +1,293 @@
+{
+ "id": "2026-10-24_P02_d8ac5e4792e36d6b",
+ "case_id": "case:P02",
+ "source": "hosted (backfilled)",
+ "status": "ended",
+ "started_utc": "2026-10-24T17:08:12.161572+00:00",
+ "updated_utc": "2026-10-25T00:07:32+00:00",
+ "finished_utc": "2026-10-24T17:12:48.113663+00:00",
+ "session_id": "d8ac5e4792e36d6b",
+ "title": "Nordmark passes on copper for the 7.5 kW motor",
+ "goal": null,
+ "suppliers": {
+  "sup:70510": "Key Account Manager, Antriebstechnik Nordmark AG"
+ },
+ "messages": [
+  {
+   "message_id": "msg:70510-0-0",
+   "from": "supplier",
+   "from_name": "Key Account Manager, Antriebstechnik Nordmark AG",
+   "subject": "Quote from Antriebstechnik Nordmark AG: Nordmark passes on copper for the 7.5 kW motor",
+   "body": "Dear Sir or Madam,\n\nThank you for your enquiry. Please find our Angebot below.\n\nWe offer a price of €370.96 per unit, Zahlungsziel 30 days net, no Preisgleitklausel. \n\nRegarding our cost structure, CU-NOTATION rose 47.7 % in twelve months and is 20 % of our cost. Furthermore, LCI-C rose 2.7 % in twelve months and is 20 % of our cost. Additionally, PPI-C241 rose 6.5 % in twelve months and is 14 % of our cost.\n\nPlease note that this offer remains valid for 30 days.\n\nMit freundlichen Grüßen\nPetra Lechner\nKey Account Manager, Antriebstechnik Nordmark AG",
+   "status": "open",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70510",
+   "term_sheets": [
+    {
+     "id": "offer:70510-0",
+     "terms": {
+      "unit_price": 370.96,
+      "payment_days": 30,
+      "index_clause": null
+     }
+    }
+   ],
+   "attachments": [
+    "quote-offer-70510-0.pdf"
+   ],
+   "at": "2026-10-24T17:08:12.161572+00:00",
+   "index": 0
+  },
+  {
+   "from": "buyer",
+   "subject": "Part 350011 – 2027 terms: payment days and volume",
+   "body": "Dear Ms Lechner,\n\nThank you for your offer for the 7.5 kW motor. We understand the copper effect behind your adjustment.\n\nOur current contract ctr:4600070510 runs on 90 days payment. We would like to keep that term rather than move to 30 days.\n\nOur latest forecast fc:350011@2026-09 shows a volume change of 11.9 %, to 6,110 pc a year. That gives your plant a larger, stable load.\n\nWe propose the attached packages, both without an index clause. If 366.50 needs your pricing committee's approval, could you please submit it for review? Could you also share your earliest possible lead time?\n\nKind regards,\nPurchasing, Hollerau Pumpenwerke",
+   "supplier_id": "sup:70510",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 366.5,
+      "payment_days": 90,
+      "index_clause": null
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 370.96,
+      "payment_days": 90,
+      "index_clause": null
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 366.5,
+      "payment_days": 60,
+      "index_clause": null
+     }
+    }
+   ],
+   "at": "2026-10-24T17:08:12.161572+00:00",
+   "index": 1
+  },
+  {
+   "message_id": "msg:70510-1-2",
+   "from": "supplier",
+   "from_name": "Key Account Manager, Antriebstechnik Nordmark AG",
+   "subject": "Re: Part 350011 – 2027 terms: payment days and volume",
+   "body": "Dear Sir or Madam,\n\nWe have reviewed your offer and can adjust our Angebot as follows. We checked the volume change data you cited; it holds and we took it into account.\n\nOur offer stands at a price of €373.57 per unit, Zahlungsziel 90 days net, no Preisgleitklausel. To accommodate your request for longer payment terms, we propose a compromise of 60 days net at €371.50 per unit, with a price of €371.50 per unit, Zahlungsziel 60 days net, no Preisgleitklausel.\n\nOur colleagues will address your inquiry regarding the earliest possible lead time. This offer is valid for 30 days.\n\nMit freundlichen Grüßen\nPetra Lechner\nKey Account Manager, Antriebstechnik Nordmark AG\n\nLogistics: As part of our standard procedures, please be advised that our Lieferzeit is 35 days.",
+   "status": "open",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "verified"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70510",
+   "term_sheets": [
+    {
+     "id": "offer:70510-1",
+     "terms": {
+      "unit_price": 373.57,
+      "payment_days": 90,
+      "index_clause": null
+     }
+    },
+    {
+     "id": "offer:70510-1-a",
+     "terms": {
+      "unit_price": 371.5,
+      "payment_days": 60,
+      "index_clause": null
+     }
+    }
+   ],
+   "attachments": [
+    "delivery-schedule.xlsx"
+   ],
+   "at": "2026-10-24T17:08:12.161572+00:00",
+   "index": 2
+  },
+  {
+   "from": "buyer",
+   "supplier_id": "sup:70510",
+   "term_sheets": [],
+   "action": {
+    "type": "accept",
+    "term_sheet_id": "offer:70510-1"
+   },
+   "at": "2026-10-24T17:08:12.161572+00:00",
+   "index": 3
+  },
+  {
+   "message_id": "msg:70510-1-4",
+   "from": "supplier",
+   "from_name": "Key Account Manager, Antriebstechnik Nordmark AG",
+   "subject": "Re: Part 350011 – 2027 terms: payment days and volume",
+   "body": "Dear Sir or Madam,\n\nThank you for your order. Our order confirmation is attached.\n\nMit freundlichen Grüßen\nPetra Lechner\nKey Account Manager, Antriebstechnik Nordmark AG\n\nLogistics: As part of our standard procedures, please be advised that our Lieferzeit is 35 days.",
+   "status": "agreed",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "verified"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70510",
+   "term_sheets": [
+    {
+     "id": "offer:70510-1",
+     "terms": {
+      "unit_price": 373.57,
+      "payment_days": 90,
+      "index_clause": null
+     }
+    },
+    {
+     "id": "offer:70510-1-a",
+     "terms": {
+      "unit_price": 371.5,
+      "payment_days": 60,
+      "index_clause": null
+     }
+    }
+   ],
+   "attachments": [
+    "order-confirmation-offer-70510-1.pdf",
+    "delivery-schedule.xlsx"
+   ],
+   "at": "2026-10-24T17:08:12.161572+00:00",
+   "index": 4
+  },
+  {
+   "from": "buyer",
+   "supplier_id": "sup:70510",
+   "at": "2026-10-24T17:12:48.113663+00:00",
+   "action": {
+    "type": "accept",
+    "term_sheet_id": "offer:70510-1"
+   },
+   "closing": true,
+   "term_sheets": [],
+   "index": 10000
+  }
+ ],
+ "decisions": [
+  {
+   "route": "fast",
+   "reason": "strong_unconfigured",
+   "fallback": false,
+   "budget_s": 25.0,
+   "decision_s": 12.598450366996985,
+   "move": {
+    "supplier_id": "sup:70510",
+    "action": "send",
+    "term_sheets": [
+     {
+      "unit_price": 366.5,
+      "payment_days": 90,
+      "index_clause": null
+     },
+     {
+      "unit_price": 370.96,
+      "payment_days": 90,
+      "index_clause": null
+     },
+     {
+      "unit_price": 366.5,
+      "payment_days": 60,
+      "index_clause": null
+     }
+    ]
+   },
+   "reply": {
+    "supplier_id": "sup:70510",
+    "status": "open",
+    "unit_price": 373.57,
+    "term_sheet_id": "offer:70510-1"
+   },
+   "path": [
+    "decide",
+    "model",
+    "strong_unconfigured",
+    "validate"
+   ]
+  },
+  {
+   "route": "fast",
+   "reason": "strong_unconfigured",
+   "fallback": false,
+   "budget_s": 25.0,
+   "decision_s": 10.120285862001765,
+   "move": {
+    "supplier_id": "sup:70510",
+    "action": "accept",
+    "term_sheet_id": "offer:70510-1"
+   },
+   "reply": {
+    "supplier_id": "sup:70510",
+    "status": "agreed",
+    "unit_price": 373.57,
+    "term_sheet_id": "offer:70510-1"
+   },
+   "path": [
+    "decide",
+    "model",
+    "strong_unconfigured",
+    "validate"
+   ]
+  }
+ ],
+ "result": {
+  "deal": true,
+  "score": 0.30367572028558415,
+  "supplier_id": "sup:70510",
+  "terms": {
+   "payment_days": 90,
+   "lead_time_days": 35,
+   "volume_per_year": 6110,
+   "contract_months": 12,
+   "effective_date": "2027-01-01",
+   "index_clause": null,
+   "incoterm": "DAP",
+   "tooling_eur": 0.0,
+   "ppm_commitment": 250,
+   "chargeback_eur_per_complaint": 0.0,
+   "unit_price": 373.57
+  },
+  "cost_eur": 2268487.4,
+  "reference_cost_eur": 2235514.05,
+  "opening_cost_eur": 2282867.49,
+  "alternative_cost_eur": 2604227.78,
+  "cost_breakdown": {
+   "price": 2282512.7,
+   "uncovered_need": 0.0,
+   "fallback_risk": 0.0,
+   "payment_terms": -15216.75,
+   "freight": 0.0,
+   "late_delivery": 0.0,
+   "quality": 1191.45,
+   "tooling": 0.0,
+   "index_clause": 0.0,
+   "index_risk": 0.0,
+   "relationship": 0.0
+  },
+  "rounds": 2,
+  "end_reason": "accepted",
+  "replay_url": "https://arena.tacto.ai/replay/d8ac5e4792e36d6b"
+ },
+ "run": "2026-10-24-opus-high",
+ "times": "approximate: report start",
+ "closing": {
+  "at": "2026-10-24T17:12:48.113663+00:00",
+  "supplier_id": "sup:70510",
+  "action": {
+   "type": "accept",
+   "term_sheet_id": "offer:70510-1"
+  }
+ }
+}

@@ -71,3 +71,13 @@ The fixes between the high runs:
 
 **Use Opus at high effort.** Runs use different policy commits and suppliers vary between attempts, so differences of a few hundredths are noise.
 
+
+## Hosted runs on 25 October (Opus high effort, 10 cases each)
+
+| Run | Mean | Model time per case | Change |
+|---|---|---|---|
+| [v13](results/live-practice-2026-10-24-opus-high-v13.json) | 0.781 | — | levers and prose guards |
+| [v16](results/live-practice-2026-10-25-opus-high-v16.json) | 0.752 | 37.1 s | held sheet after an imposed index clause, last-rise claim, hedge rule |
+| [v17](results/live-practice-2026-10-25-opus-high-fast-v17.json) | **0.789** | **15.8 s** | Opus fast mode; index-clause sheet on the longest payment term |
+
+One 10-case run varies by about ±0.02, so v13, v16 and v17 are close; fast mode's measured effect is the time. After v17, the shared gate stopped offering one RFQ bidder a sheet dearer than another bidder's standing acceptable offer (hosted P05 v17: 0.699, about 0.77 with the cheaper offer). Every session is readable in the [deal journal](DEALS.md).

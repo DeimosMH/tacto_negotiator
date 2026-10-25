@@ -1,0 +1,451 @@
+{
+ "id": "2026-10-24_P18_2b8d31da774a4189",
+ "case_id": "case:P18",
+ "source": "hosted (backfilled)",
+ "status": "ended",
+ "started_utc": "2026-10-24T21:28:19.310648+00:00",
+ "updated_utc": "2026-10-25T00:07:47+00:00",
+ "finished_utc": "2026-10-24T21:36:26.100838+00:00",
+ "session_id": "2b8d31da774a4189",
+ "title": "Alloy surcharge and base price for 1.4404 bar (Werdenfels)",
+ "goal": null,
+ "suppliers": {
+  "sup:70740": "Inside Sales, Blankstahl Werdenfels GmbH"
+ },
+ "messages": [
+  {
+   "message_id": "msg:70740-0-0",
+   "from": "supplier",
+   "from_name": "Inside Sales, Blankstahl Werdenfels GmbH",
+   "subject": "Quote from Blankstahl Werdenfels GmbH: Alloy surcharge and base price for 1.4404 bar (Werdenfels)",
+   "body": "Dear customer,\n\nThank you for your enquiry. Please find our Angebot below.\n\nWe are delighted to present our competitive quote for your requirements. Our price is €6.10 per unit, with a Zahlungsziel of 30 days net, a contract term of 12 months, and no Preisgleitklausel. Please note that AS-14404 rose 5.9 % in twelve months and is 45 % of our cost. Furthermore, LCI-C rose 2.7 % in twelve months and is 5 % of our cost, while PPI-C2431 rose 12.3 % in twelve months and is 38 % of our cost. This offer remains valid for 30 days.\n\nMit freundlichen Grüßen\nFranz Seidl\nInside Sales, Blankstahl Werdenfels GmbH",
+   "status": "open",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70740",
+   "term_sheets": [
+    {
+     "id": "offer:70740-0",
+     "terms": {
+      "unit_price": 6.1,
+      "payment_days": 30,
+      "index_clause": null,
+      "contract_months": 12
+     }
+    }
+   ],
+   "attachments": [
+    "quote-offer-70740-0.pdf"
+   ],
+   "at": "2026-10-24T21:28:19.310648+00:00",
+   "index": 0
+  },
+  {
+   "from": "buyer",
+   "subject": "part:370010 – price basis from 2027-01-01",
+   "body": "Dear Mr Seidl,\n\nThank you for your offer and your letter on the price basis.\n\nOur orders with you for part:370010 rose from EUR 5.26 (po:4500013373-10) to EUR 5.84 (po:4500014427-10) between 2026-01-02 and 2026-09-18. That rise is already in our price.\n\nAS-14404 fell from 3182.6744 (idx:AS-14404@2026-06) to 3007.8019 (idx:AS-14404@2026-09), a change of -5.49%.\n\nPPI-C2431 fell from 131.9 (idx:PPI-C2431@2026-05) to 129.1 (idx:PPI-C2431@2026-08), a change of -2.12%.\n\nThe attached packages offer you a longer, plannable volume commitment without an index clause. Could your pricing committee review them at its next meeting?\n\nKind regards,\nPurchasing, Hollerau Pumpenwerke",
+   "supplier_id": "sup:70740",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 4.56,
+      "index_clause": null,
+      "payment_days": 90,
+      "contract_months": 24
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 4.49,
+      "index_clause": null,
+      "payment_days": 30,
+      "contract_months": 24
+     }
+    }
+   ],
+   "at": "2026-10-24T21:28:19.310648+00:00",
+   "index": 1
+  },
+  {
+   "message_id": "msg:70740-1-2",
+   "from": "supplier",
+   "from_name": "Inside Sales, Blankstahl Werdenfels GmbH",
+   "subject": "Re: part:370010 – price basis from 2027-01-01",
+   "body": "Dear customer,\n\nWe have reviewed your offer and can adjust our Angebot as follows. We checked the price history data you cited; it holds and we took it into account. Furthermore, we have reviewed the index developments you cited, and we are pleased to pass on these reductions in our new offer.\n\nOur price follows our main cost drivers: AS-14404, PPI-C2431, LCI-C. Specifically, AS-14404 rose 5.9 % in twelve months and is 45 % of our cost. That remains. LCI-C rose 2.7 % in twelve months and is 5 % of our cost. That remains. PPI-C2431 rose 12.3 % in twelve months and is 38 % of our cost. That remains.\n\nFor a 24-month contract, we must include an AS-14404 index clause, as we cannot fix prices over such a long period. We can offer a Preisgleitklausel on AS-14404, AS-14404, AS-14404.\n\nOur updated offer is a price of €5.30 per unit, Zahlungsziel 90 days net, a contract term of 24 months, a Preisgleitklausel on AS-14404. \n\nWith this clause and your preferred 30-day payment terms, we can offer €5.30 per unit. Alternatively, with Zahlungsziel 30 days net and a Preisgleitklausel on AS-14404: €5.30 per unit.\n\nThis offer stays valid for 30 days. We are happy to discuss this in a call; until then our offer stands.\n\nMit freundlichen Grüßen\nFranz Seidl\nInside Sales, Blankstahl Werdenfels GmbH",
+   "status": "open",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "verified"
+    },
+    {
+     "index": 1,
+     "result": "verified"
+    },
+    {
+     "index": 2,
+     "result": "verified"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70740",
+   "term_sheets": [
+    {
+     "id": "offer:70740-1",
+     "terms": {
+      "unit_price": 5.3,
+      "payment_days": 90,
+      "index_clause": {
+       "series": "AS-14404",
+       "material_share": 0.45,
+       "deadband_pct": 0.0,
+       "base_month": "2026-08"
+      },
+      "contract_months": 24
+     }
+    },
+    {
+     "id": "offer:70740-1-a",
+     "terms": {
+      "unit_price": 5.3,
+      "payment_days": 30,
+      "index_clause": {
+       "series": "AS-14404",
+       "material_share": 0.45,
+       "deadband_pct": 5.0,
+       "base_month": "2026-08"
+      },
+      "contract_months": 24
+     }
+    }
+   ],
+   "at": "2026-10-24T21:28:19.310648+00:00",
+   "index": 2
+  },
+  {
+   "from": "buyer",
+   "subject": "Part 370010: index clause with deadband and longer commitment",
+   "body": "Dear Mr Seidl,\n\nThank you for your revised offer and for taking the verified data into account.\n\nThe forecast for part:370010 increased by 1.9% (fc:370010@2026-09); please reflect this additional business in your price.\n\nWe accept your point that a multi-year term needs an AS-14404 clause. The attached packages include that clause with a deadband, so routine fluctuations cause no repricing work on either side. One package offers you a longer commitment for more planning security on volume.\n\nCould you also tell us whether a cheaper variant of the peeled bar, for example in finish or tolerance, would lower your cost?\n\nKind regards,\nPurchasing, Hollerau Pumpenwerke",
+   "supplier_id": "sup:70740",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 4.66,
+      "index_clause": {
+       "series": "AS-14404",
+       "material_share": 0.45,
+       "deadband_pct": 5,
+       "base_month": "2026-08"
+      },
+      "payment_days": 90,
+      "contract_months": 24
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 4.62,
+      "index_clause": {
+       "series": "AS-14404",
+       "material_share": 0.45,
+       "deadband_pct": 3,
+       "base_month": "2026-08"
+      },
+      "payment_days": 90,
+      "contract_months": 36
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 4.55,
+      "index_clause": {
+       "series": "AS-14404",
+       "material_share": 0.45,
+       "deadband_pct": 0.0,
+       "base_month": "2026-08"
+      },
+      "payment_days": 90,
+      "contract_months": 24
+     }
+    }
+   ],
+   "at": "2026-10-24T21:28:19.310648+00:00",
+   "index": 3
+  },
+  {
+   "message_id": "msg:70740-2-4",
+   "from": "supplier",
+   "from_name": "Inside Sales, Blankstahl Werdenfels GmbH",
+   "subject": "Re: Part 370010: index clause with deadband and longer commitment",
+   "body": "Dear customer,\n\nThank you for your continued partnership with Blankstahl Werdenfels GmbH. We checked the volume change data you cited; it holds, but it does not change our calculation. Material accounts for about 45 % of our cost; more detail we do not share. A change in finish or tolerance would not significantly lower our costs, as the base material and primary processing remain the main cost drivers. From our calculation: a cheaper material grade would save about EUR 0.24 per unit; a wider tolerance would save about EUR 0.05 per unit; doubling the lot size would save about EUR 0.03 per unit. Each needs your engineering approval and a new drawing revision. Regarding the forecast increase, we cannot verify the data you cited; please provide the forecast document so we can review it.\n\nWe appreciate your acceptance of the index clause, and we can offer €5.20 per unit for a 24-month contract with 90-day payment terms. Our offer features a price of €5.20 per unit, Zahlungsziel 90 days net, a contract term of 24 months, and a Preisgleitklausel on AS-14404. Please note that this offer remains valid for 7 days. This is our final offer (letztes Angebot). Please decide.\n\nMit freundlichen Grüßen\nFranz Seidl\nInside Sales, Blankstahl Werdenfels GmbH",
+   "status": "final_offer",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "verified"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70740",
+   "term_sheets": [
+    {
+     "id": "offer:70740-2",
+     "terms": {
+      "unit_price": 5.2,
+      "payment_days": 90,
+      "index_clause": {
+       "series": "AS-14404",
+       "material_share": 0.45,
+       "deadband_pct": 0.0,
+       "base_month": "2026-08"
+      },
+      "contract_months": 24
+     }
+    }
+   ],
+   "attachments": [
+    "quote-offer-70740-2.pdf"
+   ],
+   "at": "2026-10-24T21:28:19.310648+00:00",
+   "index": 4
+  },
+  {
+   "from": "buyer",
+   "supplier_id": "sup:70740",
+   "term_sheets": [],
+   "action": {
+    "type": "accept",
+    "term_sheet_id": "offer:70740-2"
+   },
+   "at": "2026-10-24T21:28:19.310648+00:00",
+   "index": 5
+  },
+  {
+   "message_id": "msg:70740-2-6",
+   "from": "supplier",
+   "from_name": "Inside Sales, Blankstahl Werdenfels GmbH",
+   "subject": "Re: Part 370010: index clause with deadband and longer commitment",
+   "body": "Dear customer,\n\nThank you for your order. Our order confirmation is attached. \n\nIt is always a pleasure working with you, and we truly appreciate your business. As a reliable partner for high-quality steel products, our team remains at your disposal for all your supply needs from our extensive product range. We look forward to continuing our successful partnership.\n\nMit freundlichen Grüßen\nFranz Seidl\nInside Sales, Blankstahl Werdenfels GmbH",
+   "status": "agreed",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "verified"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70740",
+   "term_sheets": [
+    {
+     "id": "offer:70740-2",
+     "terms": {
+      "unit_price": 5.2,
+      "payment_days": 90,
+      "index_clause": {
+       "series": "AS-14404",
+       "material_share": 0.45,
+       "deadband_pct": 0.0,
+       "base_month": "2026-08"
+      },
+      "contract_months": 24
+     }
+    }
+   ],
+   "attachments": [
+    "order-confirmation-offer-70740-2.pdf"
+   ],
+   "at": "2026-10-24T21:28:19.310648+00:00",
+   "index": 6
+  },
+  {
+   "from": "buyer",
+   "supplier_id": "sup:70740",
+   "at": "2026-10-24T21:36:26.100838+00:00",
+   "action": {
+    "type": "accept",
+    "term_sheet_id": "offer:70740-2"
+   },
+   "closing": true,
+   "term_sheets": [],
+   "index": 10000
+  }
+ ],
+ "decisions": [
+  {
+   "route": "fast",
+   "reason": "strong_unconfigured",
+   "fallback": false,
+   "budget_s": 40.0,
+   "decision_s": 12.569008409001981,
+   "move": {
+    "supplier_id": "sup:70740",
+    "action": "send",
+    "term_sheets": [
+     {
+      "unit_price": 4.56,
+      "index_clause": null,
+      "payment_days": 90,
+      "contract_months": 24
+     },
+     {
+      "unit_price": 4.49,
+      "index_clause": null,
+      "payment_days": 30,
+      "contract_months": 24
+     }
+    ]
+   },
+   "reply": {
+    "supplier_id": "sup:70740",
+    "status": "open",
+    "unit_price": 5.3,
+    "term_sheet_id": "offer:70740-1"
+   },
+   "path": [
+    "decide",
+    "model",
+    "strong_unconfigured",
+    "validate"
+   ]
+  },
+  {
+   "route": "fast",
+   "reason": "strong_unconfigured",
+   "fallback": false,
+   "budget_s": 40.0,
+   "decision_s": 16.14738323900383,
+   "move": {
+    "supplier_id": "sup:70740",
+    "action": "send",
+    "term_sheets": [
+     {
+      "unit_price": 4.66,
+      "index_clause": {
+       "series": "AS-14404",
+       "material_share": 0.45,
+       "deadband_pct": 5,
+       "base_month": "2026-08"
+      },
+      "payment_days": 90,
+      "contract_months": 24
+     },
+     {
+      "unit_price": 4.62,
+      "index_clause": {
+       "series": "AS-14404",
+       "material_share": 0.45,
+       "deadband_pct": 3,
+       "base_month": "2026-08"
+      },
+      "payment_days": 90,
+      "contract_months": 36
+     },
+     {
+      "unit_price": 4.55,
+      "index_clause": {
+       "series": "AS-14404",
+       "material_share": 0.45,
+       "deadband_pct": 0.0,
+       "base_month": "2026-08"
+      },
+      "payment_days": 90,
+      "contract_months": 24
+     }
+    ]
+   },
+   "reply": {
+    "supplier_id": "sup:70740",
+    "status": "final_offer",
+    "unit_price": 5.2,
+    "term_sheet_id": "offer:70740-2"
+   },
+   "path": [
+    "decide",
+    "model",
+    "strong_unconfigured",
+    "validate"
+   ]
+  },
+  {
+   "route": "script",
+   "reason": "terminal_offers",
+   "fallback": false,
+   "budget_s": 40.0,
+   "decision_s": 0.00031025199859868735,
+   "move": {
+    "supplier_id": "sup:70740",
+    "action": "accept",
+    "term_sheet_id": "offer:70740-2"
+   },
+   "reply": {
+    "supplier_id": "sup:70740",
+    "status": "agreed",
+    "unit_price": 5.2,
+    "term_sheet_id": "offer:70740-2"
+   },
+   "path": [
+    "decide",
+    "scripts",
+    "terminal",
+    "terminal_offers"
+   ]
+  }
+ ],
+ "result": {
+  "deal": true,
+  "score": 0.587026467569271,
+  "supplier_id": "sup:70740",
+  "terms": {
+   "payment_days": 90,
+   "lead_time_days": 14,
+   "volume_per_year": 23700,
+   "contract_months": 24,
+   "effective_date": "2027-01-01",
+   "index_clause": {
+    "series": "AS-14404",
+    "material_share": 0.45,
+    "deadband_pct": 0.0,
+    "base_month": "2026-08"
+   },
+   "incoterm": "DAP",
+   "tooling_eur": 0.0,
+   "ppm_commitment": 70,
+   "chargeback_eur_per_complaint": 0.0,
+   "unit_price": 5.2
+  },
+  "cost_eur": 252600.92,
+  "reference_cost_eur": 222651.27,
+  "opening_cost_eur": 295173.23,
+  "alternative_cost_eur": 301087.96,
+  "cost_breakdown": {
+   "price": 246480.0,
+   "uncovered_need": 0.0,
+   "fallback_risk": 0.0,
+   "payment_terms": -1643.2,
+   "freight": 0.0,
+   "late_delivery": 0.0,
+   "quality": 0.0,
+   "tooling": 0.0,
+   "index_clause": 6654.96,
+   "index_risk": 1109.16,
+   "relationship": 0.0
+  },
+  "rounds": 3,
+  "end_reason": "accepted",
+  "replay_url": "https://arena.tacto.ai/replay/2b8d31da774a4189"
+ },
+ "run": "2026-10-24-opus-high-v14",
+ "times": "approximate: report start",
+ "closing": {
+  "at": "2026-10-24T21:36:26.100838+00:00",
+  "supplier_id": "sup:70740",
+  "action": {
+   "type": "accept",
+   "term_sheet_id": "offer:70740-2"
+  }
+ }
+}

@@ -1,0 +1,661 @@
+{
+ "id": "2026-10-24_P01_c85c451154694d23",
+ "case_id": "case:P01",
+ "source": "hosted (backfilled)",
+ "status": "ended",
+ "started_utc": "2026-10-24T21:19:35.215992+00:00",
+ "updated_utc": "2026-10-25T00:07:44+00:00",
+ "finished_utc": "2026-10-24T21:27:08.201263+00:00",
+ "session_id": "c85c451154694d23",
+ "title": "Brandlhuber announces +9.5 % on HN volute casings",
+ "goal": null,
+ "suppliers": {
+  "sup:70110": "Owner, Gießerei Brandlhuber GmbH & Co. KG"
+ },
+ "messages": [
+  {
+   "message_id": "msg:70110-0-0",
+   "from": "supplier",
+   "from_name": "Owner, Gießerei Brandlhuber GmbH & Co. KG",
+   "subject": "Quote from Gießerei Brandlhuber GmbH & Co. KG: Brandlhuber announces +9.5 % on HN volute casings",
+   "body": "Guten Tag,\n\nThank you for your enquiry. Please find our Angebot below. For many years, our family foundry has taken great pride in supplying your respected company with high-quality castings from our region, and we value our long standing relationship very much.\n\nOur team has prepared our offer carefully. We can offer you a price of €138.55 per unit, valid from 1 November 2026. This Angebot remains valid for 30 days.\n\nTo remain transparent about our situation, LCI-C rose 2.7 % in twelve months and is 30 % of our cost. Furthermore, PPI-C241 rose 6.5 % in twelve months and is 24 % of our cost. We trust that you understand the necessity of these figures for our ongoing operation and quality standards.\n\nViele Grüße aus der Gießerei\nThomas Brandlhuber\nOwner, Gießerei Brandlhuber GmbH & Co. KG",
+   "status": "open",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70110",
+   "term_sheets": [
+    {
+     "id": "offer:70110-0",
+     "terms": {
+      "unit_price": 138.55,
+      "effective_date": "2026-11-01"
+     }
+    }
+   ],
+   "attachments": [
+    "quote-offer-70110-0.pdf"
+   ],
+   "at": "2026-10-24T21:19:35.215992+00:00",
+   "index": 0
+  },
+  {
+   "from": "buyer",
+   "subject": "HN 50-200 volute casings (part:310010) – our proposal",
+   "body": "Dear Mr Brandlhuber,\n\nthank you for your offer and for many years of reliable partnership, including your support in 2022.\n\nWe have reviewed the cost picture with you in mind. PPI-D351 fell from 140.5 (idx:PPI-D351@2025-11) to 123.7 (idx:PPI-D351@2026-04), a change of -11.96 %.\nOur should-cost estimate for this casing at your plant is EUR 132.64 per piece (cost:310010).\nOur demand forecast for this part changed by +10.1 % (fc:310010@2026-09), which gives your foundry a growing, stable load.\n\nYou asked for faster payment, so one attached package includes short payment terms to ease your cash flow. Our current agreement also runs to the end of this year.\n\nWhich package suits you best?\n\nKind regards,\nPurchasing, Hollerau Pumpenwerke",
+   "supplier_id": "sup:70110",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 129.45,
+      "effective_date": "2027-04-01",
+      "payment_days": 30
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 129.45,
+      "effective_date": "2027-01-01",
+      "payment_days": 14
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 128.9,
+      "effective_date": "2027-01-01",
+      "payment_days": 30
+     }
+    }
+   ],
+   "at": "2026-10-24T21:19:35.215992+00:00",
+   "index": 1
+  },
+  {
+   "message_id": "msg:70110-1-2",
+   "from": "supplier",
+   "from_name": "Owner, Gießerei Brandlhuber GmbH & Co. KG",
+   "subject": "Re: HN 50-200 volute casings (part:310010) – our proposal",
+   "body": "Guten Tag,\n\nWe have reviewed your offer and can adjust our Angebot as follows. We checked the index change data you cited; it holds and we took it into account. We also checked the volume change data you cited; it holds and we took it into account. Furthermore, we checked the should cost data you cited; it holds and we took it into account. We did not know that - a fair point. \n\nLCI-C rose 2.7 % in twelve months and is 30 % of our cost. That remains. PPI-C241 rose 6.5 % in twelve months and is 24 % of our cost. That remains. Our price reflects our costs; our calculation stays internal. Our standard Zahlungsziel is 30 days net. However, we are willing to adopt the 14-day payment term and the 1 January 2027 effective date, and in return we offer a revised price of EUR 133.70 per unit. \n\nThus, our current offer is a price of €133.70 per unit, Zahlungsziel 14 days net, valid from 1 January 2027. This Angebot stays valid for 30 days. A binding higher volume would help us and can improve the price. Which volume can you commit to?\n\nViele Grüße aus der Gießerei\nThomas Brandlhuber\nOwner, Gießerei Brandlhuber GmbH & Co. KG",
+   "status": "open",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "verified"
+    },
+    {
+     "index": 1,
+     "result": "verified"
+    },
+    {
+     "index": 2,
+     "result": "verified"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70110",
+   "term_sheets": [
+    {
+     "id": "offer:70110-1",
+     "terms": {
+      "unit_price": 133.7,
+      "payment_days": 14,
+      "effective_date": "2027-01-01"
+     }
+    }
+   ],
+   "at": "2026-10-24T21:19:35.215992+00:00",
+   "index": 2
+  },
+  {
+   "from": "buyer",
+   "subject": "Re: Brandlhuber announces +9.5 % on HN volute casings",
+   "body": "Thank you. Please consider this complete package.",
+   "supplier_id": "sup:70110",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 129.55,
+      "effective_date": "2027-01-01",
+      "payment_days": 14
+     }
+    }
+   ],
+   "at": "2026-10-24T21:19:35.215992+00:00",
+   "index": 3
+  },
+  {
+   "message_id": "msg:70110-2-4",
+   "from": "supplier",
+   "from_name": "Owner, Gießerei Brandlhuber GmbH & Co. KG",
+   "subject": "Re: Brandlhuber announces +9.5 % on HN volute casings",
+   "body": "Guten Tag,\n\nIt is always a pleasure to stay in touch with our long-standing business partners at Hollerau Pumpenwerke GmbH. Our traditional family foundry takes great pride in the quality of the work we deliver to our region and beyond. We have carefully reviewed your offer and hold our Angebot. \n\nIn our last message, we asked what binding volume you can commit to, as this could help us improve the price. Without a firm volume commitment, our offer remains at EUR 133.70 per unit. Therefore, our price of €133.70 per unit, with a Zahlungsziel 14 days net, valid from 1 January 2027, stays as presented. This offer stays valid for 30 days. \n\nWhich volume can you commit to? We look forward to your response so we can find the best way forward together.\n\nViele Grüße aus der Gießerei\nThomas Brandlhuber\nOwner, Gießerei Brandlhuber GmbH & Co. KG",
+   "status": "open",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70110",
+   "term_sheets": [
+    {
+     "id": "offer:70110-2",
+     "terms": {
+      "unit_price": 133.7,
+      "payment_days": 14,
+      "effective_date": "2027-01-01"
+     }
+    }
+   ],
+   "at": "2026-10-24T21:19:35.215992+00:00",
+   "index": 4
+  },
+  {
+   "from": "buyer",
+   "subject": "HN 50-200 volute casings: volume commitment and complete packages",
+   "body": "Dear Mr Brandlhuber,\n\nthank you for your patience and for reviewing our data so carefully.\n\nTo answer your question on volume: all three attached packages commit to 8150 pieces per year over a 12-month contract, delivered under your 42-day lead time. This gives your foundry a firm, plannable load for the whole year.\n\nThe first package keeps the 14-day payment term you asked for to support your cash flow. The second adds a later start date. The third uses your standard 30-day payment term.\n\nWhat is the lowest price at which you can sign these terms today?\n\nKind regards,\nPurchasing, Hollerau Pumpenwerke",
+   "supplier_id": "sup:70110",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 130.3,
+      "effective_date": "2027-01-01",
+      "payment_days": 14
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 131.8,
+      "effective_date": "2027-04-01",
+      "payment_days": 14
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 131.1,
+      "effective_date": "2027-01-01",
+      "payment_days": 30
+     }
+    }
+   ],
+   "at": "2026-10-24T21:19:35.215992+00:00",
+   "index": 5
+  },
+  {
+   "message_id": "msg:70110-3-6",
+   "from": "supplier",
+   "from_name": "Owner, Gießerei Brandlhuber GmbH & Co. KG",
+   "subject": "Re: HN 50-200 volute casings: volume commitment and complete packages",
+   "body": "Guten Tag,\n\nWe have reviewed your offer and can adjust our Angebot as follows. Our current Angebot stands at a price of €133.40 per unit, Zahlungsziel 30 days net, valid from 1 January 2027. \n\nWe appreciate the firm volume commitment of 8150 pieces per year, which allows us to plan our production better. In return for this commitment, we are pleased to reduce our price to EUR 132.80 per unit for the 14-day payment term starting 1 January 2027. This is a significant step from our side, reflecting the value we place on our long-standing partnership and the stability your volume provides. \n\nAs an alternative beside our main Angebot, we can offer a price of €132.80 per unit, Zahlungsziel 14 days net, valid from 1 January 2027.\n\nWhich figures is that based on? Please send us the data. Our margin and our limits stay internal. A binding higher volume would help us and can improve the price. Which volume can you commit to? \n\nOur offer remains valid for 30 days.\n\nViele Grüße aus der Gießerei\nThomas Brandlhuber\nOwner, Gießerei Brandlhuber GmbH & Co. KG",
+   "status": "open",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70110",
+   "term_sheets": [
+    {
+     "id": "offer:70110-3",
+     "terms": {
+      "unit_price": 133.4,
+      "payment_days": 30,
+      "effective_date": "2027-01-01"
+     }
+    },
+    {
+     "id": "offer:70110-3-a",
+     "terms": {
+      "unit_price": 132.8,
+      "payment_days": 14,
+      "effective_date": "2027-01-01"
+     }
+    }
+   ],
+   "at": "2026-10-24T21:19:35.215992+00:00",
+   "index": 6
+  },
+  {
+   "from": "buyer",
+   "subject": "HN 50-200 volute casings: packages built around timing",
+   "body": "Dear Mr Brandlhuber,\n\nthank you for the step and for confirming the data we sent earlier. We have no further figures to add.\n\nOn volume, all three packages commit to 8150 pieces per year over a 12-month contract at your 42-day lead time.\n\nThe attached packages stay close to your price level. In return they ask for flexibility on the start date and on payment timing. That keeps your margin largely intact and gives you a firm load for the full year.\n\nIf one of them works for you, could you please make it your main offer? Then we can conclude quickly.\n\nKind regards,\nPurchasing, Hollerau Pumpenwerke",
+   "supplier_id": "sup:70110",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 136.31,
+      "effective_date": "2027-04-01",
+      "payment_days": 90
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 134.8,
+      "effective_date": "2027-04-01",
+      "payment_days": 60
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 133.41,
+      "effective_date": "2027-01-01",
+      "payment_days": 90
+     }
+    }
+   ],
+   "at": "2026-10-24T21:19:35.215992+00:00",
+   "index": 7
+  },
+  {
+   "message_id": "msg:70110-4-8",
+   "from": "supplier",
+   "from_name": "Owner, Gießerei Brandlhuber GmbH & Co. KG",
+   "subject": "Re: HN 50-200 volute casings: packages built around timing",
+   "body": "Guten Tag,\n\nWe have reviewed your offer and hold our Angebot. Therefore, we must hold our offer of EUR 133.40 per unit with a 30-day payment term starting 1 January 2027. Our current offer stands at a price of €133.40 per unit, Zahlungsziel 30 days net, valid from 1 January 2027. \n\nOur standard Zahlungsziel is 30 days net. We value our long-standing partnership and believe this offer provides a fair balance for the firm volume commitment of 8150 pieces. At our traditional family foundry, we take immense pride in our craft, our dedicated people, and the deep roots we share with our region. To help us adjust our calculations, a binding higher volume would help us and can improve the price. Which volume can you commit to? \n\nThis offer remains valid for 30 days.\n\nViele Grüße aus der Gießerei\nThomas Brandlhuber\nOwner, Gießerei Brandlhuber GmbH & Co. KG",
+   "status": "open",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70110",
+   "term_sheets": [
+    {
+     "id": "offer:70110-4",
+     "terms": {
+      "unit_price": 133.4,
+      "payment_days": 30,
+      "effective_date": "2027-01-01"
+     }
+    }
+   ],
+   "at": "2026-10-24T21:19:35.215992+00:00",
+   "index": 8
+  },
+  {
+   "from": "buyer",
+   "subject": "HN 50-200 volute casings: volume confirmation and packages",
+   "body": "Dear Mr Brandlhuber,\n\nthank you for your reply. To answer your question on volume: each attached package commits to 8150 pieces per year over a 12-month contract. This is our full annual need for part:310010.\n\nYour scorecard sc:70110@2026Q3 records 85.2 % on-time delivery for the quarter. We would like to build on our partnership, so two packages use the 14-day payment term. This addresses the cash concern you raised about earlier payment. The third package keeps your standard 30-day term with a later start date.\n\nIf one of these works for you, could you please make it your main offer? Then we can conclude promptly.\n\nKind regards,\nPurchasing, Hollerau Pumpenwerke",
+   "supplier_id": "sup:70110",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 131.17,
+      "effective_date": "2027-01-01",
+      "payment_days": 14
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 133.12,
+      "effective_date": "2027-04-01",
+      "payment_days": 14
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 133.91,
+      "effective_date": "2027-04-01",
+      "payment_days": 30
+     }
+    }
+   ],
+   "at": "2026-10-24T21:19:35.215992+00:00",
+   "index": 9
+  },
+  {
+   "message_id": "msg:70110-5-10",
+   "from": "supplier",
+   "from_name": "Owner, Gießerei Brandlhuber GmbH & Co. KG",
+   "subject": "Re: HN 50-200 volute casings: volume confirmation and packages",
+   "body": "Guten Tag,\n\nWe checked the delivery record data you cited; it holds and we took it into account. As to the delivery record data you cited, we did not know that - a fair point. We value our long-standing partnership and believe this is a fair step forward. We can accept your terms and await your order.\n\nOurangebot is a price of €131.17 per unit, Zahlungsziel 14 days net, valid from 1 January 2027. Our Lieferzeit is 42 days.\n\nViele Grüße aus der Gießerei\nThomas Brandlhuber\nOwner, Gießerei Brandlhuber GmbH & Co. KG",
+   "status": "agreed",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "verified"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70110",
+   "term_sheets": [
+    {
+     "id": "offer:70110-5",
+     "terms": {
+      "unit_price": 131.17,
+      "payment_days": 14,
+      "effective_date": "2027-01-01"
+     }
+    }
+   ],
+   "attachments": [
+    "quote-offer-70110-5.pdf",
+    "delivery-schedule.xlsx"
+   ],
+   "at": "2026-10-24T21:19:35.215992+00:00",
+   "index": 10
+  },
+  {
+   "from": "buyer",
+   "supplier_id": "sup:70110",
+   "term_sheets": [],
+   "action": {
+    "type": "accept",
+    "term_sheet_id": "offer:70110-5"
+   },
+   "at": "2026-10-24T21:19:35.215992+00:00",
+   "index": 11
+  },
+  {
+   "message_id": "msg:70110-5-12",
+   "from": "supplier",
+   "from_name": "Owner, Gießerei Brandlhuber GmbH & Co. KG",
+   "subject": "Re: HN 50-200 volute casings: volume confirmation and packages",
+   "body": "Guten Tag,\n\nThank you for your order. Our order confirmation is attached. It is always a pleasure to serve Hollerau Pumpenwerke GmbH and to continue the long relationship between our companies. We take great pride in our foundry's craftsmanship and look forward to delivering the quality you expect from us.\n\nViele Grüße aus der Gießerei\nThomas Brandlhuber\nOwner, Gießerei Brandlhuber GmbH & Co. KG",
+   "status": "agreed",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "verified"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70110",
+   "term_sheets": [
+    {
+     "id": "offer:70110-5",
+     "terms": {
+      "unit_price": 131.17,
+      "payment_days": 14,
+      "effective_date": "2027-01-01"
+     }
+    }
+   ],
+   "attachments": [
+    "order-confirmation-offer-70110-5.pdf",
+    "delivery-schedule.xlsx"
+   ],
+   "at": "2026-10-24T21:19:35.215992+00:00",
+   "index": 12
+  },
+  {
+   "from": "buyer",
+   "supplier_id": "sup:70110",
+   "at": "2026-10-24T21:27:08.201263+00:00",
+   "action": {
+    "type": "accept",
+    "term_sheet_id": "offer:70110-5"
+   },
+   "closing": true,
+   "term_sheets": [],
+   "index": 10000
+  }
+ ],
+ "decisions": [
+  {
+   "route": "fast",
+   "reason": "strong_unconfigured",
+   "fallback": false,
+   "budget_s": 40.0,
+   "decision_s": 16.040055862998997,
+   "move": {
+    "supplier_id": "sup:70110",
+    "action": "send",
+    "term_sheets": [
+     {
+      "unit_price": 129.45,
+      "effective_date": "2027-04-01",
+      "payment_days": 30
+     },
+     {
+      "unit_price": 129.45,
+      "effective_date": "2027-01-01",
+      "payment_days": 14
+     },
+     {
+      "unit_price": 128.9,
+      "effective_date": "2027-01-01",
+      "payment_days": 30
+     }
+    ]
+   },
+   "reply": {
+    "supplier_id": "sup:70110",
+    "status": "open",
+    "unit_price": 133.7,
+    "term_sheet_id": "offer:70110-1"
+   },
+   "path": [
+    "decide",
+    "model",
+    "strong_unconfigured",
+    "validate"
+   ]
+  },
+  {
+   "route": "fast",
+   "reason": "ValueError",
+   "fallback": true,
+   "error": "model accepted an open offer above our last ask",
+   "budget_s": 40.0,
+   "decision_s": 29.42227527200157,
+   "move": {
+    "supplier_id": "sup:70110",
+    "action": "send",
+    "term_sheets": [
+     {
+      "unit_price": 129.55,
+      "effective_date": "2027-01-01",
+      "payment_days": 14
+     }
+    ]
+   },
+   "reply": {
+    "supplier_id": "sup:70110",
+    "status": "open",
+    "unit_price": 133.7,
+    "term_sheet_id": "offer:70110-2"
+   },
+   "path": [
+    "decide",
+    "model",
+    "fallback",
+    "error:ValueError"
+   ]
+  },
+  {
+   "route": "fast",
+   "reason": "strong_unconfigured",
+   "fallback": false,
+   "budget_s": 40.0,
+   "decision_s": 16.95037749200128,
+   "move": {
+    "supplier_id": "sup:70110",
+    "action": "send",
+    "term_sheets": [
+     {
+      "unit_price": 130.3,
+      "effective_date": "2027-01-01",
+      "payment_days": 14
+     },
+     {
+      "unit_price": 131.8,
+      "effective_date": "2027-04-01",
+      "payment_days": 14
+     },
+     {
+      "unit_price": 131.1,
+      "effective_date": "2027-01-01",
+      "payment_days": 30
+     }
+    ]
+   },
+   "reply": {
+    "supplier_id": "sup:70110",
+    "status": "open",
+    "unit_price": 133.4,
+    "term_sheet_id": "offer:70110-3"
+   },
+   "path": [
+    "decide",
+    "model",
+    "strong_unconfigured",
+    "validate"
+   ]
+  },
+  {
+   "route": "fast",
+   "reason": "strong_unconfigured",
+   "fallback": false,
+   "budget_s": 40.0,
+   "decision_s": 26.01961221500096,
+   "move": {
+    "supplier_id": "sup:70110",
+    "action": "send",
+    "term_sheets": [
+     {
+      "unit_price": 136.31,
+      "effective_date": "2027-04-01",
+      "payment_days": 90
+     },
+     {
+      "unit_price": 134.8,
+      "effective_date": "2027-04-01",
+      "payment_days": 60
+     },
+     {
+      "unit_price": 133.41,
+      "effective_date": "2027-01-01",
+      "payment_days": 90
+     }
+    ]
+   },
+   "reply": {
+    "supplier_id": "sup:70110",
+    "status": "open",
+    "unit_price": 133.4,
+    "term_sheet_id": "offer:70110-4"
+   },
+   "path": [
+    "decide",
+    "model",
+    "strong_unconfigured",
+    "validate"
+   ]
+  },
+  {
+   "route": "fast",
+   "reason": "strong_unconfigured",
+   "fallback": false,
+   "budget_s": 40.0,
+   "decision_s": 36.130657975998474,
+   "move": {
+    "supplier_id": "sup:70110",
+    "action": "send",
+    "term_sheets": [
+     {
+      "unit_price": 131.17,
+      "effective_date": "2027-01-01",
+      "payment_days": 14
+     },
+     {
+      "unit_price": 133.12,
+      "effective_date": "2027-04-01",
+      "payment_days": 14
+     },
+     {
+      "unit_price": 133.91,
+      "effective_date": "2027-04-01",
+      "payment_days": 30
+     }
+    ]
+   },
+   "reply": {
+    "supplier_id": "sup:70110",
+    "status": "agreed",
+    "unit_price": 131.17,
+    "term_sheet_id": "offer:70110-5"
+   },
+   "path": [
+    "decide",
+    "model",
+    "strong_unconfigured",
+    "validate"
+   ]
+  },
+  {
+   "route": "script",
+   "reason": "terminal_offers",
+   "fallback": false,
+   "budget_s": 40.0,
+   "decision_s": 0.0003307490042061545,
+   "move": {
+    "supplier_id": "sup:70110",
+    "action": "accept",
+    "term_sheet_id": "offer:70110-5"
+   },
+   "reply": {
+    "supplier_id": "sup:70110",
+    "status": "agreed",
+    "unit_price": 131.17,
+    "term_sheet_id": "offer:70110-5"
+   },
+   "path": [
+    "decide",
+    "scripts",
+    "terminal",
+    "terminal_offers"
+   ]
+  }
+ ],
+ "result": {
+  "deal": true,
+  "score": 0.9640578007568309,
+  "supplier_id": "sup:70110",
+  "terms": {
+   "payment_days": 14,
+   "lead_time_days": 42,
+   "volume_per_year": 8150,
+   "contract_months": 12,
+   "effective_date": "2027-01-01",
+   "index_clause": null,
+   "incoterm": "FCA",
+   "tooling_eur": 0.0,
+   "ppm_commitment": 900,
+   "chargeback_eur_per_complaint": 0.0,
+   "unit_price": 131.17
+  },
+  "cost_eur": 1098863.19,
+  "reference_cost_eur": 1096815.78,
+  "opening_cost_eur": 1153779.74,
+  "alternative_cost_eur": 1176178.02,
+  "cost_breakdown": {
+   "price": 1062715.57,
+   "uncovered_need": 0.0,
+   "fallback_risk": 0.0,
+   "payment_terms": 10863.31,
+   "freight": 15485.0,
+   "late_delivery": 0.0,
+   "quality": 1584.36,
+   "tooling": 0.0,
+   "index_clause": 0.0,
+   "index_risk": 0.0,
+   "relationship": 8214.95
+  },
+  "rounds": 6,
+  "end_reason": "accepted",
+  "replay_url": "https://arena.tacto.ai/replay/c85c451154694d23"
+ },
+ "run": "2026-10-24-opus-high-v13",
+ "times": "approximate: report start",
+ "closing": {
+  "at": "2026-10-24T21:27:08.201263+00:00",
+  "supplier_id": "sup:70110",
+  "action": {
+   "type": "accept",
+   "term_sheet_id": "offer:70110-5"
+  }
+ }
+}

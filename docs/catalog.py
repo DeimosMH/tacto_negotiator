@@ -4,7 +4,7 @@ CODE = "src/tacto_negotiator/"
 DATA = "data/"
 GUIDES = ("README.md", "BEGINNER_GUIDE.md", "TUTORIAL.md", "IMPLEMENTATION.md", "DATA_GUIDE.md", "LOCAL_TESTING.md",
           "FINAL_READINESS.md", "MODEL_SELECTION.md", "ROUTING.md", "COMPETITION.md", "WEB_UI.md", "FAQ_ADVANTAGE.md",
-          "LIVE_PRACTICE.md", "EVALUATION.md", "FINAL_RUNBOOK.md")
+          "LIVE_PRACTICE.md", "EVALUATION.md", "FINAL_RUNBOOK.md", "DEALS.md")
 
 GROUPS = {
     "project": {"label": "Project setup", "color": "#e4b86b"},
@@ -33,6 +33,7 @@ FILES = {
     CODE + "cli.py": ("runtime", "Orchestration", "tacto command dispatcher, environment loader and agent factory; routed is the default buyer.", "Connects command-line options to data, agents and runners. Help exits before environment loading; execution loads the current directory's configuration."),
     CODE + "client.py": ("runtime", "Transport", "ArenaClient HTTP adapter and ArenaError response exception.", "Centralizes authentication, pacing, retries and X-Move-Id reuse. One shared client paces calls across its worker threads."),
     CODE + "play.py": ("runtime", "Orchestration", "RemoteTable adapter, shared acceptance checks, per-case loop, parallel runner and wave polling.", "Owns session lifecycle, authoritative offer recovery and supplier/wave budgets. Routed, legacy and deadline closures share the same evidence and acceptance checks."),
+    CODE + "deals.py": ("runtime", "Orchestration", "Deal journal: records every hosted play() as a dated conversation with each decision's path through the routed buyer's decision tree.", "Lets a person monitor and review each negotiation like a chat in docs/index.html#deals; recording never changes a move and is off in tests."),
     CODE + "cost.py": ("evidence", "Deal evaluation", "Deterministic term completion, must-have checks, cost breakdown and score helpers.", "Keeps money arithmetic outside the model. Supplier health is charged only when a supplier estimate is supplied."),
     CODE + "data.py": ("evidence", "Evidence access", "DataPackage: read-only SQLite queries, fact lookup and document access.", "Gives every argument a traceable source. Sunday facts and CSV rows overlay lookups; they do not alter the base SQLite tables."),
     CODE + "docs.py": ("evidence", "Evidence access", "PDF/XLSX text extraction and structured quote-term parsing.", "A missing negotiated field can close on the supplier's standard terms. Read the quote before evaluating or accepting it."),

@@ -370,3 +370,30 @@ def test_serve_prints_the_rehearsal_timeline(monkeypatch, capsys):
     sim_mod.main(["serve", "--final-rehearsal", "--rehearsal-cap", "120"])
     (_, cap, brk), out = built[0].rehearsal, capsys.readouterr().out
     assert cap == 120 and brk == 30 and 'wave 2 "Rehearsal 2" starts: case:R2-S01' in out and "rehearsal is over" in out
+
+
+def test_a_hosted_style_play_is_journaled_with_its_decision_path(sim, tmp_path, monkeypatch):
+    from pathlib import Path
+
+    from tacto_negotiator.agents.routed import RoutedAgent
+    from tacto_negotiator.compete import unavailable
+    from tacto_negotiator.data import DataPackage
+    from tacto_negotiator.deals import NODES
+
+    monkeypatch.setenv("TACTO_DEALS_DIR", str(tmp_path / "deals"))
+    client = team(sim[0])
+    case_id = client.cases()[0]["case_id"]
+    agent = RoutedAgent(unavailable, package=DataPackage(Path(__file__).resolve().parent.parent / "data"))
+    result = play(RemoteTable(client), case_id, agent)
+    [file] = (tmp_path / "deals").glob("*.json")
+    record = json.loads(file.read_text())
+    assert record["status"] == "ended" and record["result"]["score"] == result["score"]
+    assert record["started_utc"][:2] == "20" and record["session_id"]
+    buyer = [m for m in record["messages"] if m["from"] == "buyer"]
+    assert buyer and all(m["at"] for m in record["messages"]) and buyer[-1].get("closing")
+    assert record["decisions"] and all(step["path"][0] == "decide" for step in record["decisions"])
+    assert all(node in NODES or ":" in node for step in record["decisions"] for node in step["path"])
+    index = (tmp_path / "deals.js").read_text()
+    assert index.startswith("// Generated") and record["id"] in index and "tree" in index
+    assert (tmp_path / "deals" / f"{record['id']}.js").read_text().count("window.tactoDeal(") == 1
+    assert "decide_timed" not in vars(agent)  # the journal left the agent as it was

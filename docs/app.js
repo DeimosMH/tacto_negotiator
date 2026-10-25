@@ -115,7 +115,7 @@ function inlineMarkdown(text, source) {
           const id = decodeURIComponent(url.pathname.slice(1));
           if (atlas.guides[id]) href = `#guide=${encodeURIComponent(id.slice(5))}`;
           else if (byId.has(id)) href = routeFor(id);
-          else if (id === "docs/index.html") href = "#home";
+          else if (id === "docs/index.html") href = url.hash || "#home";
           else if (atlas.reports[id] || id.startsWith("materials/")) {
             const original = originalLink(id);
             if (original) href = original + url.hash;
@@ -344,6 +344,20 @@ function readRoute() {
   try { hash = decodeURIComponent(location.hash.slice(1)); } catch { hash = "home"; }
   const [route, section] = hash.split("&section=");
   hash = route || "guide=BEGINNER_GUIDE.md";
+  const dealsRoute = hash === "deals" || hash.startsWith("deal=");
+  $("#deals-view").hidden = !dealsRoute;
+  if (dealsRoute) {
+    for (const id of ["#workspace", "#guide", "#guide-layout", "#stats"]) $(id).hidden = true;
+    $("#page-heading").innerHTML = "";
+    $("#source-explorer").open = false;
+    $(".page-tabs").querySelectorAll("a").forEach(link => {
+      if (link.dataset.tab === "deals") link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    });
+    window.DealsView.render(hash, false, section);
+    setNavigation(false);
+    return;
+  }
   if (hash.startsWith("file=") && byId.has(hash.slice(5))) state.selected = hash.slice(5);
   if (hash.startsWith("group=") && atlas.nodes.some(node => mapIds.has(node.id) && subgroupId(node) === hash.slice(6))) state.group = hash.slice(6);
   if (hash.startsWith("guide=") && atlas.guides["docs/" + hash.slice(6)]) state.guide = hash.slice(6);

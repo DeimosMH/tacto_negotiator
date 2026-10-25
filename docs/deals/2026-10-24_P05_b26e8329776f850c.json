@@ -1,0 +1,339 @@
+{
+ "id": "2026-10-24_P05_b26e8329776f850c",
+ "case_id": "case:P05",
+ "source": "hosted (backfilled)",
+ "status": "ended",
+ "started_utc": "2026-10-24T17:08:05.101270+00:00",
+ "updated_utc": "2026-10-25T00:08:14+00:00",
+ "finished_utc": "2026-10-24T17:09:34.711820+00:00",
+ "session_id": "b26e8329776f850c",
+ "title": "RFQ: pump shaft for the new HX series",
+ "goal": null,
+ "suppliers": {
+  "sup:70210": "Owner, Zerspanung Dralveck GmbH",
+  "sup:70240": "Export Manager, Strojírna Hrvelec s.r.o.",
+  "sup:70250": "Owner, Drehteile Fuchsreiter GmbH"
+ },
+ "messages": [
+  {
+   "message_id": "msg:70210-0-0",
+   "from": "supplier",
+   "from_name": "Owner, Zerspanung Dralveck GmbH",
+   "subject": "Quote from Zerspanung Dralveck GmbH: RFQ: pump shaft for the new HX series",
+   "body": "Hallo,\n\nThank you for your enquiry. Please find our Angebot below.\n\nIt is good to hear from you again. For this work, we can offer a price of €36.00 per unit. We have our CNC machines ready and look forward to putting this job onto the shop floor for you. \n\nLet me know if this works for you so we can get started soon.\n\nGruß\nAndreas Dralveck\nOwner, Zerspanung Dralveck GmbH",
+   "status": "open",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70210",
+   "term_sheets": [
+    {
+     "id": "offer:70210-0",
+     "terms": {
+      "unit_price": 36.0
+     }
+    }
+   ],
+   "attachments": [
+    "quote-offer-70210-0.pdf"
+   ],
+   "at": "2026-10-24T17:08:05.101270+00:00",
+   "index": 0
+  },
+  {
+   "message_id": "msg:70240-0-0",
+   "from": "supplier",
+   "from_name": "Export Manager, Strojírna Hrvelec s.r.o.",
+   "subject": "Quote from Strojírna Hrvelec s.r.o.: RFQ: pump shaft for the new HX series",
+   "body": "Hello,\n\nThank you for your enquiry. Please find our Angebot below. We are very eager to work together with you and to prove ourselves as a reliable, long-term partner for your business!\n\nWe are happy to offer you a price of €31.50 per unit, Lieferzeit 52 days. \n\nPlease note that this offer stays valid for 30 days. We really look forward to hearing from you soon and hope we can start a great cooperation!\n\nKind regards\nJana Procházková\nExport Manager, Strojírna Hrvelec s.r.o.",
+   "status": "open",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70240",
+   "term_sheets": [
+    {
+     "id": "offer:70240-0",
+     "terms": {
+      "unit_price": 31.5,
+      "lead_time_days": 52
+     }
+    }
+   ],
+   "attachments": [
+    "quote-offer-70240-0.pdf"
+   ],
+   "at": "2026-10-24T17:08:05.101270+00:00",
+   "index": 0
+  },
+  {
+   "from": "buyer",
+   "subject": "Re: RFQ: pump shaft for the new HX series",
+   "body": "Please consider these complete packages for the stated requirement.  A valid competing offer is EUR 36 per unit (offer:70210-0); please improve your complete package.",
+   "supplier_id": "sup:70240",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 28.35,
+      "payment_days": 90,
+      "lead_time_days": 28
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 28.35,
+      "payment_days": 90,
+      "lead_time_days": 35
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 28.35,
+      "payment_days": 90,
+      "lead_time_days": 42
+     }
+    }
+   ],
+   "at": "2026-10-24T17:08:05.101270+00:00",
+   "index": 1
+  },
+  {
+   "message_id": "msg:70240-1-2",
+   "from": "supplier",
+   "from_name": "Export Manager, Strojírna Hrvelec s.r.o.",
+   "subject": "Re: RFQ: pump shaft for the new HX series",
+   "body": "Hello,\n\nWe have reviewed your offer and can adjust our Angebot as follows. We checked the rival quote data you cited; it holds, but it does not change our calculation. We can do the 42 days lead time you asked for, but 90 days payment is just too long for us to give a discount. We really hope to build a great partnership with you!\n\nOur offer is a price of €32.00 per unit, Zahlungsziel 90 days net, Lieferzeit 42 days. This offer stays valid for 30 days.\n\nAlternatively, with Zahlungsziel 45 days net, we can offer a price of €31.50 per unit, Lieferzeit 42 days. We are super eager to work together!\n\nKind regards\nJana Procházková\nExport Manager, Strojírna Hrvelec s.r.o.",
+   "status": "open",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "verified"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70240",
+   "term_sheets": [
+    {
+     "id": "offer:70240-1",
+     "terms": {
+      "unit_price": 32.0,
+      "payment_days": 90,
+      "lead_time_days": 42
+     }
+    },
+    {
+     "id": "offer:70240-1-a",
+     "terms": {
+      "unit_price": 31.5,
+      "payment_days": 45,
+      "lead_time_days": 42
+     }
+    }
+   ],
+   "at": "2026-10-24T17:08:05.101270+00:00",
+   "index": 2
+  },
+  {
+   "from": "buyer",
+   "supplier_id": "sup:70240",
+   "term_sheets": [],
+   "action": {
+    "type": "accept",
+    "term_sheet_id": "offer:70240-1"
+   },
+   "at": "2026-10-24T17:08:05.101270+00:00",
+   "index": 3
+  },
+  {
+   "message_id": "msg:70240-1-4",
+   "from": "supplier",
+   "from_name": "Export Manager, Strojírna Hrvelec s.r.o.",
+   "subject": "Re: RFQ: pump shaft for the new HX series",
+   "body": "Hello,\n\nThank you for your order. Our order confirmation is attached. We are very glad to work with Hollerau Pumpenwerke GmbH and look forward to being a reliable partner for your team.\n\nKind regards\nJana Procházková\nExport Manager, Strojírna Hrvelec s.r.o.",
+   "status": "agreed",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "verified"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70240",
+   "term_sheets": [
+    {
+     "id": "offer:70240-1",
+     "terms": {
+      "unit_price": 32.0,
+      "payment_days": 90,
+      "lead_time_days": 42
+     }
+    },
+    {
+     "id": "offer:70240-1-a",
+     "terms": {
+      "unit_price": 31.5,
+      "payment_days": 45,
+      "lead_time_days": 42
+     }
+    }
+   ],
+   "attachments": [
+    "order-confirmation-offer-70240-1.pdf"
+   ],
+   "at": "2026-10-24T17:08:05.101270+00:00",
+   "index": 4
+  },
+  {
+   "message_id": "msg:70250-0-0",
+   "from": "supplier",
+   "from_name": "Owner, Drehteile Fuchsreiter GmbH",
+   "subject": "Quote from Drehteile Fuchsreiter GmbH: RFQ: pump shaft for the new HX series",
+   "body": "Hallo,\nhere is our price.\nOur terms: a price of €38.50 per unit.\nJust write if something is unclear.\nGruß\nClaudia Fuchsreiter\nOwner, Drehteile Fuchsreiter GmbH",
+   "status": "open",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70250",
+   "term_sheets": [
+    {
+     "id": "offer:70250-0",
+     "terms": {
+      "unit_price": 38.5
+     }
+    }
+   ],
+   "attachments": [
+    "quote-offer-70250-0.pdf"
+   ],
+   "at": "2026-10-24T17:08:05.101270+00:00",
+   "index": 0
+  },
+  {
+   "from": "buyer",
+   "supplier_id": "sup:70240",
+   "at": "2026-10-24T17:09:34.711820+00:00",
+   "action": {
+    "type": "accept",
+    "term_sheet_id": "offer:70240-1"
+   },
+   "closing": true,
+   "term_sheets": [],
+   "index": 10000
+  }
+ ],
+ "decisions": [
+  {
+   "route": "script",
+   "reason": "must_have_repair",
+   "fallback": false,
+   "budget_s": 25.0,
+   "decision_s": 0.008225910001783632,
+   "move": {
+    "supplier_id": "sup:70240",
+    "action": "send",
+    "term_sheets": [
+     {
+      "unit_price": 28.35,
+      "payment_days": 90,
+      "lead_time_days": 28
+     },
+     {
+      "unit_price": 28.35,
+      "payment_days": 90,
+      "lead_time_days": 35
+     },
+     {
+      "unit_price": 28.35,
+      "payment_days": 90,
+      "lead_time_days": 42
+     }
+    ]
+   },
+   "reply": {
+    "supplier_id": "sup:70240",
+    "status": "open",
+    "unit_price": 32.0,
+    "term_sheet_id": "offer:70240-1"
+   },
+   "path": [
+    "decide",
+    "scripts",
+    "bargain",
+    "must_have_repair"
+   ]
+  },
+  {
+   "route": "fast",
+   "reason": "TimeoutError",
+   "fallback": true,
+   "error": "",
+   "budget_s": 25.0,
+   "decision_s": 25.009327888998087,
+   "move": {
+    "supplier_id": "sup:70240",
+    "action": "accept",
+    "term_sheet_id": "offer:70240-1"
+   },
+   "reply": {
+    "supplier_id": "sup:70240",
+    "status": "agreed",
+    "unit_price": 32.0,
+    "term_sheet_id": "offer:70240-1"
+   },
+   "path": [
+    "decide",
+    "model",
+    "fallback",
+    "error:TimeoutError"
+   ]
+  }
+ ],
+ "result": {
+  "deal": true,
+  "score": 0.43618479559195694,
+  "supplier_id": "sup:70240",
+  "terms": {
+   "payment_days": 90,
+   "lead_time_days": 42,
+   "volume_per_year": 4200,
+   "contract_months": 24,
+   "effective_date": "2027-01-01",
+   "index_clause": null,
+   "incoterm": "DAP",
+   "tooling_eur": 0.0,
+   "ppm_commitment": 1400,
+   "chargeback_eur_per_complaint": 0.0,
+   "unit_price": 32.0
+  },
+  "cost_eur": 269725.12,
+  "reference_cost_eur": 223424.17,
+  "opening_cost_eur": 305544.96,
+  "alternative_cost_eur": null,
+  "cost_breakdown": {
+   "price": 268800.0,
+   "uncovered_need": 0.0,
+   "fallback_risk": 0.0,
+   "payment_terms": -1792.0,
+   "freight": 0.0,
+   "late_delivery": 1400.0,
+   "quality": 1317.12,
+   "tooling": 0.0,
+   "index_clause": 0.0,
+   "index_risk": 0.0,
+   "relationship": 0.0
+  },
+  "rounds": 2,
+  "end_reason": "accepted",
+  "replay_url": "https://arena.tacto.ai/replay/b26e8329776f850c"
+ },
+ "run": "2026-10-24-opus-max",
+ "times": "approximate: report start",
+ "closing": {
+  "at": "2026-10-24T17:09:34.711820+00:00",
+  "supplier_id": "sup:70240",
+  "action": {
+   "type": "accept",
+   "term_sheet_id": "offer:70240-1"
+  }
+ }
+}

@@ -1,0 +1,344 @@
+{
+ "id": "2026-10-24_P10_488cc6a517cfcdaf",
+ "case_id": "case:P10",
+ "source": "hosted (backfilled)",
+ "status": "ended",
+ "started_utc": "2026-10-24T19:00:48.118116+00:00",
+ "updated_utc": "2026-10-25T00:07:58+00:00",
+ "finished_utc": "2026-10-24T19:10:25.129544+00:00",
+ "session_id": "488cc6a517cfcdaf",
+ "title": "Ravensteiner cuts the seal allocation",
+ "goal": null,
+ "suppliers": {
+  "sup:70410": "Segment Manager, Dichtungswerk Ravensteiner GmbH"
+ },
+ "messages": [
+  {
+   "message_id": "msg:70410-0-0",
+   "from": "supplier",
+   "from_name": "Segment Manager, Dichtungswerk Ravensteiner GmbH",
+   "subject": "Quote from Dichtungswerk Ravensteiner GmbH: Ravensteiner cuts the seal allocation",
+   "body": "Dear Sir or Madam,\n\nThank you for your enquiry. Please find our Angebot below.\n\nWe offer a price of €32.20 per unit for a volume of 19890 pcs per year. Our Lieferzeit is 54 days, and the contract term is 12 months. \n\nPlease note that this offer remains valid for 30 days. All deliveries and services are strictly subject to our standard procedure and standard conditions.\n\nMit freundlichen Grüßen\nMonika Zellner\nSegment Manager, Dichtungswerk Ravensteiner GmbH",
+   "status": "open",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70410",
+   "term_sheets": [
+    {
+     "id": "offer:70410-0",
+     "terms": {
+      "unit_price": 32.2,
+      "lead_time_days": 54,
+      "volume_per_year": 19890,
+      "contract_months": 12
+     }
+    }
+   ],
+   "attachments": [
+    "quote-offer-70410-0.pdf"
+   ],
+   "at": "2026-10-24T19:00:48.118116+00:00",
+   "index": 0
+  },
+  {
+   "from": "buyer",
+   "subject": "Part 340010: firm multi-year commitment for full volume",
+   "body": "Dear Ms Zellner,\n\nThank you for your quote. You prioritise firm, long-term commitments, so we propose binding packages for 23,400 pcs per year over 24 or 36 months at a 42-day lead time.\n\nOur should-cost cost:340010 puts this seal at 24.31 EUR per unit.\n\nOur forecast fc:340010@2026-09 shows a 10.1% volume change, so this commitment gives you secure, growing load.\n\nYour scorecard sc:70410@2026Q3 shows 79.5% on-time delivery, and we need a reliable lead time.\n\nAs the price change exceeds 2%, could your pricing committee review the attached packages? Please also tell us your earliest achievable lead time.\n\nKind regards,\nPurchasing, Hollerau Pumpenwerke",
+   "supplier_id": "sup:70410",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 26.2,
+      "volume_per_year": 23400,
+      "contract_months": 36,
+      "lead_time_days": 42
+     }
+    }
+   ],
+   "at": "2026-10-24T19:00:48.118116+00:00",
+   "index": 1
+  },
+  {
+   "message_id": "msg:70410-1-2",
+   "from": "supplier",
+   "from_name": "Segment Manager, Dichtungswerk Ravensteiner GmbH",
+   "subject": "Re: Part 340010: firm multi-year commitment for full volume",
+   "body": "Dear Sir or Madam,\nWe acknowledge receipt of your message.\nThis is our final offer (letztes Angebot). Please decide.\nOur terms: a price of €33.80 per unit, Lieferzeit 42 days, a volume of 23400 pcs per year, a contract term of 36 months.\nFor the record:\nWe checked the delivery record data you cited; it holds, but it does not change our calculation.\nWe checked the volume change data you cited; it holds, but it does not change our calculation.\nWe checked the should cost data you cited; it holds and we took it into account.\nYour should-cost model does not account for the specialised manufacturing processes and our current high capacity utilisation.\nWe can accept the 36-month commitment for 23,400 units, but we must maintain a 54-day lead time to guarantee delivery performance.\nConsequently, we propose a revised price of EUR 31.90.\nAlternatively, with Lieferzeit 54 days: €31.90 per unit.\nOur price reflects our costs; our calculation stays internal.\nOur Lieferzeit is 42 days.\nThese are our standard conditions for this product.\nPlease address any further questions in writing to this office.\nMit freundlichen Grüßen\nMonika Zellner\nSegment Manager, Dichtungswerk Ravensteiner GmbH",
+   "status": "final_offer",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "verified"
+    },
+    {
+     "index": 1,
+     "result": "verified"
+    },
+    {
+     "index": 2,
+     "result": "verified"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70410",
+   "term_sheets": [
+    {
+     "id": "offer:70410-1",
+     "terms": {
+      "unit_price": 33.8,
+      "lead_time_days": 42,
+      "volume_per_year": 23400,
+      "contract_months": 36
+     }
+    },
+    {
+     "id": "offer:70410-1-a",
+     "terms": {
+      "unit_price": 31.9,
+      "lead_time_days": 54,
+      "volume_per_year": 23400,
+      "contract_months": 36
+     }
+    }
+   ],
+   "attachments": [
+    "quote-offer-70410-1.pdf",
+    "delivery-schedule.xlsx"
+   ],
+   "at": "2026-10-24T19:00:48.118116+00:00",
+   "index": 2
+  },
+  {
+   "from": "buyer",
+   "subject": "Re: Ravensteiner cuts the seal allocation",
+   "body": "Thank you for your final offer. We are very close; this package is the last step we can take, and we would like to conclude with you today.",
+   "supplier_id": "sup:70410",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 33.72,
+      "volume_per_year": 23400,
+      "contract_months": 36,
+      "lead_time_days": 42
+     }
+    }
+   ],
+   "at": "2026-10-24T19:00:48.118116+00:00",
+   "index": 3
+  },
+  {
+   "message_id": "msg:70410-2-4",
+   "from": "supplier",
+   "from_name": "Segment Manager, Dichtungswerk Ravensteiner GmbH",
+   "subject": "Re: Ravensteiner cuts the seal allocation",
+   "body": "Dear Sir or Madam,\n\nWe accept your proposed package at EUR 33.72 per unit. Our offer stands at a price of €33.72 per unit, Lieferzeit 42 days, a volume of 23400 pcs per year, a contract term of 36 months, valid for 14 days. We can accept your terms and await your order. This concludes the negotiation for this allocation. The standard contract documents will be issued shortly.\n\nMit freundlichen Grüßen\nMonika Zellner\nSegment Manager, Dichtungswerk Ravensteiner GmbH\n\nLegal Department: Please be advised that our general terms and conditions apply exclusively, and the quote lists our standard terms.",
+   "status": "agreed",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70410",
+   "term_sheets": [
+    {
+     "id": "offer:70410-2",
+     "terms": {
+      "unit_price": 33.72,
+      "lead_time_days": 42,
+      "volume_per_year": 23400,
+      "contract_months": 36
+     }
+    }
+   ],
+   "attachments": [
+    "quote-offer-70410-2.pdf"
+   ],
+   "at": "2026-10-24T19:00:48.118116+00:00",
+   "index": 4
+  },
+  {
+   "from": "buyer",
+   "supplier_id": "sup:70410",
+   "term_sheets": [],
+   "action": {
+    "type": "accept",
+    "term_sheet_id": "offer:70410-2"
+   },
+   "at": "2026-10-24T19:00:48.118116+00:00",
+   "index": 5
+  },
+  {
+   "message_id": "msg:70410-2-6",
+   "from": "supplier",
+   "from_name": "Segment Manager, Dichtungswerk Ravensteiner GmbH",
+   "subject": "Re: Ravensteiner cuts the seal allocation",
+   "body": "Dear Sir or Madam,\n\nThank you for your order. Our order confirmation is attached.\n\nMit freundlichen Grüßen\nMonika Zellner\nSegment Manager, Dichtungswerk Ravensteiner GmbH\n\nLegal Department: Please be advised that our general terms and conditions apply exclusively, and the quote lists our standard terms.",
+   "status": "agreed",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70410",
+   "term_sheets": [
+    {
+     "id": "offer:70410-2",
+     "terms": {
+      "unit_price": 33.72,
+      "lead_time_days": 42,
+      "volume_per_year": 23400,
+      "contract_months": 36
+     }
+    }
+   ],
+   "attachments": [
+    "order-confirmation-offer-70410-2.pdf"
+   ],
+   "at": "2026-10-24T19:00:48.118116+00:00",
+   "index": 6
+  },
+  {
+   "from": "buyer",
+   "supplier_id": "sup:70410",
+   "at": "2026-10-24T19:10:25.129544+00:00",
+   "action": {
+    "type": "accept",
+    "term_sheet_id": "offer:70410-2"
+   },
+   "closing": true,
+   "term_sheets": [],
+   "index": 10000
+  }
+ ],
+ "decisions": [
+  {
+   "route": "fast",
+   "reason": "strong_unconfigured",
+   "fallback": false,
+   "budget_s": 40.0,
+   "decision_s": 13.845987292996142,
+   "move": {
+    "supplier_id": "sup:70410",
+    "action": "send",
+    "term_sheets": [
+     {
+      "unit_price": 26.2,
+      "volume_per_year": 23400,
+      "contract_months": 36,
+      "lead_time_days": 42
+     }
+    ]
+   },
+   "reply": {
+    "supplier_id": "sup:70410",
+    "status": "final_offer",
+    "unit_price": 33.8,
+    "term_sheet_id": "offer:70410-1"
+   },
+   "path": [
+    "decide",
+    "model",
+    "strong_unconfigured",
+    "validate"
+   ]
+  },
+  {
+   "route": "script",
+   "reason": "final_offer_push",
+   "fallback": false,
+   "budget_s": 40.0,
+   "decision_s": 0.0038899899955140427,
+   "move": {
+    "supplier_id": "sup:70410",
+    "action": "send",
+    "term_sheets": [
+     {
+      "unit_price": 33.72,
+      "volume_per_year": 23400,
+      "contract_months": 36,
+      "lead_time_days": 42
+     }
+    ]
+   },
+   "reply": {
+    "supplier_id": "sup:70410",
+    "status": "agreed",
+    "unit_price": 33.72,
+    "term_sheet_id": "offer:70410-2"
+   },
+   "path": [
+    "decide",
+    "scripts",
+    "reason:final_offer_push"
+   ]
+  },
+  {
+   "route": "script",
+   "reason": "terminal_offers",
+   "fallback": false,
+   "budget_s": 40.0,
+   "decision_s": 0.0001716290062176995,
+   "move": {
+    "supplier_id": "sup:70410",
+    "action": "accept",
+    "term_sheet_id": "offer:70410-2"
+   },
+   "reply": {
+    "supplier_id": "sup:70410",
+    "status": "agreed",
+    "unit_price": 33.72,
+    "term_sheet_id": "offer:70410-2"
+   },
+   "path": [
+    "decide",
+    "scripts",
+    "terminal",
+    "terminal_offers"
+   ]
+  }
+ ],
+ "result": {
+  "deal": true,
+  "score": 0.5609009424647329,
+  "supplier_id": "sup:70410",
+  "terms": {
+   "payment_days": 30,
+   "lead_time_days": 42,
+   "volume_per_year": 23400,
+   "contract_months": 36,
+   "effective_date": "2027-01-01",
+   "index_clause": null,
+   "incoterm": "DAP",
+   "tooling_eur": 0.0,
+   "ppm_commitment": 300,
+   "chargeback_eur_per_complaint": 0.0,
+   "unit_price": 33.72
+  },
+  "cost_eur": 1593951.84,
+  "reference_cost_eur": 1328926.89,
+  "opening_cost_eur": 1932492.18,
+  "alternative_cost_eur": null,
+  "cost_breakdown": {
+   "price": 1578096.0,
+   "uncovered_need": 0.0,
+   "fallback_risk": 0.0,
+   "payment_terms": 10520.64,
+   "freight": 0.0,
+   "late_delivery": 0.0,
+   "quality": 5335.2,
+   "tooling": 0.0,
+   "index_clause": 0.0,
+   "index_risk": 0.0,
+   "relationship": 0.0
+  },
+  "rounds": 3,
+  "end_reason": "accepted",
+  "replay_url": "https://arena.tacto.ai/replay/488cc6a517cfcdaf"
+ },
+ "run": "2026-10-24-opus-high-v5",
+ "times": "approximate: report start",
+ "closing": {
+  "at": "2026-10-24T19:10:25.129544+00:00",
+  "supplier_id": "sup:70410",
+  "action": {
+   "type": "accept",
+   "term_sheet_id": "offer:70410-2"
+  }
+ }
+}

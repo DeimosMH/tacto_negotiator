@@ -36,3 +36,9 @@ def sim():
     yield f"http://127.0.0.1:{port}", state, clock
     server.should_exit = True
     thread.join()
+
+
+@pytest.fixture(autouse=True)
+def no_deal_journal(monkeypatch):
+    """Tests never write to docs/deals (deals.py); a test that checks the journal sets its own folder."""
+    monkeypatch.setenv("TACTO_DEALS_DIR", "off")

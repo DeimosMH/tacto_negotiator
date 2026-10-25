@@ -49,6 +49,7 @@ Until wave 1 starts, the case list returns 403 and the runner keeps waiting. Tha
 ## 5. During the final: hands off
 
 - Do not pick cases, write messages, or connect the runner to the leaderboard or event feed.
+- To watch, open `docs/index.html#deals` in a browser and tick **Auto-refresh**. Every case appears there as it runs, with each message, its time and the decision path ([Reading a deal](DEALS.md)). It only reads local files the runner writes; it sends nothing.
 - If the runner crashes, start the same command again. It resumes its open sessions and never opens a second session per case.
 - Keep the machine awake and online. A wired connection is safer than venue Wi-Fi.
 
@@ -61,4 +62,4 @@ Until wave 1 starts, the case list returns 403 and the runner keeps waiting. Tha
 - **Final offers:** never countered, because hosted suppliers walk away. A cheaper alternative in a final offer is sent back once.
 - **Deadlines:** a slow model falls back to a scripted counter, and idle RFQ threads may lapse instead of forcing the case to close.
 
-Hosted practice on 25 October: best single run 0.789 (v17, fast mode).
+Hosted practice on 25 October: best single run 0.789 (v17, fast mode). Every hosted practice session since 23 October is in the [deal journal](DEALS.md).

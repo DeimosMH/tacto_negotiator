@@ -85,6 +85,8 @@ def main(argv=None):
     sub.add_parser("me", help="your team: practice quota used and left, best score per case")
     b = sub.add_parser("board", help="show the leaderboard")
     b.add_argument("--set", **sets)
+    j = sub.add_parser("deals", help="the deal journal in docs/deals: rebuild its index, or backfill saved hosted runs")
+    j.add_argument("reports", nargs="*", help="docs/results/live-practice-*.json to backfill (reads ended sessions)")
     m = sub.add_parser("mcp", help="run the read-only MCP server over the data (stdio)")
     m.add_argument("--data", **data)
     args = ap.parse_args(argv)
@@ -101,6 +103,20 @@ def main(argv=None):
         from .mcp_server import main as serve
 
         return serve(args.data)
+    if args.cmd == "deals":
+        from . import deals
+        from .play import thread_events
+
+        folder = deals.directory()
+        if folder is None:
+            raise SystemExit("the deal journal is off (TACTO_DEALS_DIR)")
+        if args.reports:
+            written = deals.backfill(ArenaClient(), args.reports, folder, thread_events=thread_events)
+            print(f"backfilled {written} deal(s) into {folder}")
+        folder.mkdir(parents=True, exist_ok=True)
+        deals.write_index(folder)
+        print(f"index: {folder.parent / deals.INDEX_NAME} ({len(list(folder.glob('*.json')))} deals)")
+        return None
     client = ArenaClient()
     if args.cmd == "register":
         out = client.register(args.team_name, args.event_code)

@@ -20,6 +20,7 @@ import httpx
 
 from .client import ArenaError
 from .cost import RELATIONSHIP_GOALS, cheapest_price, decision_cost, must_haves_ok, total_cost, valid_value
+from .deals import recorded_play
 from .docs import read_document, standard_terms
 
 log = logging.getLogger("arena")
@@ -447,7 +448,12 @@ def close_before_lapse(case, threads, ending):
 
 def play(table, case_id, agent, deadline=None):
     """Play one case to its end. `deadline` (time.time(), or a function returning it): a Live Final
-    wave's cap - shortly before it, `closing_move` closes the case so it does not end without a deal."""
+    wave's cap - shortly before it, `closing_move` closes the case so it does not end without a deal.
+    A hosted case is stored as it goes (`deals.py`: the conversation and each decision's path)."""
+    return recorded_play(_play, table, case_id, agent, deadline)
+
+
+def _play(table, case_id, agent, deadline=None):
     case, threads = table.open(case_id)
     if getattr(table, "done", None):  # resumed a case that had already ended
         return table.done
