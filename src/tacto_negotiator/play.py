@@ -331,6 +331,22 @@ def opening_price_floor(case, events):
         return 0.0
 
 
+# No opening sheet asks more than this below the anchored price. Equal cost to us let a later effective
+# date (units before it stay at today's price) push the unit price of out-of-sample P13 to 38 % below the
+# quote against a 25 % anchor; a supplier reads that as not serious and answers with its final offer.
+OPENING_SLACK = 0.05
+
+
+def opening_plausible_floor(case, resolved):
+    """Lowest unit price any opening sheet may ask: the quote price (`resolved`: the supplier's standing
+    terms over its standard ones) below the anchor by OPENING_SLACK."""
+    try:
+        anchor = ANCHOR_BY_GOAL.get(case["buyer"].get("category_goal"), 0.15)
+        return round(resolved["unit_price"] * (1 - anchor - OPENING_SLACK), 2)
+    except (KeyError, TypeError, ValueError):
+        return 0.0
+
+
 def opening_price_cap(case, events, sid=None):
     """Highest unit price of an opening sheet: the anchored quote price, never below the price where
     the supplier-health term makes C rise. A cost limit alone let a longer contract carry a far higher

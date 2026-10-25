@@ -3,6 +3,7 @@ plus the Sunday release (new news, letters and a memo) once you have downloaded 
 
 import csv
 import json
+import math
 import os
 import sqlite3
 import threading
@@ -174,7 +175,12 @@ class DataPackage:
             except Exception:  # an older or partial package: decide without the estimate
                 continue
             if record and costs:
-                unit = costs[0]["unit_cost"] / (costs[0].get("price_unit") or 1)
+                # Case prices are per price unit (motor cable: EUR per 100 m), like should-cost rows; only a
+                # per-piece case price needs the division. Take the scale nearest today's price (P14: 304.49
+                # per 100 m against 316.35, not 3.04).
+                raw, per = costs[0]["unit_cost"], costs[0].get("price_unit") or 1
+                current = case["buyer"].get("current_unit_price") or raw
+                unit = min((raw, raw / per), key=lambda value: abs(math.log(value / current)))
                 standard = {k: v for k, v in record[0].items() if v is not None}
                 out[sid] = {"standard": standard, "interest_rate": 0.07, "full_cost": round(0.98 * unit, 4)}
         return out

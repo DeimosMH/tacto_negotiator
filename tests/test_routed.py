@@ -129,7 +129,8 @@ def test_missing_quote_defaults_get_one_clarification_and_cannot_be_accepted(sce
     assert calls == [] and "payment_days" in ask["message"]["body"]
     assert ask["message"]["term_sheets"] == []
     threads[sid].append({**ask["message"], "from": "buyer"})
-    assert agent.decide(case, threads)["message"]["action"]["type"] == "walk_away"
+    held = agent.decide(case, threads)["message"]  # never accepted; rounds left, so no walk-away either
+    assert not held.get("action") and "complete term sheet" in held["body"]
     assert len(calls) == 1 and agent.last_decision["fallback"]
 
 
@@ -151,7 +152,8 @@ def test_better_alternative_blocks_model_and_fallback_acceptance(scenario):
     case["buyer"]["alternative"] = {"kind": "quote", "terms": {"unit_price": 10, "payment_days": 30}}
     calls = []
     agent = RoutedAgent(completion(sid, calls, json.dumps({"supplier_id": sid, "action": "accept"})))
-    assert agent.decide(case, threads)["message"]["action"]["type"] == "walk_away"
+    move = agent.decide(case, threads)["message"]  # neither accepted nor walked: rounds are left to beat it
+    assert (move.get("action") or {}).get("type") not in {"accept", "walk_away"}
     assert agent.last_decision["fallback"]
 
 
@@ -264,7 +266,8 @@ def test_unreadable_latest_quote_blocks_acceptance_and_gets_one_clarification(sc
     ask = agent.decide(case, threads)
     assert calls == [] and "supplier quote defaults" in ask["message"]["body"]
     threads[sid].append({**ask["message"], "from": "buyer"})
-    assert agent.decide(case, threads)["message"]["action"]["type"] == "walk_away"
+    held = agent.decide(case, threads)["message"]  # never accepted; rounds left, so no walk-away either
+    assert not held.get("action")
     assert len(calls) == 1
 
 
@@ -531,3 +534,33 @@ def test_a_supplier_raising_its_price_does_not_raise_our_next_ask(scenario):
               "term_sheets": [{"term_sheet_id": "offer:2", "terms": {"unit_price": 21, "payment_days": 30}}]}
     held = {**raised, "term_sheets": [{"term_sheet_id": "offer:2", "terms": {"unit_price": 20, "payment_days": 30}}]}
     assert ask_limit(case, threads[sid] + [ours, raised], sid) == ask_limit(case, threads[sid] + [ours, held], sid)
+
+
+def test_a_failed_model_never_walks_out_of_an_rfq_with_rounds_left():
+    """Out-of-sample P06: quotes without a tooling term (already asked for), no alternative, and no time for
+    the model. The fallback's closing move found no acceptable offer and walked away: 0 for the case."""
+    import json as _json
+    from pathlib import Path as _Path
+
+    root = _Path(__file__).resolve().parent.parent
+    case = next(c for c in _json.loads((root / "tests/fixtures/practice_cases.json").read_text())["cases"]
+                if c["case_id"] == "case:P06")
+
+    def failing(system, user, *, deadline):
+        raise TimeoutError("no time")
+
+    def thread(sid, price):
+        quote = {"from": sid, "status": "open", "body": "Our quote.", "attachments": [],
+                 "term_sheets": [{"term_sheet_id": f"offer:{sid[4:]}-0",
+                                  "terms": {"unit_price": price, "payment_days": 45, "lead_time_days": 49}}]}
+        asked = {"from": "buyer", "term_sheets": [],
+                 "body": "Please confirm these terms: tooling_eur. Please provide a complete term sheet."}
+        again = {**quote, "term_sheets": [{"term_sheet_id": f"offer:{sid[4:]}-1",
+                                           "terms": {"unit_price": price, "payment_days": 45, "lead_time_days": 49}}]}
+        return [quote, asked, again]
+
+    threads = {"sup:70120": thread("sup:70120", 232.68), "sup:70150": thread("sup:70150", 247.44)}
+    agent = RoutedAgent(failing)
+    move = agent.decide_timed(case, threads, deadline=agent.clock() + 30)
+    assert agent.last_decision["fallback"]
+    assert (move["message"].get("action") or {}).get("type") != "walk_away"

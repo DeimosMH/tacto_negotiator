@@ -331,5 +331,5 @@ def test_bounded_search_parses_the_quote_once_per_decision_stage(negotiation):
     with patch("tacto_negotiator.docs.quote_terms", wraps=quote_terms) as parsing:
         move = agent.decide(case, threads)
     assert not calls and move["message"]["term_sheets"]
-    assert parsing.call_count <= 12  # constant per stage, independent of the 256 candidate packages
+    assert parsing.call_count <= 13  # constant per stage (+1: the opening-cost cache), not per 256 packages
     assert all(must_haves_ok(case, sheet["terms"]) for sheet in move["message"]["term_sheets"])

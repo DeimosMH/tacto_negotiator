@@ -21,7 +21,7 @@ from .competition import run_competition
 from .data import DataPackage
 
 MODELS = {"sol": "gpt-6.1-sol", "astra": "gpt-6-astra", "luna": "gpt-6-luna"}
-STRATEGIES = ("naive", "close", "scripts", "sol", "astra", "luna", "hybrid")
+STRATEGIES = ("naive", "close", "scripts", "sol", "astra", "luna", "hybrid", "routed")
 
 
 def unavailable(system, user, *, deadline):
@@ -57,6 +57,10 @@ def make_factories(strategies, completions=None, *, decision_seconds=25, package
         elif strategy == "scripts":
             factories[strategy] = lambda: RoutedAgent(unavailable, package=package,
                                                       max_decision_seconds=decision_seconds)
+        elif strategy == "routed":  # the final's buyer: Claude Opus from LLM_* settings (routed_completions_from_env)
+            fast, strong = completions["routed"]
+            factories[strategy] = lambda f=fast, s=strong: RoutedAgent(
+                f, strong=s, package=package, max_decision_seconds=decision_seconds)
         elif strategy == "hybrid":
             fast, strong = completions["sol"], completions["astra"]
             factories[strategy] = lambda f=fast, s=strong: RoutedAgent(
@@ -88,6 +92,11 @@ def main(argv=None):
     parser.add_argument("--holdout", action="store_true")
     parser.add_argument("--replica", action="store_true",
                         help="the 10 hosted practice cases with a supplier calibrated on hosted replies")
+    parser.add_argument("--bench", choices=["replica", "oos", "synth"],
+                        help="replica: the 10 hosted cases on recorded openings; oos: the 9 never-hosted practice "
+                             "cases with synthesized openings; synth: the hosted cases synthesized the same way")
+    parser.add_argument("--timing", choices=["practice", "final"], default="practice",
+                        help="supplier reply delays: practice 15-40 s, final 25-60 s")
     parser.add_argument("--live", action="store_true", help="Authorize paid OpenAI completions; suppliers stay local")
     parser.add_argument("--key-file", type=Path, help="Read only literal LLM_API_KEY from this file")
     parser.add_argument("--budget-usd", type=float, default=60, help="Conservative reservation ceiling for this run")
@@ -98,7 +107,9 @@ def main(argv=None):
     requested = set(args.strategies) & (set(MODELS) | {"hybrid"})
     if requested and (not args.live or args.key_file is None):
         parser.error("model strategies require both --live and --key-file")
-    if args.live and not requested:
+    if "routed" in args.strategies and not args.live:
+        parser.error("the routed strategy calls the configured model: add --live (LLM_* from the environment)")
+    if args.live and not requested and "routed" not in args.strategies:
         parser.error("--live requires a model strategy")
     logging.getLogger("arena").setLevel(logging.CRITICAL)
     ledger = BudgetLedger(args.budget_usd) if requested else None
@@ -114,12 +125,17 @@ def main(argv=None):
         for name in names:
             client = CompletionClient(MODELS[name], key, effort="low", service_tier="default", semaphore=semaphore)
             completions[name] = BudgetedCompletion(client, ledger)
+    if "routed" in args.strategies:  # suppliers stay local; only LLM_* settings are read, never an arena key
+        from .agents.completion import routed_completions_from_env
+
+        completions["routed"] = routed_completions_from_env()
     package = None
-    if args.replica:
+    if args.replica or args.bench:
         package = DataPackage(Path(__file__).resolve().parents[2] / "data")
         package.lookup("")
     factories = make_factories(args.strategies, completions, decision_seconds=args.decision_seconds, package=package)
-    metadata = {"started_utc": datetime.now(UTC).isoformat(), "models": {n: c.model for n, c in completions.items()},
+    metadata = {"started_utc": datetime.now(UTC).isoformat(), "models": {n: (c[0] if isinstance(c, tuple) else c).model
+                                                                for n, c in completions.items()},
                 "effort": "low", "service_tier": "default", "max_output_tokens": 4096,
                 "preflight": preflight, "status": "running"}
     metadata["source_sha256"] = {
@@ -142,7 +158,8 @@ def main(argv=None):
     monitor.start()
     try:
         result = run_competition(factories, args.scenarios, args.seeds, args.waves, args.workers,
-                                 holdout=args.holdout, decision_seconds=args.decision_seconds, replica=args.replica)
+                                 holdout=args.holdout, decision_seconds=args.decision_seconds, replica=args.replica,
+                                 bench=args.bench, timing=args.timing)
     finally:
         stop.set()
         monitor.join()

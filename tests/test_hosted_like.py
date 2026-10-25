@@ -119,3 +119,27 @@ def test_replica_checks_claims_against_the_whole_data_package():
     checker = sim.sessions[session["session_id"]]["checker"]
     claim = {"type": "index_change", "refs": ["idx:AS-14404@2026-06", "idx:AS-14404@2026-09"]}
     assert checker.check("sup:70710", [claim]) == [{"index": 0, "result": "verified"}]
+
+
+def test_out_of_sample_bench_fixes_hold():
+    """The never-hosted practice cases (bench `oos`): the faults the bench found stay fixed."""
+    import json as _json
+    from pathlib import Path as _Path
+
+    from tacto_negotiator.competition import run_competition
+    from tacto_negotiator.compete import make_factories
+    from tacto_negotiator.data import DataPackage as _Package
+    from tacto_negotiator.hosted_like import build_oos_scenarios
+
+    root = _Path(__file__).resolve().parent.parent
+    package = _Package(root / "data")
+    cases = {c["case_id"]: c for c in _json.loads((root / "tests/fixtures/practice_cases.json").read_text())["cases"]}
+    # motor cable is priced per 100 m in the case and in should-cost: no division by the price unit
+    assert 290 < package.supplier_estimates(cases["case:P14"])["sup:70560"]["full_cost"] < 310
+    assert {s.name for s in build_oos_scenarios(0)} == {"P06", "P09", "P12", "P13", "P14", "P15", "P16", "P17", "P19"}
+    result = run_competition(make_factories(["scripts"], package=package), ["P13", "P14", "P06"], [0], waves=1,
+                             workers=3, bench="oos", timing="final")
+    scores = {m["scenario"]: m["score"] for m in result["matches"]}
+    assert scores["P14"] > 0.8 and scores["P13"] > 0.7 and scores["P06"] > 0  # clause sheet, anchor floor, no zero
+    opening = next(m for m in result["matches"] if m["scenario"] == "P13")["decisions"][0]
+    assert all(t["unit_price"] >= 12.2 for t in opening["sent_action"]["term_sheets"])  # 17.44 x (1 - 0.25 - 0.05)

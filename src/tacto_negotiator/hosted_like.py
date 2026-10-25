@@ -18,6 +18,8 @@ hosted scale. Supplier reasoning and prose understanding are not modelled.
 """
 
 import copy
+import csv
+import itertools
 import json
 import random
 from pathlib import Path
@@ -29,6 +31,8 @@ from .evaluation import ClaimChecker
 from .sim import Sim
 
 FIXTURE = Path(__file__).resolve().parents[2] / "tests/fixtures/practice_feedback.json"
+CASES = Path(__file__).resolve().parents[2] / "tests/fixtures/practice_cases.json"  # all 19 practice case files
+HOSTED = ("P01", "P02", "P03", "P04", "P05", "P07", "P08", "P10", "P11", "P18")
 DATA = Path(__file__).resolve().parents[2] / "data"
 # (a1, cap1, a2, floor depth F, final round R, cumulative-gap % G) ranges by category goal.
 # secure_supply G: 15 hosted P10 first rounds stayed open at package-adjusted gaps of 6.3-13.7 % and drew a
@@ -50,14 +54,24 @@ CLAIM_TYPES = {"fc": "volume_change", "cost": "should_cost", "quote": "rival_quo
                "news": "supplier_news"}
 
 
-def draw_profile(goal, rng, *, opening_below_current=False):
+# Supplier reply delays (s). Practice: hosted replies took 15-40 s. Final: every team plays at once and the
+# brief allows "up to about a minute".
+DELAYS = {"practice": (15, 40), "final": (25, 60)}
+# Hosted opening price / current price by case type (the 10 hosted cases); a price letter states its own
+# asked price (documents.csv `asked_price`: P01 138.55, P02 370.96 - exactly the hosted openings).
+OPENING_RATIO = {"renewal": (1.06, 1.13), "raw_material": (1.045, 1.11), "capacity": (1.05, 1.10),
+                 "quality": (1.03, 1.06), "bundling": (0.90, 0.93), "rfq": (0.87, 1.06),
+                 "price_increase": (1.06, 1.10)}
+
+
+def draw_profile(goal, rng, *, opening_below_current=False, delays=DELAYS["practice"]):
     ranges = PROFILE_RANGES.get(goal, PROFILE_RANGES["routine"])
     a1, cap1, a2, depth = (rng.uniform(*r) for r in ranges[:4])
     final_round, gap = rng.randint(*ranges[4]), rng.uniform(*ranges[5])
     if opening_below_current:  # an RFQ bidder already priced below today's price has little room
         depth = 0.02
     return {"a1": a1, "cap1": cap1, "a2": a2, "depth": depth, "final_round": final_round, "final_gap": gap,
-            "reply_delay_s": rng.uniform(15, 40)}
+            "reply_delay_s": rng.uniform(*delays)}
 
 
 def premium(case, terms, opening, standard, p0, rises=None):
@@ -128,7 +142,7 @@ def counter(profile, p0, round_, previous, ask, cumulative_gap, last_ask):
     return price, "final_offer" if final else "open"
 
 
-def build_replica_scenarios(seed=0, fixture=FIXTURE):
+def build_replica_scenarios(seed=0, fixture=FIXTURE, *, timing="practice"):
     """One scenario per recorded hosted practice case, with seeded private supplier profiles."""
     data = json.loads(Path(fixture).read_text())
     rng = random.Random(f"replica:{seed}")
@@ -144,10 +158,134 @@ def build_replica_scenarios(seed=0, fixture=FIXTURE):
             p0 = opening["unit_price"]
             # hosted P05: the bidder at 0.87x today's price had ~2 % room, the one at 0.99x had ~22 %
             profiles[sid] = {**draw_profile(goal, rng, opening_below_current=len(case["suppliers"]) > 1
-                                            and current and p0 < 0.9 * current),
+                                            and current and p0 < 0.9 * current, delays=DELAYS[timing]),
                              "opening": opening, "standard": dict(thread["standard"]), "p0": p0}
         reference = {"c_open": session["result"]["c_open"], "c_best": session["result"]["c_best"]}
         out.append(Scenario(case_id[5:], copy.deepcopy(case), profiles, seed, False, HostedLikeSim, reference))
+    return out
+
+
+def _table(name):
+    with (DATA / "data" / f"{name}.csv").open(newline="", encoding="utf-8") as stream:
+        return list(csv.DictReader(stream))
+
+
+def synthetic_opening(case, sid, rng, tables):
+    """A supplier's opening quote for a case never played on the hosted arena: the asked price of a
+    price letter, else today's price times the hosted opening ratio of the case type; standard terms
+    from the supplier master (payment, Incoterm, lead time) and its scorecard (ppm commitment)."""
+    suppliers, scorecards, documents = tables
+    master = suppliers.get(sid, {})
+    letter = documents.get(case.get("trigger_doc") or "", {})
+    current = case["buyer"].get("current_unit_price") or 0
+    if letter.get("asked_price") and letter.get("supplier_id") == sid:
+        p0 = float(letter["asked_price"])
+    else:
+        p0 = current * rng.uniform(*OPENING_RATIO.get(case.get("type"), (1.03, 1.10)))
+    ppm = float(scorecards.get(sid, {}).get("ppm") or 0)
+    standard = {"payment_days": int(master.get("payment_days") or 30),
+                "lead_time_days": int(master.get("standard_lead_time_days") or case["buyer"]["need_lead_time_days"]),
+                "incoterm": master.get("incoterm") or "DAP",
+                "ppm_commitment": max(50, round(ppm * rng.uniform(0.6, 1.5) / 50) * 50),
+                "chargeback_eur_per_complaint": 0.0}
+    for field, options in case.get("term_options", {}).items():  # a quote uses the case's allowed values
+        if field in standard and options and standard[field] not in options and isinstance(standard[field], int):
+            standard[field] = min((o for o in options if isinstance(o, int | float)),
+                                  key=lambda o: abs(o - standard[field]), default=standard[field])
+    # Hosted suppliers open on their own terms: the shortest contract, the earliest effective date, no
+    # index clause, a capacity supplier's reduced volume, a quality supplier's real defect rate (P11 6400 ppm).
+    options = case.get("term_options", {})
+    own = {}
+    for field in case["negotiable"]:
+        values = [v for v in options.get(field) or [] if v is not None]
+        if field == "contract_months" and values:
+            own[field] = min(values)
+        elif field == "effective_date" and values:
+            own[field] = min(values)
+        elif field == "index_clause":
+            own[field] = None
+        elif field == "volume_per_year" and values:
+            need = case["buyer"]["need_per_year"]
+            below = sorted(v for v in values if v < need)
+            own[field] = below[-1] if case.get("type") == "capacity" and below else need
+        elif field == "ppm_commitment" and case.get("type") == "quality":
+            own[field] = max(standard["ppm_commitment"], round(ppm * rng.uniform(1.5, 3.0) / 100) * 100)
+    for field in case["negotiable"]:  # every quoted term is stated (hosted quote PDFs list them all)
+        values = [v for v in options.get(field) or [] if v is not None]
+        if field != "unit_price" and field not in standard and field not in own and values:
+            standard[field] = max(values) if field == "tooling_eur" else values[0]  # tooling: its own full cost
+    opening = {**standard, **case.get("fixed_terms", {}), **own, "unit_price": round(p0, 2)}
+    return opening, standard, round(p0, 2)
+
+
+def floor_terms_cost(case, profile, sid, package, rises, scored):
+    """C of the cheapest deal this supplier would ever accept on these non-price terms (its floor for
+    the package), or None if the package breaks a must-have."""
+    p0 = profile["p0"]
+    reserve = clause_reserve(case, profile["opening"], rises, profile["depth"]) * p0
+    value = premium(case, package, profile["opening"], profile["standard"], p0, rises)
+    extra = value if package.get("index_clause") else value + max(0.0, reserve - max(0.0, value))
+    terms = closing_terms(case, {**package, "unit_price": round(p0 * (1 - profile["depth"]) + extra, 2)},
+                          profile["standard"])
+    if not must_haves_ok(case, terms):
+        return None
+    return decision_cost(scored, terms, profile["standard"], sid)
+
+
+def reference_costs(case, profiles, package):
+    """C_open (the cheapest eligible opening) and C_best (every valid lever at each supplier's floor)."""
+    scored = {**case, "_supplier_estimates": package.supplier_estimates(case) if package is not None else {}}
+    rises = index_rises(case, package)
+    openings = []
+    for sid, profile in profiles.items():
+        terms = closing_terms(case, profile["opening"], profile["standard"])
+        openings.append((not must_haves_ok(case, terms), decision_cost(scored, terms, profile["standard"], sid)))
+    c_open = min(openings)[1]
+    fields = [f for f in case["negotiable"] if f != "unit_price"]
+    best = None
+    for sid, profile in profiles.items():
+        choices = []
+        for field in fields:
+            values = list(case.get("term_options", {}).get(field) or [])
+            standard = profile["opening"].get(field)
+            if standard not in values:
+                values.append(standard)
+            choices.append(values)
+        for combo in itertools.islice(itertools.product(*choices), 4096):
+            cost = floor_terms_cost(case, profile, sid, dict(zip(fields, combo, strict=True)), rises, scored)
+            if cost is not None and (best is None or cost < best):
+                best = cost
+    return {"c_open": c_open, "c_best": min(best, c_open) if best is not None else c_open}
+
+
+def build_oos_scenarios(seed=0, cases_file=CASES, *, timing="practice", hosted=False):
+    """Out-of-sample scenarios: the practice cases never played on the hosted arena (or, with
+    `hosted=True`, the hosted ones rebuilt the same way, to measure what the synthesis itself
+    changes). Openings, standard terms and supplier profiles are synthesized from the case file and
+    the data package; nothing is fitted to these cases."""
+    data = json.loads(Path(cases_file).read_text())
+    suppliers = {r["id"]: r for r in _table("suppliers")}
+    scorecards = {}
+    for row in _table("scorecards"):
+        scorecards[row["supplier_id"]] = row  # the latest quarter last
+    documents = {r["id"]: r for r in _table("documents")}
+    package = HostedLikeSim.shared_package()
+    rng = random.Random(f"oos:{seed}")
+    out = []
+    for case in sorted(data["cases"], key=lambda c: c["case_id"]):
+        if (case["case_id"][5:] in HOSTED) != hosted:
+            continue
+        goal = case["buyer"].get("category_goal", "routine")
+        current = case["buyer"].get("current_unit_price") or 0
+        profiles = {}
+        for sid in case["suppliers"]:
+            opening, standard, p0 = synthetic_opening(case, sid, rng, (suppliers, scorecards, documents))
+            profiles[sid] = {**draw_profile(goal, rng, opening_below_current=len(case["suppliers"]) > 1
+                                            and current and p0 < 0.9 * current, delays=DELAYS[timing]),
+                             "opening": opening, "standard": standard, "p0": p0}
+        case = {k: v for k, v in copy.deepcopy(case).items() if k != "hosted"}
+        reference = reference_costs(case, profiles, package)
+        out.append(Scenario(case["case_id"][5:], case, profiles, seed, True, HostedLikeSim, reference))
     return out
 
 
@@ -156,16 +294,21 @@ class HostedLikeSim(CompetitionSim):
 
     _package = None
 
+    @classmethod
+    def shared_package(cls):
+        if cls._package is None:
+            cls._package = DataPackage(DATA)
+            cls._package.lookup("")
+        return cls._package
+
     def __init__(self, scenario, waves, package=None):
         self.scenario = copy.deepcopy(scenario)
         self.now, self.supplier_delay_s = 1_000_000.0, 0.0
         if package is None:  # shared, read-only: the supplier's claim facts and health estimates
-            if HostedLikeSim._package is None:
-                HostedLikeSim._package = DataPackage(DATA)
-                HostedLikeSim._package.lookup("")
-            package = HostedLikeSim._package
+            package = HostedLikeSim.shared_package()
         self.package = package
-        self.reference = {"cost": scenario.reference["c_best"], "kind": "recorded hosted C_best"}
+        self.reference = {"cost": scenario.reference["c_best"],
+                          "kind": "synthesized C_best" if scenario.holdout else "recorded hosted C_best"}
         Sim.__init__(self, {scenario.case["case_id"]: copy.deepcopy(scenario.case)}, clock=lambda: self.now)
         # After Sim.__init__, which resets the facts: hosted checks claims against the whole package
         # (cited index falls verified there), so an empty fact table marked every claim contradicted.

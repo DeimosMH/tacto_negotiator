@@ -4,6 +4,7 @@ Completion callables accept an absolute monotonic ``deadline`` and must enforce 
 Routing uses observed data and remaining time; it never asks a model to grade itself.
 """
 
+import contextlib
 import itertools
 import json
 import logging
@@ -33,6 +34,7 @@ from ..play import (
     latest,
     live_threads,
     moves_left,
+    opening_plausible_floor,
     opening_price_cap,
     opening_price_floor,
     price_within,
@@ -166,7 +168,7 @@ class RoutedAgent:
             # them sent 8 of 10 hosted v4 openings to the fallback.
             limit = ask_limit(case, events, sid) if reprice else math.inf
             if reprice:  # never ask for a deal dearer than one another supplier already offers (hosted P05 v17)
-                limit = min(limit, self._rival_limit(case, threads, sid))
+                limit = min(limit, self._rival_limit(case, threads, sid), self._opening_limit(case, threads))
             opening = reprice and not any(e.get("from") == "buyer" and e.get("term_sheets") for e in events)
             cap = opening_price_cap(case, events, sid) if opening else math.inf
             low = opening_price_floor(case, events) if opening else 0.0
@@ -184,6 +186,18 @@ class RoutedAgent:
                         t = {**t, "unit_price": self._price_within(case, t, std, sid, limit)}
                 if t not in conformed:
                     conformed.append(t)
+            if opening and conformed:  # an ask far below the anchor draws a final offer (OPENING_SLACK)
+                plausible = opening_plausible_floor(case, {**std, **case.get("fixed_terms", {}), **terms})
+                kept = [t for t in conformed if t["unit_price"] >= plausible - 0.005]
+                ceiling = min(limit * 1.005 + 0.01, self._outside_cost(case))
+                if not kept:  # lift to the floor; keep the cheapest that still respects our limits
+                    lifted = sorted(({**t, "unit_price": plausible} for t in conformed),
+                                    key=lambda t: total_cost(case, t, std))
+                    kept = [t for t in lifted if total_cost(case, t, std) < ceiling][:1]
+                if not kept and (own := self._limit_sheet(case, events, sid, limit)) and (
+                        own["unit_price"] >= plausible - 0.005 and total_cost(case, own, std) < ceiling):
+                    kept = [own]  # the supplier's own terms at the anchored price
+                conformed = kept or conformed
             clean = conformed
             sent = [e for e in events if e.get("from") == "buyer" and e.get("term_sheets")]
             if clean and sent and math.isfinite(limit) and latest(events).get("status") == "open":
@@ -539,6 +553,27 @@ class RoutedAgent:
             self._record(case, "script", "deadline_close", start, start)
         return move
 
+    def _opening_limit(self, case, threads):
+        """Just below the cheapest opening quote in the case: C_open is the score's zero, so a deal at or
+        above it scores nothing. Out-of-sample P06: one bidder raised its price on our no-tooling package,
+        the other agreed at 1.968M against a 1.894M opening from the first (score 0)."""
+        cache = self.__dict__.setdefault("_opening_costs", {})  # an opening never changes once read
+        best = math.inf
+        for sid, events in threads.items():
+            key = (case["case_id"], sid)
+            if key not in cache:
+                first = next((i for i, e in enumerate(events) if e.get("from") != "buyer" and e.get("term_sheets")),
+                             None)
+                if first is None:
+                    continue
+                _, terms, std, missing = known_offer(case, events[:first + 1])
+                if missing:
+                    continue
+                with contextlib.suppress(KeyError, TypeError, ValueError):
+                    cache[key] = total_cost(case, terms, std)
+            best = min(best, cache.get(key, math.inf))
+        return best * 0.999 if math.isfinite(best) else math.inf
+
     @staticmethod
     def _rival_limit(case, threads, sid):
         """Cash cost just below the best acceptable offer standing in another live thread, but never below
@@ -611,6 +646,34 @@ class RoutedAgent:
         return self.validate(case, threads, {"supplier_id": sid, "action": "send",
                                              "body": "Thank you. Please consider this complete package.",
                                              "term_sheets": [{**sheet, "unit_price": price}]})
+
+    @staticmethod
+    def _outside_cost(case):
+        """C of the declared alternative, or infinity without one."""
+        alt = case["buyer"].get("alternative") or {}
+        if alt.get("kind") in (None, "none"):
+            return math.inf
+        try:
+            return total_cost(case, alt.get("terms", {}))
+        except (KeyError, TypeError, ValueError):
+            return math.inf
+
+    def _safe_hold(self, case, threads):
+        """A move that keeps the case alive: a counter at our ask limit to a live supplier with rounds
+        left, else a request for its complete term sheet (an unknown quote term blocks every accept)."""
+        live = [sid for sid in live_threads(threads) if moves_left(case, threads[sid]) > 1
+                and sid not in self.unavailable and latest(threads[sid]).get("status") == "open"]
+        for sid in live:
+            if move := self._limit_counter(case, threads, sid):
+                return move
+        for sid in live:
+            move = self.validate(case, threads, {
+                "supplier_id": sid, "action": "send",
+                "body": "Thank you. Please send your complete term sheet with every term stated, so that we can "
+                        "compare and conclude."})
+            if move:
+                return move
+        return None
 
     def _semantic_blocker(self, case, threads):
         if self.model_case == case["case_id"]:
@@ -1065,6 +1128,12 @@ class RoutedAgent:
                     move = repair[1]
                 elif open_offer and (counter := self._limit_counter(case, threads, move["supplier_id"])):
                     move = counter
+            if (move["message"].get("action", {}).get("type") == "walk_away"
+                    and any(moves_left(case, threads[sid]) > 1 for sid in live_threads(threads))):
+                # A walk-away forfeits the case (0 without an alternative). Out-of-sample P06: a quote with an
+                # unknown term left no acceptable offer, the model had no time, and the fallback walked out
+                # of an RFQ with 9 rounds left. Keep the case alive instead.
+                move = self._safe_hold(case, threads) or move
             if self.clock() < thread_deadline - 1:
                 move = self._before_accept(case, threads, "fallback", move)[1]
             self._record(case, route, type(error).__name__, start, deadline, fallback=True)

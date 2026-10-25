@@ -1,0 +1,1778 @@
+{
+ "source": "GET /v1/cases?set=practice, 2026-10-25",
+ "cases": [
+  {
+   "case_id": "case:P01",
+   "set": "practice",
+   "type": "price_increase",
+   "title": "Brandlhuber announces +9.5 % on HN volute casings",
+   "briefing": "You negotiate for Hollerau Pumpenwerke with Gießerei Brandlhuber GmbH & Co. KG. Brandlhuber announces +9.5 % on HN volute casings. Need: 8150 pc a year. Category goal: stabilise a strategic supply: a healthy supplier and stable prices count, not only the lowest price. Score: the lowest total cost C as defined in the rules, valued with this case's rates (need lead time 45 days). Fallback if you walk away: the second-source quote quote:7200001. Must-haves: none. Prepare from the data package.",
+   "trigger_doc": "doc:20260911-70110-P01",
+   "parts": [
+    "part:310010"
+   ],
+   "suppliers": [
+    "sup:70110"
+   ],
+   "negotiable": [
+    "unit_price",
+    "effective_date",
+    "payment_days"
+   ],
+   "fixed_terms": {
+    "lead_time_days": 42,
+    "volume_per_year": 8150,
+    "contract_months": 12,
+    "index_clause": null,
+    "incoterm": "FCA",
+    "tooling_eur": 0
+   },
+   "term_options": {
+    "effective_date": [
+     "2026-11-01",
+     "2027-01-01",
+     "2027-04-01"
+    ],
+    "payment_days": [
+     14,
+     30,
+     45,
+     60,
+     90
+    ]
+   },
+   "buyer": {
+    "need_per_year": 8150,
+    "horizon_years": 1.0,
+    "current_unit_price": 126.53,
+    "fallback_unit_price": 136.65,
+    "interest_rate": 0.08,
+    "reference_payment_days": 60,
+    "need_lead_time_days": 45,
+    "category_goal": "stabilise",
+    "fallback_risk_pct": 10,
+    "index_risk_pct": 4,
+    "late_cost_per_day": 420,
+    "cost_per_defect": 216,
+    "sustainable_margin_pct": 3,
+    "relationship_eur_per_point": 15470,
+    "freight_eur_per_unit": {
+     "EXW": 2.19,
+     "FCA": 1.9,
+     "DAP": 0.0
+    },
+    "index_paths": {},
+    "must_haves": [],
+    "alternative": {
+     "kind": "quote",
+     "ref": "quote:7200001",
+     "terms": {
+      "unit_price": 143.22,
+      "payment_days": 60,
+      "lead_time_days": 70,
+      "volume_per_year": 8150,
+      "contract_months": 12,
+      "effective_date": "2027-01-01",
+      "index_clause": null,
+      "incoterm": "FCA",
+      "tooling_eur": 1500,
+      "ppm_commitment": 2376
+     }
+    }
+   },
+   "round_limit": 10,
+   "refs": [
+    "doc:20260911-70110-P01",
+    "ctr:4600070110",
+    "sc:70110@2026Q3",
+    "quote:7200001"
+   ],
+   "hosted": true
+  },
+  {
+   "case_id": "case:P02",
+   "set": "practice",
+   "type": "price_increase",
+   "title": "Nordmark passes on copper for the 7.5 kW motor",
+   "briefing": "You negotiate for Hollerau Pumpenwerke with Antriebstechnik Nordmark AG. Nordmark passes on copper for the 7.5 kW motor. Need: 6110 pc a year. Category goal: stabilise a strategic supply: a healthy supplier and stable prices count, not only the lowest price. Score: the lowest total cost C as defined in the rules, valued with this case's rates (need lead time 36 days). Fallback if you walk away: the second-source quote quote:7200002. Must-haves: none. Prepare from the data package.",
+   "trigger_doc": "doc:20260914-70510-P02",
+   "parts": [
+    "part:350011"
+   ],
+   "suppliers": [
+    "sup:70510"
+   ],
+   "negotiable": [
+    "unit_price",
+    "payment_days",
+    "index_clause"
+   ],
+   "fixed_terms": {
+    "lead_time_days": 35,
+    "volume_per_year": 6110,
+    "contract_months": 12,
+    "effective_date": "2027-01-01",
+    "incoterm": "DAP",
+    "tooling_eur": 0
+   },
+   "term_options": {
+    "payment_days": [
+     14,
+     30,
+     45,
+     60,
+     90
+    ],
+    "index_clause": [
+     null,
+     {
+      "series": "CU-NOTATION",
+      "material_share": 0.2,
+      "deadband_pct": 0,
+      "base_month": "2026-08"
+     },
+     {
+      "series": "CU-NOTATION",
+      "material_share": 0.2,
+      "deadband_pct": 3,
+      "base_month": "2026-08"
+     },
+     {
+      "series": "CU-NOTATION",
+      "material_share": 0.2,
+      "deadband_pct": 5,
+      "base_month": "2026-08"
+     }
+    ]
+   },
+   "buyer": {
+    "need_per_year": 6110,
+    "horizon_years": 1.0,
+    "current_unit_price": 348.32,
+    "fallback_unit_price": 376.19,
+    "interest_rate": 0.08,
+    "reference_payment_days": 60,
+    "need_lead_time_days": 36,
+    "category_goal": "stabilise",
+    "fallback_risk_pct": 10,
+    "index_risk_pct": 4,
+    "late_cost_per_day": 720,
+    "cost_per_defect": 780,
+    "sustainable_margin_pct": 0.5,
+    "relationship_eur_per_point": 31920,
+    "freight_eur_per_unit": {
+     "EXW": 2.99,
+     "FCA": 2.6,
+     "DAP": 0.0
+    },
+    "index_paths": {
+     "CU-NOTATION": 0.05
+    },
+    "must_haves": [],
+    "alternative": {
+     "kind": "quote",
+     "ref": "quote:7200002",
+     "terms": {
+      "unit_price": 421.06,
+      "payment_days": 30,
+      "lead_time_days": 56,
+      "volume_per_year": 6110,
+      "contract_months": 12,
+      "effective_date": "2027-01-01",
+      "index_clause": null,
+      "incoterm": "DAP",
+      "tooling_eur": 0,
+      "ppm_commitment": 0
+     }
+    }
+   },
+   "round_limit": 10,
+   "refs": [
+    "doc:20260914-70510-P02",
+    "ctr:4600070510",
+    "sc:70510@2026Q3",
+    "quote:7200002"
+   ],
+   "hosted": true
+  },
+  {
+   "case_id": "case:P03",
+   "set": "practice",
+   "type": "renewal",
+   "title": "Frame agreement renewal for the 7.5 kW frequency converter",
+   "briefing": "You negotiate for Hollerau Pumpenwerke with Selvbrunn Drive Systems GmbH. Frame agreement renewal for the 7.5 kW frequency converter. Need: 4580 pc a year. Category goal: stabilise a strategic supply: a healthy supplier and stable prices count, not only the lowest price. Score: the lowest total cost C as defined in the rules, valued with this case's rates (need lead time 54 days). Fallback if you walk away: the second-source quote quote:7200003. Must-haves: none. Prepare from the data package.",
+   "trigger_doc": "doc:20260917-70530-P03",
+   "parts": [
+    "part:350020"
+   ],
+   "suppliers": [
+    "sup:70530"
+   ],
+   "negotiable": [
+    "unit_price",
+    "payment_days",
+    "contract_months",
+    "volume_per_year"
+   ],
+   "fixed_terms": {
+    "lead_time_days": 49,
+    "effective_date": "2027-01-01",
+    "index_clause": null,
+    "incoterm": "DAP",
+    "tooling_eur": 0
+   },
+   "term_options": {
+    "payment_days": [
+     14,
+     30,
+     45,
+     60,
+     90
+    ],
+    "contract_months": [
+     12,
+     24,
+     36
+    ],
+    "volume_per_year": [
+     3664,
+     4580,
+     5496
+    ]
+   },
+   "buyer": {
+    "need_per_year": 4580,
+    "horizon_years": 2,
+    "current_unit_price": 412.74,
+    "fallback_unit_price": 441.63,
+    "interest_rate": 0.08,
+    "reference_payment_days": 60,
+    "need_lead_time_days": 54,
+    "category_goal": "stabilise",
+    "fallback_risk_pct": 10,
+    "index_risk_pct": 4,
+    "late_cost_per_day": 600,
+    "cost_per_defect": 624,
+    "sustainable_margin_pct": 8,
+    "relationship_eur_per_point": 28360,
+    "freight_eur_per_unit": {
+     "EXW": 0.35,
+     "FCA": 0.3,
+     "DAP": 0.0
+    },
+    "index_paths": {},
+    "must_haves": [],
+    "alternative": {
+     "kind": "quote",
+     "ref": "quote:7200003",
+     "terms": {
+      "unit_price": 466.99,
+      "payment_days": 30,
+      "lead_time_days": 98,
+      "volume_per_year": 4580,
+      "contract_months": 24,
+      "effective_date": "2027-01-01",
+      "index_clause": null,
+      "incoterm": "DAP",
+      "tooling_eur": 0,
+      "ppm_commitment": 0
+     }
+    }
+   },
+   "round_limit": 10,
+   "refs": [
+    "doc:20260917-70530-P03",
+    "ctr:4600070530",
+    "sc:70530@2026Q3",
+    "quote:7200003",
+    "fc:350020@2026-09"
+   ],
+   "hosted": true
+  },
+  {
+   "case_id": "case:P04",
+   "set": "practice",
+   "type": "renewal",
+   "title": "Renewal of the ball bearing 6306 agreement",
+   "briefing": "You negotiate for Hollerau Pumpenwerke with Wälzlager-Zentrum Süd GmbH. Renewal of the ball bearing 6306 agreement. Need: 20000 pc a year. Category goal: routine: fewer suppliers and less process cost. Score: the lowest total cost C as defined in the rules, valued with this case's rates (need lead time 7 days). Fallback if you walk away: the second-source quote quote:7200004. Must-haves: none. Prepare from the data package.",
+   "trigger_doc": "doc:20260920-70620-P04",
+   "parts": [
+    "part:360020"
+   ],
+   "suppliers": [
+    "sup:70620"
+   ],
+   "negotiable": [
+    "unit_price",
+    "payment_days",
+    "contract_months"
+   ],
+   "fixed_terms": {
+    "lead_time_days": 7,
+    "volume_per_year": 20000,
+    "effective_date": "2027-01-01",
+    "index_clause": null,
+    "incoterm": "DAP",
+    "tooling_eur": 0
+   },
+   "term_options": {
+    "payment_days": [
+     14,
+     30,
+     45,
+     60,
+     90
+    ],
+    "contract_months": [
+     12,
+     24,
+     36
+    ]
+   },
+   "buyer": {
+    "need_per_year": 20000,
+    "horizon_years": 2,
+    "current_unit_price": 4.39,
+    "fallback_unit_price": 4.7,
+    "interest_rate": 0.08,
+    "reference_payment_days": 60,
+    "need_lead_time_days": 7,
+    "category_goal": "routine",
+    "fallback_risk_pct": 5,
+    "index_risk_pct": 2,
+    "late_cost_per_day": 75,
+    "cost_per_defect": 95,
+    "freight_eur_per_unit": {
+     "EXW": 0.02,
+     "FCA": 0.02,
+     "DAP": 0.0
+    },
+    "index_paths": {},
+    "must_haves": [],
+    "alternative": {
+     "kind": "quote",
+     "ref": "quote:7200004",
+     "terms": {
+      "unit_price": 5.04,
+      "payment_days": 30,
+      "lead_time_days": 10,
+      "volume_per_year": 20000,
+      "contract_months": 24,
+      "effective_date": "2027-01-01",
+      "index_clause": null,
+      "incoterm": "DAP",
+      "tooling_eur": 0,
+      "ppm_commitment": 0
+     }
+    }
+   },
+   "round_limit": 10,
+   "refs": [
+    "doc:20260920-70620-P04",
+    "ctr:4600070620",
+    "sc:70620@2026Q3",
+    "quote:7200004",
+    "fc:360020@2026-09"
+   ],
+   "hosted": true
+  },
+  {
+   "case_id": "case:P05",
+   "set": "practice",
+   "type": "rfq",
+   "title": "RFQ: pump shaft for the new HX series",
+   "briefing": "You negotiate for Hollerau Pumpenwerke with Zerspanung Dralveck GmbH, Strojírna Hrvelec s.r.o., Drehteile Fuchsreiter GmbH. RFQ: pump shaft for the new HX series. Need: 4200 pc a year. Category goal: leverage: competition and data should bring the price down. Score: the lowest total cost C as defined in the rules, valued with this case's rates (need lead time 35 days). There is no fallback supplier: without a deal the demand is bought at the fallback price. Must-haves: lead_time_days <= 42. Prepare from the data package.",
+   "trigger_doc": "doc:20260923-70210-P05",
+   "parts": [
+    "part:320070"
+   ],
+   "suppliers": [
+    "sup:70210",
+    "sup:70240",
+    "sup:70250"
+   ],
+   "negotiable": [
+    "unit_price",
+    "payment_days",
+    "lead_time_days"
+   ],
+   "fixed_terms": {
+    "volume_per_year": 4200,
+    "contract_months": 24,
+    "effective_date": "2027-01-01",
+    "index_clause": null,
+    "incoterm": "DAP",
+    "tooling_eur": 0
+   },
+   "term_options": {
+    "payment_days": [
+     14,
+     30,
+     45,
+     60,
+     90
+    ],
+    "lead_time_days": [
+     28,
+     35,
+     42,
+     56
+    ]
+   },
+   "buyer": {
+    "need_per_year": 4200,
+    "horizon_years": 2.0,
+    "current_unit_price": 36.39,
+    "fallback_unit_price": 36.39,
+    "interest_rate": 0.08,
+    "reference_payment_days": 60,
+    "need_lead_time_days": 35,
+    "category_goal": "leverage",
+    "fallback_risk_pct": 3,
+    "index_risk_pct": 1,
+    "late_cost_per_day": 200,
+    "cost_per_defect": 112,
+    "freight_eur_per_unit": {
+     "EXW": 0.31,
+     "FCA": 0.27,
+     "DAP": 0.0
+    },
+    "index_paths": {},
+    "must_haves": [
+     {
+      "field": "lead_time_days",
+      "op": "<=",
+      "value": 42
+     }
+    ],
+    "alternative": {
+     "kind": "none",
+     "ref": null,
+     "terms": {}
+    }
+   },
+   "round_limit": 10,
+   "refs": [
+    "doc:20260923-70210-P05",
+    "sc:70210@2026Q3",
+    "sc:70240@2026Q3",
+    "sc:70250@2026Q3"
+   ],
+   "hosted": true
+  },
+  {
+   "case_id": "case:P06",
+   "set": "practice",
+   "type": "rfq",
+   "title": "RFQ: volute casing for the new HX series",
+   "briefing": "You negotiate for Hollerau Pumpenwerke with Eisengießerei Velkenreith GmbH, Tarsevi Döküm Sanayi A.Ş.. RFQ: volute casing for the new HX series. Need: 4200 pc a year. Category goal: stabilise a strategic supply: a healthy supplier and stable prices count, not only the lowest price. Score: the lowest total cost C as defined in the rules, valued with this case's rates (need lead time 56 days). There is no fallback supplier: without a deal the demand is bought at the fallback price. Must-haves: lead_time_days <= 84. Prepare from the data package.",
+   "trigger_doc": "doc:20260926-70120-P06",
+   "parts": [
+    "part:310070"
+   ],
+   "suppliers": [
+    "sup:70120",
+    "sup:70150"
+   ],
+   "negotiable": [
+    "unit_price",
+    "tooling_eur",
+    "payment_days",
+    "lead_time_days"
+   ],
+   "fixed_terms": {
+    "volume_per_year": 4200,
+    "contract_months": 24,
+    "effective_date": "2027-01-01",
+    "index_clause": null,
+    "incoterm": "DAP"
+   },
+   "term_options": {
+    "tooling_eur": [
+     0,
+     7500,
+     15000
+    ],
+    "payment_days": [
+     14,
+     30,
+     45,
+     60,
+     90
+    ],
+    "lead_time_days": [
+     49,
+     56,
+     70,
+     84
+    ]
+   },
+   "buyer": {
+    "need_per_year": 4200,
+    "horizon_years": 2.0,
+    "current_unit_price": 253.19,
+    "fallback_unit_price": 253.19,
+    "interest_rate": 0.08,
+    "reference_payment_days": 60,
+    "need_lead_time_days": 56,
+    "category_goal": "stabilise",
+    "fallback_risk_pct": 10,
+    "index_risk_pct": 4,
+    "late_cost_per_day": 480,
+    "cost_per_defect": 216,
+    "sustainable_margin_pct": 3,
+    "relationship_eur_per_point": 15950,
+    "freight_eur_per_unit": {
+     "EXW": 12.14,
+     "FCA": 10.56,
+     "DAP": 0.0
+    },
+    "index_paths": {},
+    "must_haves": [
+     {
+      "field": "lead_time_days",
+      "op": "<=",
+      "value": 84
+     }
+    ],
+    "alternative": {
+     "kind": "none",
+     "ref": null,
+     "terms": {}
+    }
+   },
+   "round_limit": 10,
+   "refs": [
+    "doc:20260926-70120-P06",
+    "sc:70120@2026Q3",
+    "sc:70150@2026Q3"
+   ],
+   "hosted": false
+  },
+  {
+   "case_id": "case:P07",
+   "set": "practice",
+   "type": "bundling",
+   "title": "Bundle the fastener kit with one distributor",
+   "briefing": "You negotiate for Hollerau Pumpenwerke with Schraubenhandel Leitner & Sohn GmbH. Bundle the fastener kit with one distributor. Need: 30000 kits a year. Category goal: routine: fewer suppliers and less process cost. Score: the lowest total cost C as defined in the rules, valued with this case's rates (need lead time 5 days). Fallback if you walk away: today's terms continue unchanged. Must-haves: none. Prepare from the data package.",
+   "trigger_doc": "doc:20260909-70610-P07",
+   "parts": [
+    "part:360010",
+    "part:360011",
+    "part:360012",
+    "part:360030"
+   ],
+   "suppliers": [
+    "sup:70610"
+   ],
+   "negotiable": [
+    "unit_price",
+    "payment_days",
+    "contract_months"
+   ],
+   "fixed_terms": {
+    "lead_time_days": 5,
+    "volume_per_year": 30000,
+    "effective_date": "2027-01-01",
+    "index_clause": null,
+    "incoterm": "DAP",
+    "tooling_eur": 0
+   },
+   "term_options": {
+    "payment_days": [
+     14,
+     30,
+     45,
+     60,
+     90
+    ],
+    "contract_months": [
+     12,
+     24,
+     36
+    ]
+   },
+   "buyer": {
+    "need_per_year": 30000,
+    "horizon_years": 2,
+    "current_unit_price": 6.29,
+    "fallback_unit_price": 6.91,
+    "interest_rate": 0.08,
+    "reference_payment_days": 60,
+    "need_lead_time_days": 5,
+    "category_goal": "routine",
+    "fallback_risk_pct": 5,
+    "index_risk_pct": 2,
+    "late_cost_per_day": 40,
+    "cost_per_defect": 6,
+    "freight_eur_per_unit": {
+     "EXW": 0.08,
+     "FCA": 0.07,
+     "DAP": 0.0
+    },
+    "index_paths": {},
+    "must_haves": [],
+    "alternative": {
+     "kind": "current_contract",
+     "ref": null,
+     "terms": {
+      "unit_price": 6.29,
+      "payment_days": 30,
+      "lead_time_days": 5,
+      "volume_per_year": 30000,
+      "contract_months": 24,
+      "effective_date": "2027-01-01",
+      "index_clause": null,
+      "incoterm": "DAP",
+      "tooling_eur": 0
+     }
+    }
+   },
+   "round_limit": 10,
+   "refs": [
+    "doc:20260909-70610-P07",
+    "ctr:4600070610",
+    "sc:70610@2026Q3"
+   ],
+   "hosted": true
+  },
+  {
+   "case_id": "case:P08",
+   "set": "practice",
+   "type": "raw_material",
+   "title": "Alloy surcharge and base price for 1.4404 bar",
+   "briefing": "You negotiate for Hollerau Pumpenwerke with Edelstahl-Service Donautal GmbH. Alloy surcharge and base price for 1.4404 bar. Need: 94800 kg a year. Category goal: leverage: competition and data should bring the price down. Score: the lowest total cost C as defined in the rules, valued with this case's rates (need lead time 10 days). Fallback if you walk away: the second-source quote quote:7200008. Must-haves: none. Prepare from the data package.",
+   "trigger_doc": "doc:20260912-70710-P08",
+   "parts": [
+    "part:370010"
+   ],
+   "suppliers": [
+    "sup:70710"
+   ],
+   "negotiable": [
+    "unit_price",
+    "index_clause",
+    "payment_days",
+    "contract_months"
+   ],
+   "fixed_terms": {
+    "lead_time_days": 10,
+    "volume_per_year": 94800,
+    "effective_date": "2027-01-01",
+    "incoterm": "DAP",
+    "tooling_eur": 0
+   },
+   "term_options": {
+    "index_clause": [
+     null,
+     {
+      "series": "AS-14404",
+      "material_share": 0.45,
+      "deadband_pct": 0,
+      "base_month": "2026-08"
+     },
+     {
+      "series": "AS-14404",
+      "material_share": 0.45,
+      "deadband_pct": 3,
+      "base_month": "2026-08"
+     },
+     {
+      "series": "AS-14404",
+      "material_share": 0.45,
+      "deadband_pct": 5,
+      "base_month": "2026-08"
+     }
+    ],
+    "payment_days": [
+     14,
+     30,
+     45,
+     60,
+     90
+    ],
+    "contract_months": [
+     12,
+     24,
+     36
+    ]
+   },
+   "buyer": {
+    "need_per_year": 94800,
+    "horizon_years": 2,
+    "current_unit_price": 5.45,
+    "fallback_unit_price": 5.72,
+    "interest_rate": 0.08,
+    "reference_payment_days": 60,
+    "need_lead_time_days": 10,
+    "category_goal": "leverage",
+    "fallback_risk_pct": 3,
+    "index_risk_pct": 1,
+    "late_cost_per_day": 96,
+    "cost_per_defect": 0,
+    "freight_eur_per_unit": {
+     "EXW": 0.06,
+     "FCA": 0.05,
+     "DAP": 0.0
+    },
+    "index_paths": {
+     "AS-14404": 0.06
+    },
+    "must_haves": [],
+    "alternative": {
+     "kind": "quote",
+     "ref": "quote:7200008",
+     "terms": {
+      "unit_price": 6.06,
+      "payment_days": 30,
+      "lead_time_days": 14,
+      "volume_per_year": 94800,
+      "contract_months": 24,
+      "effective_date": "2027-01-01",
+      "index_clause": null,
+      "incoterm": "DAP",
+      "tooling_eur": 0,
+      "ppm_commitment": 32
+     }
+    }
+   },
+   "round_limit": 10,
+   "refs": [
+    "doc:20260912-70710-P08",
+    "ctr:4600070710",
+    "sc:70710@2026Q3",
+    "quote:7200008"
+   ],
+   "hosted": true
+  },
+  {
+   "case_id": "case:P09",
+   "set": "practice",
+   "type": "capacity",
+   "title": "Obermaier & Huber is full - secure flanges for the HX ramp-up",
+   "briefing": "You negotiate for Hollerau Pumpenwerke with CNC-Technik Obermaier & Huber GmbH. Obermaier & Huber is full - secure flanges for the HX ramp-up. Need: 15600 pc a year. Category goal: secure supply of a bottleneck part: coverage of the full need and a supplier that stays healthy come first. Score: the lowest total cost C as defined in the rules, valued with this case's rates (need lead time 28 days). Fallback if you walk away: the second-source quote quote:7200009. Must-haves: lead_time_days <= 42. Prepare from the data package.",
+   "trigger_doc": "doc:20260915-70220-P09",
+   "parts": [
+    "part:320030"
+   ],
+   "suppliers": [
+    "sup:70220"
+   ],
+   "negotiable": [
+    "unit_price",
+    "lead_time_days",
+    "volume_per_year",
+    "payment_days"
+   ],
+   "fixed_terms": {
+    "contract_months": 12,
+    "effective_date": "2027-01-01",
+    "index_clause": null,
+    "incoterm": "EXW",
+    "tooling_eur": 0
+   },
+   "term_options": {
+    "lead_time_days": [
+     21,
+     28,
+     35,
+     42,
+     49
+    ],
+    "volume_per_year": [
+     10920,
+     13260,
+     15600
+    ],
+    "payment_days": [
+     14,
+     30,
+     45,
+     60,
+     90
+    ]
+   },
+   "buyer": {
+    "need_per_year": 15600,
+    "horizon_years": 1.0,
+    "current_unit_price": 16.02,
+    "fallback_unit_price": 20.03,
+    "interest_rate": 0.08,
+    "reference_payment_days": 60,
+    "need_lead_time_days": 28,
+    "category_goal": "secure_supply",
+    "fallback_risk_pct": 25,
+    "index_risk_pct": 3,
+    "late_cost_per_day": 1800,
+    "cost_per_defect": 90,
+    "sustainable_margin_pct": 4,
+    "relationship_eur_per_point": 5000,
+    "freight_eur_per_unit": {
+     "EXW": 0.18,
+     "FCA": 0.16,
+     "DAP": 0.0
+    },
+    "index_paths": {},
+    "must_haves": [
+     {
+      "field": "lead_time_days",
+      "op": "<=",
+      "value": 42
+     }
+    ],
+    "alternative": {
+     "kind": "quote",
+     "ref": "quote:7200009",
+     "terms": {
+      "unit_price": 16.33,
+      "payment_days": 45,
+      "lead_time_days": 56,
+      "volume_per_year": 15600,
+      "contract_months": 12,
+      "effective_date": "2027-01-01",
+      "index_clause": null,
+      "incoterm": "FCA",
+      "tooling_eur": 800,
+      "ppm_commitment": 980
+     }
+    }
+   },
+   "round_limit": 10,
+   "refs": [
+    "doc:20260915-70220-P09",
+    "ctr:4600070220",
+    "sc:70220@2026Q3",
+    "quote:7200009",
+    "fc:320030@2026-09"
+   ],
+   "hosted": false
+  },
+  {
+   "case_id": "case:P10",
+   "set": "practice",
+   "type": "capacity",
+   "title": "Ravensteiner cuts the seal allocation",
+   "briefing": "You negotiate for Hollerau Pumpenwerke with Dichtungswerk Ravensteiner GmbH. Ravensteiner cuts the seal allocation. Need: 23400 pc a year. Category goal: secure supply of a bottleneck part: coverage of the full need and a supplier that stays healthy come first. Score: the lowest total cost C as defined in the rules, valued with this case's rates (need lead time 42 days). There is no fallback supplier: without a deal the demand is bought at the fallback price. Must-haves: volume_per_year >= 22230. Prepare from the data package.",
+   "trigger_doc": "doc:20260918-70410-P10",
+   "parts": [
+    "part:340010"
+   ],
+   "suppliers": [
+    "sup:70410"
+   ],
+   "negotiable": [
+    "unit_price",
+    "volume_per_year",
+    "contract_months",
+    "lead_time_days"
+   ],
+   "fixed_terms": {
+    "payment_days": 30,
+    "effective_date": "2027-01-01",
+    "index_clause": null,
+    "incoterm": "DAP",
+    "tooling_eur": 0
+   },
+   "term_options": {
+    "volume_per_year": [
+     16379,
+     19890,
+     23400
+    ],
+    "contract_months": [
+     12,
+     24,
+     36
+    ],
+    "lead_time_days": [
+     35,
+     42,
+     56
+    ]
+   },
+   "buyer": {
+    "need_per_year": 23400,
+    "horizon_years": 2,
+    "current_unit_price": 29.89,
+    "fallback_unit_price": 37.36,
+    "interest_rate": 0.08,
+    "reference_payment_days": 60,
+    "need_lead_time_days": 42,
+    "category_goal": "secure_supply",
+    "fallback_risk_pct": 25,
+    "index_risk_pct": 3,
+    "late_cost_per_day": 2400,
+    "cost_per_defect": 380,
+    "sustainable_margin_pct": 10,
+    "relationship_eur_per_point": 13990,
+    "freight_eur_per_unit": {
+     "EXW": 0.01,
+     "FCA": 0.01,
+     "DAP": 0.0
+    },
+    "index_paths": {},
+    "must_haves": [
+     {
+      "field": "volume_per_year",
+      "op": ">=",
+      "value": 22230
+     }
+    ],
+    "alternative": {
+     "kind": "none",
+     "ref": null,
+     "terms": {}
+    }
+   },
+   "round_limit": 10,
+   "refs": [
+    "doc:20260918-70410-P10",
+    "ctr:4600070410",
+    "sc:70410@2026Q3",
+    "fc:340010@2026-09"
+   ],
+   "hosted": true
+  },
+  {
+   "case_id": "case:P11",
+   "set": "practice",
+   "type": "quality",
+   "title": "Kalwisz: bearing brackets in red",
+   "briefing": "You negotiate for Hollerau Pumpenwerke with Odlewnia Kalwisz Sp. z o.o.. Kalwisz: bearing brackets in red. Need: 15900 pc a year. Category goal: quality first: defects and late deliveries cost more than a few cents of price. Score: the lowest total cost C as defined in the rules, valued with this case's rates (need lead time 58 days). Fallback if you walk away: the second-source quote quote:7200011. Must-haves: ppm_commitment <= 1500. Prepare from the data package.",
+   "trigger_doc": "doc:20260921-70140-P11",
+   "parts": [
+    "part:310020"
+   ],
+   "suppliers": [
+    "sup:70140"
+   ],
+   "negotiable": [
+    "ppm_commitment",
+    "chargeback_eur_per_complaint",
+    "unit_price"
+   ],
+   "fixed_terms": {
+    "payment_days": 60,
+    "lead_time_days": 56,
+    "volume_per_year": 15900,
+    "contract_months": 12,
+    "effective_date": "2027-01-01",
+    "index_clause": null,
+    "incoterm": "FCA",
+    "tooling_eur": 0
+   },
+   "term_options": {
+    "ppm_commitment": [
+     300,
+     800,
+     1500,
+     2500
+    ],
+    "chargeback_eur_per_complaint": [
+     0,
+     150,
+     300,
+     500
+    ]
+   },
+   "buyer": {
+    "need_per_year": 15900,
+    "horizon_years": 1.0,
+    "current_unit_price": 45.15,
+    "fallback_unit_price": 47.86,
+    "interest_rate": 0.08,
+    "reference_payment_days": 60,
+    "need_lead_time_days": 58,
+    "category_goal": "quality_first",
+    "fallback_risk_pct": 8,
+    "index_risk_pct": 2,
+    "late_cost_per_day": 300,
+    "cost_per_defect": 450,
+    "freight_eur_per_unit": {
+     "EXW": 1.77,
+     "FCA": 1.54,
+     "DAP": 0.0
+    },
+    "index_paths": {},
+    "must_haves": [
+     {
+      "field": "ppm_commitment",
+      "op": "<=",
+      "value": 1500
+     }
+    ],
+    "alternative": {
+     "kind": "quote",
+     "ref": "quote:7200011",
+     "terms": {
+      "unit_price": 53.56,
+      "payment_days": 30,
+      "lead_time_days": 56,
+      "volume_per_year": 15900,
+      "contract_months": 12,
+      "effective_date": "2027-01-01",
+      "index_clause": null,
+      "incoterm": "FCA",
+      "tooling_eur": 7500,
+      "ppm_commitment": 715
+     }
+    }
+   },
+   "round_limit": 10,
+   "refs": [
+    "doc:20260921-70140-P11",
+    "ctr:4600070140",
+    "sc:70140@2026Q3",
+    "quote:7200011"
+   ],
+   "hosted": true
+  },
+  {
+   "case_id": "case:P12",
+   "set": "practice",
+   "type": "quality",
+   "title": "Aichbauer: base frames late and out of spec",
+   "briefing": "You negotiate for Hollerau Pumpenwerke with Blechtechnik Aichbauer GmbH. Aichbauer: base frames late and out of spec. Need: 8980 pc a year. Category goal: quality first: defects and late deliveries cost more than a few cents of price. Score: the lowest total cost C as defined in the rules, valued with this case's rates (need lead time 23 days). Fallback if you walk away: today's terms continue unchanged. Must-haves: none. Prepare from the data package.",
+   "trigger_doc": "doc:20260924-70310-P12",
+   "parts": [
+    "part:330010"
+   ],
+   "suppliers": [
+    "sup:70310"
+   ],
+   "negotiable": [
+    "ppm_commitment",
+    "chargeback_eur_per_complaint",
+    "unit_price",
+    "lead_time_days"
+   ],
+   "fixed_terms": {
+    "payment_days": 45,
+    "volume_per_year": 8980,
+    "contract_months": 12,
+    "effective_date": "2027-01-01",
+    "index_clause": null,
+    "incoterm": "DAP",
+    "tooling_eur": 0
+   },
+   "term_options": {
+    "ppm_commitment": [
+     300,
+     800,
+     1500,
+     2500
+    ],
+    "chargeback_eur_per_complaint": [
+     0,
+     150,
+     300,
+     500
+    ],
+    "lead_time_days": [
+     16,
+     21,
+     23,
+     35
+    ]
+   },
+   "buyer": {
+    "need_per_year": 8980,
+    "horizon_years": 1.0,
+    "current_unit_price": 100.14,
+    "fallback_unit_price": 106.15,
+    "interest_rate": 0.08,
+    "reference_payment_days": 60,
+    "need_lead_time_days": 23,
+    "category_goal": "quality_first",
+    "fallback_risk_pct": 8,
+    "index_risk_pct": 2,
+    "late_cost_per_day": 450,
+    "cost_per_defect": 275,
+    "freight_eur_per_unit": {
+     "EXW": 1.61,
+     "FCA": 1.4,
+     "DAP": 0.0
+    },
+    "index_paths": {},
+    "must_haves": [],
+    "alternative": {
+     "kind": "current_contract",
+     "ref": "ctr:4600070310",
+     "terms": {
+      "unit_price": 100.14,
+      "payment_days": 45,
+      "lead_time_days": 21,
+      "volume_per_year": 8980,
+      "contract_months": 12,
+      "effective_date": "2027-01-01",
+      "index_clause": null,
+      "incoterm": "DAP",
+      "tooling_eur": 0,
+      "ppm_commitment": 4118,
+      "chargeback_eur_per_complaint": 150
+     }
+    }
+   },
+   "round_limit": 10,
+   "refs": [
+    "doc:20260924-70310-P12",
+    "ctr:4600070310",
+    "sc:70310@2026Q3"
+   ],
+   "hosted": false
+  },
+  {
+   "case_id": "case:P13",
+   "set": "practice",
+   "type": "price_increase",
+   "title": "Lindlbauer wants +7 % on coupling hubs",
+   "briefing": "You negotiate for Hollerau Pumpenwerke with Präzisionsteile Lindlbauer KG. Lindlbauer wants +7 % on coupling hubs. Need: 17900 pc a year. Category goal: leverage: competition and data should bring the price down. Score: the lowest total cost C as defined in the rules, valued with this case's rates (need lead time 28 days). Fallback if you walk away: the second-source quote quote:7200013. Must-haves: none. Prepare from the data package.",
+   "trigger_doc": "doc:20260927-70230-P13",
+   "parts": [
+    "part:320060"
+   ],
+   "suppliers": [
+    "sup:70230"
+   ],
+   "negotiable": [
+    "unit_price",
+    "payment_days",
+    "effective_date"
+   ],
+   "fixed_terms": {
+    "lead_time_days": 28,
+    "volume_per_year": 17900,
+    "contract_months": 12,
+    "index_clause": null,
+    "incoterm": "EXW",
+    "tooling_eur": 0
+   },
+   "term_options": {
+    "payment_days": [
+     14,
+     30,
+     45,
+     60,
+     90
+    ],
+    "effective_date": [
+     "2026-11-01",
+     "2027-01-01",
+     "2027-04-01"
+    ]
+   },
+   "buyer": {
+    "need_per_year": 17900,
+    "horizon_years": 1.0,
+    "current_unit_price": 16.3,
+    "fallback_unit_price": 17.6,
+    "interest_rate": 0.08,
+    "reference_payment_days": 60,
+    "need_lead_time_days": 28,
+    "category_goal": "leverage",
+    "fallback_risk_pct": 3,
+    "index_risk_pct": 1,
+    "late_cost_per_day": 160,
+    "cost_per_defect": 72,
+    "freight_eur_per_unit": {
+     "EXW": 0.1,
+     "FCA": 0.09,
+     "DAP": 0.0
+    },
+    "index_paths": {},
+    "must_haves": [],
+    "alternative": {
+     "kind": "quote",
+     "ref": "quote:7200013",
+     "terms": {
+      "unit_price": 17.87,
+      "payment_days": 30,
+      "lead_time_days": 42,
+      "volume_per_year": 17900,
+      "contract_months": 12,
+      "effective_date": "2027-01-01",
+      "index_clause": null,
+      "incoterm": "EXW",
+      "tooling_eur": 800,
+      "ppm_commitment": 318
+     }
+    }
+   },
+   "round_limit": 10,
+   "refs": [
+    "doc:20260927-70230-P13",
+    "ctr:4600070230",
+    "sc:70230@2026Q3",
+    "quote:7200013"
+   ],
+   "hosted": false
+  },
+  {
+   "case_id": "case:P14",
+   "set": "practice",
+   "type": "renewal",
+   "title": "Motor cable: base price and copper clause for 2027",
+   "briefing": "You negotiate for Hollerau Pumpenwerke with Kabelwerk Rhönsberg GmbH. Motor cable: base price and copper clause for 2027. Need: 3420 x 100 m a year. Category goal: stabilise a strategic supply: a healthy supplier and stable prices count, not only the lowest price. Score: the lowest total cost C as defined in the rules, valued with this case's rates (need lead time 14 days). There is no fallback supplier: without a deal the demand is bought at the fallback price. Must-haves: none. Prepare from the data package.",
+   "trigger_doc": "doc:20260910-70560-P14",
+   "parts": [
+    "part:350040"
+   ],
+   "suppliers": [
+    "sup:70560"
+   ],
+   "negotiable": [
+    "unit_price",
+    "payment_days",
+    "contract_months",
+    "index_clause"
+   ],
+   "fixed_terms": {
+    "lead_time_days": 14,
+    "volume_per_year": 3420,
+    "effective_date": "2027-01-01",
+    "incoterm": "DAP",
+    "tooling_eur": 0
+   },
+   "term_options": {
+    "payment_days": [
+     14,
+     30,
+     45,
+     60,
+     90
+    ],
+    "contract_months": [
+     12,
+     24,
+     36
+    ],
+    "index_clause": [
+     null,
+     {
+      "series": "CU-NOTATION",
+      "material_share": 0.55,
+      "deadband_pct": 0,
+      "base_month": "2026-08"
+     },
+     {
+      "series": "CU-NOTATION",
+      "material_share": 0.55,
+      "deadband_pct": 3,
+      "base_month": "2026-08"
+     },
+     {
+      "series": "CU-NOTATION",
+      "material_share": 0.55,
+      "deadband_pct": 5,
+      "base_month": "2026-08"
+     }
+    ]
+   },
+   "buyer": {
+    "need_per_year": 3420,
+    "horizon_years": 2,
+    "current_unit_price": 316.35,
+    "fallback_unit_price": 338.49,
+    "interest_rate": 0.08,
+    "reference_payment_days": 60,
+    "need_lead_time_days": 14,
+    "category_goal": "stabilise",
+    "fallback_risk_pct": 10,
+    "index_risk_pct": 4,
+    "late_cost_per_day": 180,
+    "cost_per_defect": 48,
+    "sustainable_margin_pct": 4,
+    "relationship_eur_per_point": 16230,
+    "freight_eur_per_unit": {
+     "EXW": 0.81,
+     "FCA": 0.7,
+     "DAP": 0.0
+    },
+    "index_paths": {
+     "CU-NOTATION": 0.05
+    },
+    "must_haves": [],
+    "alternative": {
+     "kind": "none",
+     "ref": null,
+     "terms": {}
+    }
+   },
+   "round_limit": 10,
+   "refs": [
+    "doc:20260910-70560-P14",
+    "ctr:4600070560",
+    "sc:70560@2026Q3",
+    "fc:350040@2026-09"
+   ],
+   "hosted": false
+  },
+  {
+   "case_id": "case:P15",
+   "set": "practice",
+   "type": "bundling",
+   "title": "Bundle O-rings, gaskets and lip seals",
+   "briefing": "You negotiate for Hollerau Pumpenwerke with Elasto-Dicht Hermannsdorfer GmbH. Bundle O-rings, gaskets and lip seals. Need: 25000 kits a year. Category goal: routine: fewer suppliers and less process cost. Score: the lowest total cost C as defined in the rules, valued with this case's rates (need lead time 7 days). Fallback if you walk away: today's terms continue unchanged. Must-haves: none. Prepare from the data package.",
+   "trigger_doc": "doc:20260913-70430-P15",
+   "parts": [
+    "part:340020",
+    "part:340030",
+    "part:340040"
+   ],
+   "suppliers": [
+    "sup:70430"
+   ],
+   "negotiable": [
+    "unit_price",
+    "payment_days",
+    "contract_months"
+   ],
+   "fixed_terms": {
+    "lead_time_days": 7,
+    "volume_per_year": 25000,
+    "effective_date": "2027-01-01",
+    "index_clause": null,
+    "incoterm": "DAP",
+    "tooling_eur": 0
+   },
+   "term_options": {
+    "payment_days": [
+     14,
+     30,
+     45,
+     60,
+     90
+    ],
+    "contract_months": [
+     12,
+     24,
+     36
+    ]
+   },
+   "buyer": {
+    "need_per_year": 25000,
+    "horizon_years": 2,
+    "current_unit_price": 5.66,
+    "fallback_unit_price": 6.23,
+    "interest_rate": 0.08,
+    "reference_payment_days": 60,
+    "need_lead_time_days": 7,
+    "category_goal": "routine",
+    "fallback_risk_pct": 5,
+    "index_risk_pct": 2,
+    "late_cost_per_day": 50,
+    "cost_per_defect": 25,
+    "freight_eur_per_unit": {
+     "EXW": 0.01,
+     "FCA": 0.01,
+     "DAP": 0.0
+    },
+    "index_paths": {},
+    "must_haves": [],
+    "alternative": {
+     "kind": "current_contract",
+     "ref": null,
+     "terms": {
+      "unit_price": 5.66,
+      "payment_days": 30,
+      "lead_time_days": 7,
+      "volume_per_year": 25000,
+      "contract_months": 24,
+      "effective_date": "2027-01-01",
+      "index_clause": null,
+      "incoterm": "DAP",
+      "tooling_eur": 0
+     }
+    }
+   },
+   "round_limit": 10,
+   "refs": [
+    "doc:20260913-70430-P15",
+    "ctr:4600070430",
+    "sc:70430@2026Q3"
+   ],
+   "hosted": false
+  },
+  {
+   "case_id": "case:P16",
+   "set": "practice",
+   "type": "raw_material",
+   "title": "Steel sheet: index clause or fixed price?",
+   "briefing": "You negotiate for Hollerau Pumpenwerke with Stahlhandel Rupprecht-Kessel GmbH. Steel sheet: index clause or fixed price?. Need: 5510 x 100 kg a year. Category goal: leverage: competition and data should bring the price down. Score: the lowest total cost C as defined in the rules, valued with this case's rates (need lead time 10 days). Fallback if you walk away: the second-source quote quote:7200016. Must-haves: none. Prepare from the data package.",
+   "trigger_doc": "doc:20260916-70720-P16",
+   "parts": [
+    "part:370020"
+   ],
+   "suppliers": [
+    "sup:70720"
+   ],
+   "negotiable": [
+    "unit_price",
+    "index_clause",
+    "payment_days",
+    "contract_months"
+   ],
+   "fixed_terms": {
+    "lead_time_days": 10,
+    "volume_per_year": 5510,
+    "effective_date": "2027-01-01",
+    "incoterm": "DAP",
+    "tooling_eur": 0
+   },
+   "term_options": {
+    "index_clause": [
+     null,
+     {
+      "series": "PPI-C241",
+      "material_share": 0.8,
+      "deadband_pct": 0,
+      "base_month": "2026-08"
+     },
+     {
+      "series": "PPI-C241",
+      "material_share": 0.8,
+      "deadband_pct": 3,
+      "base_month": "2026-08"
+     },
+     {
+      "series": "PPI-C241",
+      "material_share": 0.8,
+      "deadband_pct": 5,
+      "base_month": "2026-08"
+     }
+    ],
+    "payment_days": [
+     14,
+     30,
+     45,
+     60,
+     90
+    ],
+    "contract_months": [
+     12,
+     24,
+     36
+    ]
+   },
+   "buyer": {
+    "need_per_year": 5510,
+    "horizon_years": 2,
+    "current_unit_price": 84.34,
+    "fallback_unit_price": 88.56,
+    "interest_rate": 0.08,
+    "reference_payment_days": 60,
+    "need_lead_time_days": 10,
+    "category_goal": "leverage",
+    "fallback_risk_pct": 3,
+    "index_risk_pct": 1,
+    "late_cost_per_day": 120,
+    "cost_per_defect": 0,
+    "freight_eur_per_unit": {
+     "EXW": 5.75,
+     "FCA": 5.0,
+     "DAP": 0.0
+    },
+    "index_paths": {
+     "PPI-C241": 0.03
+    },
+    "must_haves": [],
+    "alternative": {
+     "kind": "quote",
+     "ref": "quote:7200016",
+     "terms": {
+      "unit_price": 96.37,
+      "payment_days": 30,
+      "lead_time_days": 14,
+      "volume_per_year": 5510,
+      "contract_months": 24,
+      "effective_date": "2027-01-01",
+      "index_clause": null,
+      "incoterm": "DAP",
+      "tooling_eur": 0,
+      "ppm_commitment": 32
+     }
+    }
+   },
+   "round_limit": 10,
+   "refs": [
+    "doc:20260916-70720-P16",
+    "ctr:4600070720",
+    "sc:70720@2026Q3",
+    "quote:7200016"
+   ],
+   "hosted": false
+  },
+  {
+   "case_id": "case:P17",
+   "set": "practice",
+   "type": "price_increase",
+   "title": "Platinenwerk Lausitz: component costs for the HB control board",
+   "briefing": "You negotiate for Hollerau Pumpenwerke with Platinenwerk Lausitz GmbH. Platinenwerk Lausitz: component costs for the HB control board. Need: 19900 pc a year. Category goal: stabilise a strategic supply: a healthy supplier and stable prices count, not only the lowest price. Score: the lowest total cost C as defined in the rules, valued with this case's rates (need lead time 59 days). There is no fallback supplier: without a deal the demand is bought at the fallback price. Must-haves: none. Prepare from the data package.",
+   "trigger_doc": "doc:20260919-70550-P17",
+   "parts": [
+    "part:350030"
+   ],
+   "suppliers": [
+    "sup:70550"
+   ],
+   "negotiable": [
+    "unit_price",
+    "payment_days",
+    "volume_per_year"
+   ],
+   "fixed_terms": {
+    "lead_time_days": 56,
+    "contract_months": 12,
+    "effective_date": "2027-01-01",
+    "index_clause": null,
+    "incoterm": "DAP",
+    "tooling_eur": 0
+   },
+   "term_options": {
+    "payment_days": [
+     14,
+     30,
+     45,
+     60,
+     90
+    ],
+    "volume_per_year": [
+     15920,
+     19900,
+     23880
+    ]
+   },
+   "buyer": {
+    "need_per_year": 19900,
+    "horizon_years": 1.0,
+    "current_unit_price": 34.35,
+    "fallback_unit_price": 37.1,
+    "interest_rate": 0.08,
+    "reference_payment_days": 60,
+    "need_lead_time_days": 59,
+    "category_goal": "stabilise",
+    "fallback_risk_pct": 10,
+    "index_risk_pct": 4,
+    "late_cost_per_day": 840,
+    "cost_per_defect": 192,
+    "sustainable_margin_pct": 0.5,
+    "relationship_eur_per_point": 10250,
+    "freight_eur_per_unit": {
+     "EXW": 0.01,
+     "FCA": 0.01,
+     "DAP": 0.0
+    },
+    "index_paths": {},
+    "must_haves": [],
+    "alternative": {
+     "kind": "none",
+     "ref": null,
+     "terms": {}
+    }
+   },
+   "round_limit": 10,
+   "refs": [
+    "doc:20260919-70550-P17",
+    "ctr:4600070550",
+    "sc:70550@2026Q3"
+   ],
+   "hosted": false
+  },
+  {
+   "case_id": "case:P18",
+   "set": "practice",
+   "type": "raw_material",
+   "title": "Alloy surcharge and base price for 1.4404 bar (Werdenfels)",
+   "briefing": "You negotiate for Hollerau Pumpenwerke with Blankstahl Werdenfels GmbH. Alloy surcharge and base price for 1.4404 bar (Werdenfels). Need: 23700 kg a year. Category goal: leverage: competition and data should bring the price down. Score: the lowest total cost C as defined in the rules, valued with this case's rates (need lead time 14 days). Fallback if you walk away: the second-source quote quote:7200018. Must-haves: none. Prepare from the data package.",
+   "trigger_doc": "doc:20260922-70740-P18",
+   "parts": [
+    "part:370010"
+   ],
+   "suppliers": [
+    "sup:70740"
+   ],
+   "negotiable": [
+    "unit_price",
+    "index_clause",
+    "payment_days",
+    "contract_months"
+   ],
+   "fixed_terms": {
+    "lead_time_days": 14,
+    "volume_per_year": 23700,
+    "effective_date": "2027-01-01",
+    "incoterm": "DAP",
+    "tooling_eur": 0
+   },
+   "term_options": {
+    "index_clause": [
+     null,
+     {
+      "series": "AS-14404",
+      "material_share": 0.45,
+      "deadband_pct": 0,
+      "base_month": "2026-08"
+     },
+     {
+      "series": "AS-14404",
+      "material_share": 0.45,
+      "deadband_pct": 3,
+      "base_month": "2026-08"
+     },
+     {
+      "series": "AS-14404",
+      "material_share": 0.45,
+      "deadband_pct": 5,
+      "base_month": "2026-08"
+     }
+    ],
+    "payment_days": [
+     14,
+     30,
+     45,
+     60,
+     90
+    ],
+    "contract_months": [
+     12,
+     24,
+     36
+    ]
+   },
+   "buyer": {
+    "need_per_year": 23700,
+    "horizon_years": 2,
+    "current_unit_price": 5.84,
+    "fallback_unit_price": 6.13,
+    "interest_rate": 0.08,
+    "reference_payment_days": 60,
+    "need_lead_time_days": 14,
+    "category_goal": "leverage",
+    "fallback_risk_pct": 3,
+    "index_risk_pct": 1,
+    "late_cost_per_day": 96,
+    "cost_per_defect": 0,
+    "freight_eur_per_unit": {
+     "EXW": 0.06,
+     "FCA": 0.05,
+     "DAP": 0.0
+    },
+    "index_paths": {
+     "AS-14404": 0.06
+    },
+    "must_haves": [],
+    "alternative": {
+     "kind": "quote",
+     "ref": "quote:7200018",
+     "terms": {
+      "unit_price": 6.31,
+      "payment_days": 30,
+      "lead_time_days": 10,
+      "volume_per_year": 23700,
+      "contract_months": 24,
+      "effective_date": "2027-01-01",
+      "index_clause": null,
+      "incoterm": "DAP",
+      "tooling_eur": 0,
+      "ppm_commitment": 75
+     }
+    }
+   },
+   "round_limit": 10,
+   "refs": [
+    "doc:20260922-70740-P18",
+    "ctr:4600070740",
+    "sc:70740@2026Q3",
+    "quote:7200018"
+   ],
+   "hosted": true
+  },
+  {
+   "case_id": "case:P19",
+   "set": "practice",
+   "type": "renewal",
+   "title": "Renewal of the ball bearing 6306 agreement (Inntal)",
+   "briefing": "You negotiate for Hollerau Pumpenwerke with Kugellager-Vertrieb Inntal GmbH. Renewal of the ball bearing 6306 agreement (Inntal). Need: 8580 pc a year. Category goal: routine: fewer suppliers and less process cost. Score: the lowest total cost C as defined in the rules, valued with this case's rates (need lead time 10 days). Fallback if you walk away: the second-source quote quote:7200019. Must-haves: none. Prepare from the data package.",
+   "trigger_doc": "doc:20260925-70640-P19",
+   "parts": [
+    "part:360020"
+   ],
+   "suppliers": [
+    "sup:70640"
+   ],
+   "negotiable": [
+    "unit_price",
+    "payment_days",
+    "contract_months"
+   ],
+   "fixed_terms": {
+    "lead_time_days": 10,
+    "volume_per_year": 8580,
+    "effective_date": "2027-01-01",
+    "index_clause": null,
+    "incoterm": "DAP",
+    "tooling_eur": 0
+   },
+   "term_options": {
+    "payment_days": [
+     14,
+     30,
+     45,
+     60,
+     90
+    ],
+    "contract_months": [
+     12,
+     24,
+     36
+    ]
+   },
+   "buyer": {
+    "need_per_year": 8580,
+    "horizon_years": 2,
+    "current_unit_price": 4.2,
+    "fallback_unit_price": 4.49,
+    "interest_rate": 0.08,
+    "reference_payment_days": 60,
+    "need_lead_time_days": 10,
+    "category_goal": "routine",
+    "fallback_risk_pct": 5,
+    "index_risk_pct": 2,
+    "late_cost_per_day": 75,
+    "cost_per_defect": 95,
+    "freight_eur_per_unit": {
+     "EXW": 0.03,
+     "FCA": 0.03,
+     "DAP": 0.0
+    },
+    "index_paths": {},
+    "must_haves": [],
+    "alternative": {
+     "kind": "quote",
+     "ref": "quote:7200019",
+     "terms": {
+      "unit_price": 4.63,
+      "payment_days": 30,
+      "lead_time_days": 7,
+      "volume_per_year": 8580,
+      "contract_months": 24,
+      "effective_date": "2027-01-01",
+      "index_clause": null,
+      "incoterm": "DAP",
+      "tooling_eur": 0,
+      "ppm_commitment": 302
+     }
+    }
+   },
+   "round_limit": 10,
+   "refs": [
+    "doc:20260925-70640-P19",
+    "ctr:4600070640",
+    "sc:70640@2026Q3",
+    "quote:7200019",
+    "fc:360020@2026-09"
+   ],
+   "hosted": false
+  }
+ ]
+}

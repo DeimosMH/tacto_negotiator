@@ -527,7 +527,7 @@ def _match(variant, factory, scenario, wave, waves, decision_seconds):
 
 
 def run_competition(factories, scenarios=None, seeds=(0, 1, 2), waves=5, workers=4, *,
-                    holdout=False, decision_seconds=25, replica=False):
+                    holdout=False, decision_seconds=25, replica=False, bench=None, timing="practice"):
     """Run paired policies in parallel within five sequential virtual 480-second waves.
 
     factories maps variant names to no-argument fresh-agent factories. scenarios is an optional
@@ -544,10 +544,15 @@ def run_competition(factories, scenarios=None, seeds=(0, 1, 2), waves=5, workers
     requested = None if scenarios is None else set(scenarios)
     cases = []
     for seed in seeds:
-        if replica:
+        bench = bench or ("replica" if replica else None)
+        if bench in {"oos", "synth"}:  # never-hosted practice cases, or the hosted ones rebuilt the same way
+            from .hosted_like import build_oos_scenarios
+
+            available = build_oos_scenarios(seed, timing=timing, hosted=bench == "synth")
+        elif bench == "replica":
             from .hosted_like import build_replica_scenarios
 
-            available = build_replica_scenarios(seed)
+            available = build_replica_scenarios(seed, timing=timing)
         else:
             available = build_scenarios(seed, holdout=holdout)
         if requested is not None and (not requested or requested - {s.name for s in available}):
