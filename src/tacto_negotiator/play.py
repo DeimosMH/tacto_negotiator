@@ -42,6 +42,7 @@ LAPSE_POLL_S = 1.0
 # In the Live Final, close this long before the wave's cap - or the slowest round of the case so far
 # (your decision plus a supplier reply of up to about a minute) plus a margin, if that is longer.
 CLOSE_BEFORE_CAP_S, ROUND_MARGIN_S = 90, 15
+RESUME_BEFORE_CAP_S, RESUME_PAUSE_S = 10, 2.0  # a case failing on a network/server error resumes its session
 RUNNING = re.compile(r"one session per case in the final: (\S+)")
 # Practice: the case list shows every practice case file; only those marked hosted can be played
 # (a session on another is a 403). Without the marker every listed case counts as hosted.
@@ -745,19 +746,34 @@ def play_waves(client, new_agent, waves=5, parallel=10, poll=5.0):
     started, closed, caps = {}, set(), {}  # caps: wave -> its cap as time.time()
 
     def one(case, deadline):
-        try:
-            return play(RemoteTable(client, case), case["case_id"], new_agent(), deadline)
-        except Exception as e:  # one broken case must not stop the others
-            log.exception("%s failed", case["case_id"])
-            return e
+        # A network or server error must not lose the case: the arena keeps one session per case, so play it
+        # again - `RemoteTable.open` gets a 409 naming the running session and resumes it. Hosted practice
+        # P11 (25 Oct) lost a case to a single ConnectError that outlasted the client's retries.
+        failure = None
+        while True:
+            try:
+                return play(RemoteTable(client, case), case["case_id"], new_agent(), deadline)
+            except Exception as e:  # one broken case must not stop the others
+                failure = e
+                transient = isinstance(e, httpx.TransportError | TimeoutError) or (
+                    isinstance(e, ArenaError) and e.status >= 500)
+                cap = deadline()
+                if not transient or (cap is not None and time.time() > cap - RESUME_BEFORE_CAP_S):
+                    log.exception("%s failed", case["case_id"])
+                    return failure
+                log.warning("%s: %s - resuming the session", case["case_id"], type(e).__name__)
+                time.sleep(RESUME_PAUSE_S)
 
     with ThreadPoolExecutor(max_workers=parallel) as pool:
         while len(closed) < waves or not all(f.done() for f in started.values()):
             try:
                 cases = client.cases("final")
             except ArenaError as e:
-                if e.status != 403:  # 403: no wave has started yet
+                if e.status != 403 and e.status < 500:  # 403: no wave has started yet; 5xx: try again
                     raise
+                cases = []
+            except httpx.TransportError as e:  # a network blip must not stop the final: poll again
+                log.warning("case list: %s - polling again", type(e).__name__)
                 cases = []
             for case in cases:
                 if not case.get("open"):

@@ -373,3 +373,33 @@ def test_cli_can_rehearse_the_five_wave_final(monkeypatch, capsys):
     assert len(built[0].waves()) == 5
     assert all(w["closes"] - w["opens"] == 480 for w in built[0].waves())
     assert "--waves 5" in capsys.readouterr().out
+
+
+def test_a_network_error_resumes_the_case_and_the_wave_poll_survives_it(monkeypatch):
+    """Hosted practice P11 (25 Oct) lost a case to one ConnectError: in the final the runner resumes the
+    session instead (the arena keeps one session per case), and a failed case-list poll is retried."""
+    import httpx
+
+    play_module = sys.modules["tacto_negotiator.play"]
+
+    calls = {"play": 0, "cases": 0}
+
+    def flaky_play(table, case_id, agent, deadline=None):
+        calls["play"] += 1
+        if calls["play"] == 1:
+            raise httpx.ConnectError("connection refused")
+        return {"deal": True, "score": 0.8}
+
+    class Client:
+        def cases(self, set_):
+            calls["cases"] += 1
+            if calls["cases"] == 1:
+                raise httpx.ConnectError("blip")
+            if calls["cases"] < 4:
+                return [{"case_id": "case:F1", "wave": 1, "open": True, "seconds_left": 400}]
+            return [{"case_id": "case:F1", "wave": 1, "open": False}]
+
+    monkeypatch.setattr(play_module, "play", flaky_play)
+    monkeypatch.setattr(play_module, "RESUME_PAUSE_S", 0.0)
+    out = play_module.play_waves(Client(), object, waves=1, parallel=2, poll=0.01)
+    assert out == {"case:F1": {"deal": True, "score": 0.8}} and calls["play"] == 2
