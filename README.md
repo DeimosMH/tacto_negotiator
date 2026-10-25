@@ -24,6 +24,41 @@ systemd-inhibit --what=idle:sleep --why="Tacto final" \
 
 [The final runbook](docs/FINAL_RUNBOOK.md) has the full timeline and pre-flight.
 
+### Run the Live Final in Azure instead
+
+The Azure job `caj-vera-buyer` runs the same command (`tacto run --set final --agent routed --data data --parallel 10 --waves 5`) with the same model settings. It takes the arena URL and keys from `.env` at deploy time and the data, including `data/release-sunday`, from the image. Deploy first with `02-vera-iac/deploy.sh` (see [Deploy to Azure](#deploy-to-azure)). **Run the final in one place only: here or in Azure, never both.**
+
+From the terminal:
+
+```sh
+az containerapp job start -n caj-vera-buyer -g rg-vera-202610250146          # start the final
+az containerapp job execution list -n caj-vera-buyer -g rg-vera-202610250146 -o table   # status
+az containerapp job logs show -n caj-vera-buyer -g rg-vera-202610250146 --container buyer --follow   # live log
+```
+
+From the Azure portal ([portal.azure.com](https://portal.azure.com)):
+
+1. Open **Resource groups → rg-vera-202610250146 → caj-vera-buyer**.
+2. **Overview → Run now** starts the final.
+3. **Execution history** shows each run's status. **Console logs** opens its log, and **Stop** cancels it.
+
+- **To watch:** open the [deployed deal journal](https://ca-vera-docs.wonderfulsmoke-9f0c2f68.swedencentral.azurecontainerapps.io/#deals) and tick **Auto-refresh**. The job writes every move straight to the journal.
+- **If it fails:** start it again (Run now). The job does not retry by itself; a new run resumes the open sessions like a local restart.
+- **Time limit:** a run stops after 4 hours. Start it at most about 3 hours before wave 1.
+
+## Deploy to Azure
+
+`02-vera-iac/` is the Terraform for resource group `rg-vera-202610250146` (Sweden Central). `02-vera-iac/deploy.sh` builds the images in Azure Container Registry, applies the Terraform and publishes `docs/` (atlas, guides, reports, deal journal). It needs `az login` and Terraform, and reads the arena URL and keys from `.env`. Run it again after every change.
+
+| Deployed | Link |
+|---|---|
+| Docs atlas, guides and deal journal (live) | [ca-vera-docs…](https://ca-vera-docs.wonderfulsmoke-9f0c2f68.swedencentral.azurecontainerapps.io) |
+| Results dashboard (live reports) | [ca-vera-ui…](https://ca-vera-ui.wonderfulsmoke-9f0c2f68.swedencentral.azurecontainerapps.io) |
+| Local supplier API (`/health`, `/v1/…`) | [ca-vera-sim…](https://ca-vera-sim.wonderfulsmoke-9f0c2f68.swedencentral.azurecontainerapps.io) |
+| Live Final buyer | Container Apps job `caj-vera-buyer`, started by hand |
+
+Deals that runs on this machine write to `docs/deals/` reach Azure through `02-vera-iac/sync-docs.sh --watch`, or install `02-vera-iac/tacto-docs-sync.service` as a systemd user service to sync continuously. `cd 02-vera-iac && source env.sh && terraform destroy` removes everything except the resource group.
+
 ## Useful commands
 
 | Purpose | Command |
