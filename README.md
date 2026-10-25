@@ -190,9 +190,3 @@ evaluator; the paid models were not rerun during the review fixes.
 Sequential supplier requests within RFQs, supplier-health estimation, grounded prose
 claims and representative medium-semantic qualification remain work. Migration does
 not change those boundaries. [Sunday readiness](docs/FINAL_READINESS.md) prioritizes them.
-
-See [NOTICE.md](NOTICE.md) for source/data attribution and the restored upstream snapshot.
-
-The Sunday release (news, supplier letters and a memo from 08:00 on Sunday) goes into
-`data/release-sunday`: `tacto data --out data` downloads it, and `DataPackage` merges its
-facts automatically. Some final cases cite it.
