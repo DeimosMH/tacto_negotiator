@@ -32,12 +32,16 @@ WEAK_FORECAST_PCT = 2.0
 # read as a cherry-picked calculation (hosted P02, copper +47.7 %), so they are fillers only.
 JUSTIFIED_RISE_PCT = 10.0
 CASH_STRESS_TOPICS = {"credit_watch", "credit_downgrade", "restructuring", "short_time_work", "insolvency"}
+# News that the supplier needs work: its own idle capacity is our leverage (the Sunday release adds such news
+# for three suppliers; the arena verifies a news claim when the news is about the supplier it is cited to).
+NEED_WORK_TOPICS = {"free_capacity", "customer_loss", "short_time_work"}
 CASH_STRESS_WORDS = ("cash flow", "liquidity", "cannot give up margin", "squeeze our margin", "cash is tight")
 SHRUG_WORDS = ("not change our calculation", "not alter", "does not change our", "do not change our",
                "don't change our", "doesn't change our")
 # Order of strong facts (measured take-rates: should-cost and rival quotes > forecast > index > records).
 # The supplier's own rising order-price path leads (`price_path`).
-PRIORITY = {"price_path": 0, "should_cost": 1, "rival_quote": 2, "volume_change": 3, "index_change": 4,
+PRIORITY = {"price_path": 0, "should_cost": 1, "rival_quote": 2, "volume_change": 3, "supplier_news": 3,
+            "index_change": 4,
             "quality_record": 5, "delivery_record": 5}
 HEDGED = re.compile(r"(covered|bought|secured|hedged)[^.]{0,40}(fixed prices?|until)|fixed prices? until",
                     re.IGNORECASE)
@@ -105,7 +109,7 @@ class FactBank:
 
     def _build(self, case, sid):
         out = []
-        for provider in (self._price_path, self._forecast, self._index_falls, self._scorecard):
+        for provider in (self._price_path, self._forecast, self._news, self._index_falls, self._scorecard):
             try:
                 out += provider(case, sid)
             except Exception:  # an older or partial package: fewer facts, never a crash
@@ -143,6 +147,20 @@ class FactBank:
                      "please reflect this additional business in your price.",
                      change >= WEAK_FORECAST_PCT, -change,
                      {"type": "volume_change", "refs": [ref], "asserted": {"change_pct": change}})]
+
+    def _news(self, case, sid):
+        """The newest news that this supplier needs work (idle capacity, a lost customer, short-time work)."""
+        found = sorted((fact.get("date") or "", ref, fact) for ref, fact in self.facts(case).items()
+                       if ref.startswith("news:") and fact.get("supplier") == sid
+                       and fact.get("topic") in NEED_WORK_TOPICS and fact.get("headline"))
+        if not found:
+            return []
+        _, ref, fact = found[-1]
+        headline = fact["headline"].rstrip(".")
+        return [Fact("news:need", "supplier_news", (ref,), "",
+                     f"We read that {headline} ({ref}); our volume fills capacity you have free, "
+                     "and we expect that to show in your price.", True,
+                     claim={"type": "supplier_news", "refs": [ref]})]
 
     def _index_falls(self, case, sid):
         package = self.package
