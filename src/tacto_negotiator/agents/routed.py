@@ -61,8 +61,8 @@ CONDITIONAL_WORDING = ("subject to", "provided that", "only if", "pending approv
 # value, often far above ours. Contract length, volume and index clauses are security instead.
 SUPPLIER_CASH_TERMS = {"payment_days", "chargeback_eur_per_complaint", "ppm_commitment", "lead_time_days",
                        "tooling_eur", "incoterm"}
-# An index-clause sheet (relationship goals) needs a series rise this many times its expected cost to us,
-# and must close this share of the gap from the standing offer to our cheapest sheet (`_clause_sheet`).
+# An index-clause sheet needs a series rise this many times its expected cost to us and (relationship goals)
+# must close this share of the gap from the standing offer to our cheapest sheet (`_clause_sheet`).
 CLAUSE_RISE_RATIO, CLAUSE_GAP_SHARE = 3.0, 0.5
 # Body grounding (`_grounded_body`, docs/reviews/LLM_ASSUMPTIONS.md). The supplier's people and processes:
 # hosted v6-v12 models named them in 95 of 147 e-mails, 45 times repeating an ask in the same thread.
@@ -296,8 +296,9 @@ class RoutedAgent:
         return next((t for t in sheets if package(t) == lead), fallback)
 
     def _clause_sheet(self, case, events, sid, sheets):
-        """Relationship goals: our cheapest sheet with an index clause, priced at its own health floor,
-        when the clause's series rose far more over twelve months than the clause is expected to cost us.
+        """Our cheapest sheet with an index clause, when the clause's series rose far more over twelve
+        months than the clause is expected to cost us (`_clause_pays`). Relationship goals price it at its
+        health floor; other goals at equal cost to our cheapest sheet (`_equal_cost_clause`).
 
         A supplier passing on a material rise takes the clause instead of the increase: hosted P02
         answered a 90-day sheet with a 5 % deadband clause at 349.05 (the old price) while without it
@@ -308,8 +309,7 @@ class RoutedAgent:
         gap between the standing offer and our cheapest sheet at its floor (the price-only path's best
         hosted result). Without the series' data or a health estimate there is no clause sheet."""
         clauses = [o for o in case.get("term_options", {}).get("index_clause") or [] if o]
-        if (case["buyer"].get("category_goal") not in RELATIONSHIP_GOALS or "index_clause" not in case["negotiable"]
-                or not clauses or not sheets):
+        if "index_clause" not in case["negotiable"] or not clauses or not sheets:
             return None
         _, terms, std, missing = known_offer(case, events)
         position = {**std, **case.get("fixed_terms", {}), **terms}
@@ -318,6 +318,8 @@ class RoutedAgent:
                 for s in e.get("term_sheets") or []):
             return None  # the supplier already holds a clause, or it saw ours and preferred none
         base = min(sheets, key=lambda t: decision_cost(case, t, std, sid))
+        if case["buyer"].get("category_goal") not in RELATIONSHIP_GOALS:
+            return self._equal_cost_clause(case, base, clauses, std, sid)
         floor = cheapest_price(case, base, std, sid)
         if floor is None:
             return None
@@ -342,6 +344,26 @@ class RoutedAgent:
         if best is None or not best[0] <= current - CLAUSE_GAP_SHARE * (current - lowest):
             return None
         return best[1]
+
+    def _equal_cost_clause(self, case, base, clauses, std, sid):
+        """Without a supplier-health term there is no floor to price a clause sheet at: `base` with the
+        paying clause (`_clause_pays`) with the smallest deadband (the supplier passes the most of
+        the rise on), priced so that its cost to us - the expected index path
+        beyond the deadband plus index risk - equals `base`'s. Accepted, it is as good for us as `base`;
+        the supplier, passing the rise on instead of pricing it in, may prefer it."""
+        best = None
+        for clause in clauses:
+            if not self._clause_pays(case, clause):
+                continue
+            variant = {**base, "index_clause": clause}
+            if not must_haves_ok(case, variant, std):
+                continue
+            variant["unit_price"] = price_within(case, variant, std, sid, total_cost(case, base, std))
+            cost = decision_cost(case, variant, std, sid)
+            if (math.isfinite(cost) and cost <= decision_cost(case, base, std, sid) * 1.003 + 0.01
+                    and (best is None or clause["deadband_pct"] < best[0])):
+                best = (clause["deadband_pct"], variant)
+        return best[1] if best else None
 
     @staticmethod
     def _off_repeat(case, events, sheet, terms, std):

@@ -204,20 +204,29 @@ def test_relationship_opening_leads_with_an_index_clause_at_its_health_floor():
     assert agent._clause_sheet(case, held, sid, [plain]) is None
 
 
-def test_small_index_rises_and_other_goals_get_no_clause_sheet():
-    """Hosted P08/P18 steel rose 5.9 % against a 2 % expected clause cost; clause sheets moved nothing."""
+def test_small_index_rises_get_no_clause_sheet_and_other_goals_one_at_equal_cost():
+    """Hosted P08/P18 steel rose 5.9 % against a 2 % expected clause cost; clause sheets moved nothing.
+    Without a health floor a paying clause sheet costs us what our cheapest sheet costs."""
     from tacto_negotiator.agents.routed import RoutedAgent
+    from tacto_negotiator.cost import total_cost
 
     feedback = json.loads((ROOT / "tests/fixtures/practice_feedback.json").read_text())
     agent = RoutedAgent(None, package=DataPackage(ROOT / "data"))
     p02, p08 = feedback["cases"]["case:P02"], feedback["cases"]["case:P08"]
     assert agent._clause_pays(p02, p02["term_options"]["index_clause"][-1])
-    assert not agent._clause_pays(p08, p08["term_options"]["index_clause"][-1])
+    assert not any(agent._clause_pays(p08, c) for c in p08["term_options"]["index_clause"] if c)
+    events = [{"from": "supplier", "status": "open", "term_sheets": [{"term_sheet_id": "offer:0", "terms": {
+        "unit_price": 6.05, "payment_days": 30, "index_clause": None, "contract_months": 24}}]}]
+    sheet = {"unit_price": 5.4, "payment_days": 30, "index_clause": None, "contract_months": 24}
+    assert agent._clause_sheet(p08, events, p08["suppliers"][0], [sheet]) is None
     events = [{"from": "supplier", "status": "open", "term_sheets": [{"term_sheet_id": "offer:0", "terms": {
         "unit_price": 370.96, "payment_days": 30, "index_clause": None}}]}]
     sheet = {"unit_price": 361.51, "payment_days": 90, "index_clause": None}
     routine = {**p02, "buyer": {**p02["buyer"], "category_goal": "routine"}}
-    assert agent._clause_sheet(routine, events, "sup:70510", [sheet]) is None
+    clause = agent._clause_sheet(routine, events, "sup:70510", [sheet])
+    assert clause["index_clause"]["deadband_pct"] == 0 and clause["payment_days"] == 90
+    assert clause["unit_price"] < sheet["unit_price"]
+    assert total_cost(routine, clause) <= total_cost(routine, sheet) < total_cost(routine, clause) * 1.0001  # a cent
 
 
 def test_secure_supply_openings_stay_at_the_shallow_anchor():
