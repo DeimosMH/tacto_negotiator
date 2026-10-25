@@ -762,8 +762,8 @@ def play_waves(client, new_agent, waves=5, parallel=10, poll=5.0):
                 return play(RemoteTable(client, case), case["case_id"], new_agent(), deadline)
             except Exception as e:  # one broken case must not stop the others
                 failure = e
-                transient = isinstance(e, httpx.TransportError | TimeoutError) or (
-                    isinstance(e, ArenaError) and e.status >= 500)
+                transient = isinstance(e, httpx.TransportError | TimeoutError) or (  # 429: a long Retry-After
+                    isinstance(e, ArenaError) and (e.status >= 500 or e.status == 429))
                 cap = deadline()
                 if not transient or (cap is not None and time.time() > cap - RESUME_BEFORE_CAP_S):
                     log.exception("%s failed", case["case_id"])
