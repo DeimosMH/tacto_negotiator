@@ -83,9 +83,10 @@ def read_report(path):
     return public_report(json.loads(raw))
 
 
-def create_server(report_dir, port=1234):
-    """Bind loopback only and expose three static assets plus explicitly selected JSON reports."""
+def create_server(report_dir, port=1234, host="127.0.0.1", allowed_hosts=()):
+    """Bind loopback by default and expose three static assets plus explicitly selected JSON reports."""
     root = Path(report_dir).resolve()
+    hostnames = {"localhost", "127.0.0.1", *(name.lower() for name in allowed_hosts)}
     if not root.is_dir():
         raise ValueError("Report directory does not exist; use --reports PATH")
 
@@ -112,7 +113,7 @@ def create_server(report_dir, port=1234):
                 hostname = urlsplit("//" + self.headers.get("Host", "")).hostname
             except ValueError:
                 hostname = None
-            if hostname not in {"localhost", "127.0.0.1"}:
+            if hostname not in hostnames:
                 self.reply(403, {"error": "Local host only"})
                 return
             route = unquote(urlsplit(self.path).path)
@@ -151,7 +152,7 @@ def create_server(report_dir, port=1234):
                 return
             self.reply(404, {"error": "Not found"})
 
-    return ThreadingHTTPServer(("127.0.0.1", port), Handler)
+    return ThreadingHTTPServer((host, port), Handler)
 
 
 def main(argv=None):
@@ -159,9 +160,12 @@ def main(argv=None):
     parser.add_argument("--reports", type=Path, default=Path("docs/results"),
                         help="Directory of competition JSON reports")
     parser.add_argument("--port", type=int, default=1234, help="Local port (default: 1234)")
+    parser.add_argument("--host", default="127.0.0.1", help="Bind address (default: loopback; 0.0.0.0 in a container)")
+    parser.add_argument("--allow-host", action="append", default=[], metavar="NAME",
+                        help="Also accept this Host name, e.g. the public name of a deployment (repeatable)")
     args = parser.parse_args(argv)
     try:
-        server = create_server(args.reports, args.port)
+        server = create_server(args.reports, args.port, args.host, args.allow_host)
     except (OSError, ValueError, OverflowError) as error:
         parser.error(str(error))
     print(f"Tacto dashboard: http://localhost:{server.server_port} — Ctrl+C to stop", flush=True)

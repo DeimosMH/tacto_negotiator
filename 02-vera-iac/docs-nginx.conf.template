@@ -1,0 +1,23 @@
+# nginx envsubst template: only DOCS_DIR and DASHBOARD_URL are substituted.
+server {
+    listen 80;
+    root ${DOCS_DIR};
+    index index.html;
+
+    # The share is SMB and changes underneath us: no sendfile, and browsers revalidate every request,
+    # so the atlas, guides and the 5 s deal-journal refresh always see the latest files.
+    sendfile off;
+    add_header Cache-Control "no-cache" always;
+
+    # The header's "Run explorer" link points at the deployed dashboard instead of localhost.
+    location = /index.html {
+        add_header Cache-Control "no-cache" always;
+        sub_filter_once off;
+        sub_filter 'http://localhost:1234' '${DASHBOARD_URL}';
+    }
+
+    # Build and test scripts are not part of the site.
+    location ~ \.(py|mjs)$ {
+        return 404;
+    }
+}

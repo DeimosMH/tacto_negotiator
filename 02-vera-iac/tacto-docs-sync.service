@@ -1,0 +1,14 @@
+# Keeps the deployed docs site, dashboard reports and deal journal in step with docs/ on this machine.
+# Install: ln -sf "$PWD/tacto-docs-sync.service" ~/.config/systemd/user/ && systemctl --user enable --now tacto-docs-sync
+[Unit]
+Description=Mirror Tacto docs/ to the live Azure docs share
+After=network-online.target
+
+[Service]
+ExecStart=%h/Documents/git_prv/tacto_negotiator/02-vera-iac/sync-docs.sh --watch
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=default.target

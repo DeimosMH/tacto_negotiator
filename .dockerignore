@@ -6,5 +6,12 @@
 !NOTICE.md
 !src/
 !src/**
+!data/
+!data/**
+!docs/
+!docs/**
+!Dockerfile.azure
+!Dockerfile.docs
+!02-vera-iac/docs-nginx.conf.template
 **/__pycache__/
 **/*.pyc

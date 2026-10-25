@@ -90,6 +90,21 @@ def test_routes_cannot_read_credentials_traverse_or_follow_symlinks(dashboard):
     assert not (root / "test.json").exists()
 
 
+def test_allowed_host_is_accepted_and_others_still_rejected(tmp_path):
+    server = web.create_server(tmp_path, port=0, allowed_hosts=["Dash.Example"])
+    thread = threading.Thread(target=server.serve_forever, kwargs={"poll_interval": 0.01}, daemon=True)
+    thread.start()
+    try:
+        with httpx.Client(base_url=f"http://127.0.0.1:{server.server_port}", trust_env=False) as client:
+            assert client.get("/api/reports", headers={"Host": "dash.example"}).status_code == 200
+            assert client.get("/api/reports", headers={"Host": "dash.example:443"}).status_code == 200
+            assert client.get("/api/reports", headers={"Host": "attacker.example"}).status_code == 403
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+
 def test_local_host_and_static_assets(dashboard):
     _, client = dashboard
     for host in ("attacker.example", "[invalid"):

@@ -1,0 +1,6 @@
+# Docs atlas (docs/index.html) for Azure. No content is baked in: nginx serves the live share,
+# which 02-vera-iac/sync-docs.sh mirrors from docs/ and the buyer job writes deals into.
+# Build from the repository root: az acr build -f Dockerfile.docs .
+FROM docker.io/library/nginx:1.27-alpine
+COPY 02-vera-iac/docs-nginx.conf.template /etc/nginx/templates/default.conf.template
+ENV DOCS_DIR=/mnt/docs DASHBOARD_URL=http://localhost:1234
