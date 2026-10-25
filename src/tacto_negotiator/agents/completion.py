@@ -224,7 +224,8 @@ class AnthropicCompletionClient(CompletionClient):
 def routed_completions_from_env():
     """Read explicit process configuration; the strong route is disabled unless configured.
 
-    LLM_PROVIDER=anthropic uses LLM_API_KEY_ANTHROPIC (or ANTHROPIC_API_KEY) and defaults to claude-opus-5-5."""
+    LLM_PROVIDER=anthropic uses LLM_API_KEY_ANTHROPIC (or ANTHROPIC_API_KEY), defaults to claude-opus-5-5 and
+    runs in fast mode unless LLM_SPEED=standard."""
     provider = os.environ.get("LLM_PROVIDER", "openai").lower()
     if provider not in ("openai", "anthropic"):
         raise ValueError("the routed agent supports LLM_PROVIDER=openai or anthropic")
@@ -242,8 +243,10 @@ def routed_completions_from_env():
             "base_url": os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1"),
             "semaphore": threading.BoundedSemaphore(maximum),
         }
-    if provider == "anthropic" and os.environ.get("LLM_SPEED"):
-        shared["speed"] = os.environ["LLM_SPEED"]
+    if provider == "anthropic":  # fast mode by default: same model and effort, ~2.3x faster output
+        speed = os.environ.get("LLM_SPEED", "fast").strip().lower()
+        if speed not in ("standard", "normal", "off", ""):
+            shared["speed"] = speed
     fast = client(os.environ.get("LLM_MODEL", default_model), effort=os.environ.get("LLM_EFFORT", "low"), **shared)
     strong_model = os.environ.get("LLM_STRONG_MODEL", "").strip()
     strong = (client(strong_model, effort=os.environ.get("LLM_STRONG_EFFORT", "medium"), **shared)

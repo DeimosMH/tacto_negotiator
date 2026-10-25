@@ -240,16 +240,20 @@ def test_anthropic_provider_reads_its_own_key_and_accounts_cache_tokens(monkeypa
     assert anthropic_metadata(SimpleNamespace(usage=usage, stop_reason="max_tokens"))["status"] == "incomplete"
 
 
-def test_anthropic_fast_mode_is_opt_in_and_priced_double(monkeypatch):
+def test_anthropic_fast_mode_is_the_default_and_priced_double(monkeypatch):
     from tacto_negotiator.agents.completion import AnthropicCompletionClient
     from tacto_negotiator.benchmark import BudgetedCompletion, BudgetLedger
 
     monkeypatch.setenv("LLM_PROVIDER", "anthropic")
     monkeypatch.setenv("LLM_API_KEY_ANTHROPIC", "test-key")
     monkeypatch.delenv("LLM_MODEL", raising=False)
-    monkeypatch.setenv("LLM_SPEED", "fast")
+    monkeypatch.delenv("LLM_SPEED", raising=False)
     fast, _ = routed_completions_from_env()
     assert isinstance(fast, AnthropicCompletionClient) and fast.speed == "fast"
+    monkeypatch.setenv("LLM_SPEED", "standard")
+    assert routed_completions_from_env()[0].speed is None
+    monkeypatch.setenv("LLM_SPEED", "fast")
+    fast, _ = routed_completions_from_env()
     fast.service_tier = "default"
     assert BudgetedCompletion(fast, BudgetLedger(1)).model == "claude-opus-5-5-fast"
     with pytest.raises(ValueError):

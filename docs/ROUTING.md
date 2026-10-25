@@ -195,7 +195,7 @@ The tacto CLI uses this implementation by default or with --agent routed. These 
 | LLM_PROVIDER | `anthropic` for the final (Claude Messages API); `openai` (the default) selects the Responses adapter. |
 | LLM_MODEL | `claude-opus-5-5` for the final. |
 | LLM_EFFORT | `high` for the final (max effort exceeded the decision deadline in every hosted test). |
-| LLM_SPEED | `fast`: Opus fast mode, about 2.3x faster output; a rate-limited call falls back to normal speed. Hosted v17: model time per case 37 s -> 16 s. |
+| LLM_SPEED | `fast` (the default for Claude): Opus fast mode, about 2.3x faster output; a rate-limited call falls back to normal speed. Hosted v17: model time per case 37 s -> 16 s. `standard` turns it off. |
 | LLM_API_KEY_ANTHROPIC / ANTHROPIC_API_KEY | The Anthropic key, read from `.env`. |
 | LLM_STRONG_MODEL | Unset: strong route disabled. |
 | LLM_STRONG_EFFORT | medium when the strong route is configured. |
