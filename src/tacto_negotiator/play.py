@@ -573,6 +573,7 @@ def _play(table, case_id, agent, deadline=None):
         for m in events:
             read(m)
     slowest = 0.0  # the longest round so far: decision + the supplier's reply
+    rejected_accepts = 0  # accepts the arena refused as not standing (re-read, at most twice)
     while live_threads(threads):
         decision_deadline, usable = None, None
         if timed_decide:
@@ -651,8 +652,15 @@ def _play(table, case_id, agent, deadline=None):
                 log.info("%s %s", sid, msg["action"])
                 return table.close(sid, msg)
             except ArenaError as e:
-                if e.status != 409:
+                # An accept of an offer that is no longer standing (a timeout answer replaced it while we
+                # decided) is a 422: re-read the thread and decide again. Hosted P05 (25 Oct) lost the case
+                # to it: the fallback accepted offer:70210-2 after 70210's clock had lapsed.
+                stale = e.status == 422 and msg["action"].get("type") == "accept" and rejected_accepts < 2
+                if e.status != 409 and not stale:
                     raise
+                rejected_accepts += stale
+                if stale:
+                    log.warning("%s: %s - re-reading the thread", sid, e.detail)
                 outcomes = {sid: (e, time.monotonic())}
         else:
             outcomes = send_all(sid, msg)

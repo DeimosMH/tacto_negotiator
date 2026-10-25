@@ -584,3 +584,41 @@ def test_terms_that_cost_us_nothing_go_the_suppliers_way():
     for months in (12, 24):  # contract length stays ours to choose: hosted P07 preferred 24 months over 36
         sheet = {**first, "unit_price": 10.0, "contract_months": months}
         assert RoutedAgent._free_terms(case, sheet, {}, None) == sheet
+
+
+def test_an_accept_of_a_replaced_offer_is_retried_on_the_fresh_thread():
+    """Hosted P05 (25 Oct): the arena answered an accept of offer:70210-2 with 422 "not a standing offer in this
+    session" (a timeout answer had replaced it) and the runner gave the case up. It now re-reads the thread."""
+    from tacto_negotiator.client import ArenaError
+    from tacto_negotiator.play import play, standing
+
+    case = {"case_id": "case:T", "suppliers": ["sup:a"], "negotiable": ["unit_price"], "round_limit": 10,
+            "buyer": {"category_goal": "routine", "alternative": {"kind": "none"}}}
+
+    def offer(n, price):
+        return {"from": "sup:a", "status": "final_offer", "body": "Offer.", "attachments": [],
+                "term_sheets": [{"term_sheet_id": f"offer:a-{n}", "terms": {"unit_price": price}}]}
+
+    class Table:
+        closed = []
+
+        def open(self, case_id):
+            return case, {"sup:a": [offer(1, 10.0)]}
+
+        def close(self, sid, message):
+            self.closed.append(message["action"]["term_sheet_id"])
+            if message["action"]["term_sheet_id"] == "offer:a-1":
+                raise ArenaError(422, "not a standing offer in this session")
+            return {"deal": True, "score": 0.5}
+
+        def missed(self, sid, error):
+            return {"messages": [offer(1, 10.0), {"from": "buyer", "body": "late", "term_sheets": []}, offer(2, 9.5)]}
+
+    class Accepting:
+        def decide(self, case, threads):
+            return {"supplier_id": "sup:a",
+                    "message": {"action": {"type": "accept", "term_sheet_id": standing(threads["sup:a"])[0]}}}
+
+    table = Table()
+    assert play(table, "case:T", Accepting())["deal"]
+    assert table.closed == ["offer:a-1", "offer:a-2"]
