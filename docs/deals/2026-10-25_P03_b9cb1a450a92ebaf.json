@@ -1,0 +1,607 @@
+{
+ "id": "2026-10-25_P03_b9cb1a450a92ebaf",
+ "case_id": "case:P03",
+ "source": "hosted",
+ "status": "ended",
+ "started_utc": "2026-10-25T08:53:22+00:00",
+ "updated_utc": "2026-10-25T08:56:50+00:00",
+ "finished_utc": "2026-10-25T08:56:50+00:00",
+ "session_id": "b9cb1a450a92ebaf",
+ "title": "Frame agreement renewal for the 7.5 kW frequency converter",
+ "goal": "stabilise",
+ "suppliers": {
+  "sup:70530": "Key Account Manager, Selvbrunn Drive Systems GmbH"
+ },
+ "messages": [
+  {
+   "message_id": "msg:70530-0-0",
+   "from": "supplier",
+   "from_name": "Key Account Manager, Selvbrunn Drive Systems GmbH",
+   "subject": "Quote from Selvbrunn Drive Systems GmbH: Frame agreement renewal for the 7.5 kW frequency converter",
+   "body": "Dear Sir or Madam,\n\nThank you for your enquiry. Please find our Angebot below.\n\nWe offer a price of €438.21 per unit, a volume of 4580 pcs per year, a contract term of 12 months, and a Zahlungsziel 30 days net. This offer remains valid for 30 days.\n\nRegarding our cost structure, CU-NOTATION rose 47.7 % in twelve months and is 5 % of our cost. LCI-C rose 2.7 % in twelve months and is 16 % of our cost. Furthermore, PPI-C2611 rose 13.5 % in twelve months and is 42 % of our cost.\n\nMit freundlichen Grüßen\nBirgit Mayrhofer\nKey Account Manager, Selvbrunn Drive Systems GmbH",
+   "status": "open",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70530",
+   "term_sheets": [
+    {
+     "id": "offer:70530-0",
+     "terms": {
+      "unit_price": 438.21,
+      "payment_days": 30,
+      "contract_months": 12,
+      "volume_per_year": 4580
+     }
+    }
+   ],
+   "attachments": [
+    "quote-offer-70530-0.pdf"
+   ],
+   "at": "2026-10-25T08:53:23+00:00",
+   "index": 0
+  },
+  {
+   "from": "buyer",
+   "subject": "Renewal ctr:4600070530 – part:350020 frequency converter 7.5 kW",
+   "body": "Dear Ms Mayrhofer,\n\nThank you for your offer. Our orders with you for part:350020 rose from EUR 400.19 (po:4500012924-10) to EUR 412.74 (po:4500014465-10) between 2025-09-15 and 2026-09-28. That rise is already in our price. Our should-cost estimate for part:350020 is EUR 403.21 per unit (cost:350020), below your price. The forecast for part:350020 increased by 10.3% (fc:350020@2026-09); please reflect this additional business in your price.\n\nOn volume, we plan 4580 pieces per year. The attached packages offer you a 36-month commitment for planning security. What is the earliest lead time you can confirm?\n\nKind regards,\nHollerau Pumpenwerke, Purchasing",
+   "supplier_id": "sup:70530",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 402.0,
+      "payment_days": 60,
+      "contract_months": 36,
+      "volume_per_year": 4580
+     }
+    },
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 413.68,
+      "payment_days": 30,
+      "contract_months": 36,
+      "volume_per_year": 4580
+     }
+    }
+   ],
+   "at": "2026-10-25T08:54:01+00:00",
+   "index": 1
+  },
+  {
+   "message_id": "msg:70530-1-2",
+   "from": "supplier",
+   "from_name": "Key Account Manager, Selvbrunn Drive Systems GmbH",
+   "subject": "Re: Renewal ctr:4600070530 – part:350020 frequency converter 7.5 kW",
+   "body": "Dear Sir or Madam,\n\nWe have reviewed your offer and can adjust our Angebot as follows. We checked the price history data you cited; it holds and we took it into account. We checked the volume change data you cited; it holds and we took it into account. We checked the should cost data you cited; it holds and we took it into account. \n\nOur management has frozen all price reductions until December 2027. We can talk about the terms instead - payment, volume or contract length. We welcome your proposal for a 36-month contract, as this planning security enables us to offer a revised price of EUR 427.96 per unit. \n\nIn response to your inquiry about lead times, our standard lead times apply, though the extended contract will help secure your supply chain. Our price follows our main cost drivers: PPI-C2611, LCI-C, CU-NOTATION. \n\nOur current Angebot consists of a price of €427.96 per unit, Zahlungsziel 30 days net, a volume of 4580 pcs per year, and a contract term of 36 months. This offer remains valid for 30 days.\n\nMit freundlichen Grüßen\nBirgit Mayrhofer\nKey Account Manager, Selvbrunn Drive Systems GmbH\n\nLogistics: Our Lieferzeit is 49 days. With overtime we can deliver in 49 days, at a premium.\n\nLegal Department: Please note that our general terms and conditions apply to this process; furthermore, the quote lists our standard terms.",
+   "status": "open",
+   "claim_results": [
+    {
+     "index": 0,
+     "result": "verified"
+    },
+    {
+     "index": 1,
+     "result": "verified"
+    },
+    {
+     "index": 2,
+     "result": "verified"
+    }
+   ],
+   "refs": [],
+   "supplier_id": "sup:70530",
+   "term_sheets": [
+    {
+     "id": "offer:70530-1",
+     "terms": {
+      "unit_price": 427.96,
+      "payment_days": 30,
+      "contract_months": 36,
+      "volume_per_year": 4580
+     }
+    }
+   ],
+   "attachments": [
+    "delivery-schedule.xlsx"
+   ],
+   "at": "2026-10-25T08:54:02+00:00",
+   "index": 2
+  },
+  {
+   "from": "buyer",
+   "subject": "Part 350020 frame agreement renewal: revised package with 60-day payment terms",
+   "body": "Dear Ms Mayrhofer,\n\nThank you for your revised offer and for accepting our 36-month proposal. We understand that price reductions are frozen and that you are open to discussing other terms, so we have moved our package and built it around payment terms.\n\nThe attached term sheet covers 4580 pieces per year over 36 months, with 60 days net. It is a real step towards your position. It also gives your capacity planning a firm base for the full term.\n\nWould a monthly call-off in line with your delivery schedule suit your production planning? If you see a payment or call-off variant that works better for your cash flow, we would welcome your proposal.\n\nKind regards,\nHollerau Pumpenwerke, Purchasing",
+   "supplier_id": "sup:70530",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 416.11,
+      "payment_days": 60,
+      "contract_months": 36,
+      "volume_per_year": 4580
+     }
+    }
+   ],
+   "at": "2026-10-25T08:54:49+00:00",
+   "index": 3
+  },
+  {
+   "message_id": "msg:70530-2-4",
+   "from": "supplier",
+   "from_name": "Key Account Manager, Selvbrunn Drive Systems GmbH",
+   "subject": "Re: Part 350020 frame agreement renewal: revised package with 60-day payment terms",
+   "body": "Dear Sir or Madam,\n\nWe have reviewed your offer and can adjust our Angebot as follows. Our primary offer stands at a price of €429.42 per unit, Zahlungsziel 60 days net, a volume of 4580 pcs per year, a contract term of 36 months.\n\nAs an alternative, we can offer a price of €427.96 per unit, Zahlungsziel 30 days net, a volume of 4580 pcs per year, a contract term of 36 months. We welcome your suggestion regarding cash flow; a monthly call-off schedule aligns perfectly with our production planning and delivery capabilities. To provide you with the most favorable unit price of EUR 427.96 while our price levels are frozen, we must maintain the 30-day payment terms. Extending the payment terms to 60 days would necessitate a price increase, which we wish to avoid for your benefit. Which figures is that based on? Please send us the data.\n\nThis offer stays valid for 30 days.\n\nMit freundlichen Grüßen\nBirgit Mayrhofer\nKey Account Manager, Selvbrunn Drive Systems GmbH\n\nLogistics: Our Lieferzeit is 49 days. With overtime we can deliver in 49 days, at a premium.\n\nCredit Control: Please be advised that our standard Zahlungsziel is 30 days net.",
+   "status": "open",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70530",
+   "term_sheets": [
+    {
+     "id": "offer:70530-2",
+     "terms": {
+      "unit_price": 429.42,
+      "payment_days": 60,
+      "contract_months": 36,
+      "volume_per_year": 4580
+     }
+    },
+    {
+     "id": "offer:70530-2-a",
+     "terms": {
+      "unit_price": 427.96,
+      "payment_days": 30,
+      "contract_months": 36,
+      "volume_per_year": 4580
+     }
+    }
+   ],
+   "attachments": [
+    "delivery-schedule.xlsx"
+   ],
+   "at": "2026-10-25T08:54:49+00:00",
+   "index": 4
+  },
+  {
+   "from": "buyer",
+   "subject": "Frame agreement part:350020 - revised package, 36 months",
+   "body": "Dear Ms Mayrhofer,\n\nThank you for your revised offer and for confirming that a monthly call-off schedule fits your production planning. We will take that call-off flexibility, as we discussed at our review meetings.\n\nWe have moved our package towards your position and kept the structure you prefer:\n- 4580 pieces per year\n- 36-month contract\n- 60 days net\n- monthly call-offs in line with your delivery schedule\n\nThis gives your capacity planning a firm base for the full term.\n\nWhat is the lowest price at which you can sign these terms today?\n\nKind regards,\nHollerau Pumpenwerke, Purchasing",
+   "supplier_id": "sup:70530",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 418.77,
+      "payment_days": 60,
+      "contract_months": 36,
+      "volume_per_year": 4580
+     }
+    }
+   ],
+   "at": "2026-10-25T08:55:23+00:00",
+   "index": 5
+  },
+  {
+   "message_id": "msg:70530-3-6",
+   "from": "supplier",
+   "from_name": "Key Account Manager, Selvbrunn Drive Systems GmbH",
+   "subject": "Re: Frame agreement part:350020 - revised package, 36 months",
+   "body": "Dear Sir or Madam,\n\nWe have reviewed your offer and can adjust our Angebot as follows. \n\nWe appreciate your confirmation of the monthly call-off schedule, which aligns well with our production planning. Our current offer is a price of €429.42 per unit, Zahlungsziel 60 days net, a volume of 4580 pcs per year, and a contract term of 36 months. \n\nIf you require a lower price, we must trade this against more favorable payment terms. Please note that our margin and our limits stay internal. Furthermore, our price follows our main cost drivers: PPI-C2611, LCI-C, CU-NOTATION. \n\nThis offer remains valid for 30 days.\n\nMit freundlichen Grüßen\nBirgit Mayrhofer\nKey Account Manager, Selvbrunn Drive Systems GmbH\n\nCredit Control: Please be advised that our standard Zahlungsziel is 30 days net.",
+   "status": "open",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70530",
+   "term_sheets": [
+    {
+     "id": "offer:70530-3",
+     "terms": {
+      "unit_price": 429.42,
+      "payment_days": 60,
+      "contract_months": 36,
+      "volume_per_year": 4580
+     }
+    }
+   ],
+   "at": "2026-10-25T08:55:23+00:00",
+   "index": 6
+  },
+  {
+   "from": "buyer",
+   "subject": "Frame agreement part:350020 - revised package",
+   "body": "Dear Ms Mayrhofer,\n\nThank you for your offer and for confirming the monthly call-off schedule.\n\nWe have moved our package another step towards your position. It keeps the structure you accepted: 4580 pieces per year, a 36-month contract, 60 days net and monthly call-offs in line with your delivery schedule. The full 36-month volume gives your capacity and material planning a firm base, and the stable call-off pattern keeps your workload even.\n\nWe would be glad to close the renewal of ctr:4600070530 on this basis. If a different call-off rhythm or delivery batching would lower your cost to serve, please tell us and we will consider it.\n\nKind regards,\nHollerau Pumpenwerke, Purchasing",
+   "supplier_id": "sup:70530",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 420.9,
+      "payment_days": 60,
+      "contract_months": 36,
+      "volume_per_year": 4580
+     }
+    }
+   ],
+   "at": "2026-10-25T08:56:01+00:00",
+   "index": 7
+  },
+  {
+   "message_id": "msg:70530-4-8",
+   "from": "supplier",
+   "from_name": "Key Account Manager, Selvbrunn Drive Systems GmbH",
+   "subject": "Re: Frame agreement part:350020 - revised package",
+   "body": "Dear Sir or Madam,\n\nWe have reviewed your offer and can adjust our Angebot as follows.\n\nOur current offer stands at a price of €429.42 per unit, Zahlungsziel 60 days net, a volume of 4580 pcs per year, and a contract term of 36 months. This offer remains valid for 30 days.\n\nHowever, as our price levels remain strictly frozen until December 2027, alternative call-off rhythms cannot yield further price reductions. Therefore, we must maintain our price of EUR 429.42 for the 60-day payment term. Our price follows our main cost drivers: PPI-C2611, LCI-C, CU-NOTATION.\n\nMit freundlichen Grüßen\nBirgit Mayrhofer\nKey Account Manager, Selvbrunn Drive Systems GmbH\n\nCredit Control: Please be advised that our standard Zahlungsziel is 30 days net.\n\nLogistics: Our Lieferzeit is 49 days. With overtime we can deliver in 49 days, at a premium.",
+   "status": "open",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70530",
+   "term_sheets": [
+    {
+     "id": "offer:70530-4",
+     "terms": {
+      "unit_price": 429.42,
+      "payment_days": 60,
+      "contract_months": 36,
+      "volume_per_year": 4580
+     }
+    }
+   ],
+   "attachments": [
+    "delivery-schedule.xlsx"
+   ],
+   "at": "2026-10-25T08:56:01+00:00",
+   "index": 8
+  },
+  {
+   "from": "buyer",
+   "subject": "Renewal ctr:4600070530 - revised package for part 350020",
+   "body": "Dear Ms Mayrhofer,\n\nThank you for your offer and for setting out the price freeze clearly. We respect it, and we have moved our package another real step towards your position.\n\nThe structure is unchanged:\n- 4580 pieces per year\n- 36-month contract\n- 60 days net\n- monthly call-offs in line with your delivery schedule\n\nThe full 36-month volume gives your capacity and material planning a firm base for the whole term. The even monthly call-off pattern keeps your workload stable.\n\nWe would like to close the renewal of ctr:4600070530 on this basis. Could you sign these terms so that both sides have planning security well before your holiday shutdown?\n\nKind regards,\nHollerau Pumpenwerke, Purchasing",
+   "supplier_id": "sup:70530",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 422.6,
+      "payment_days": 60,
+      "contract_months": 36,
+      "volume_per_year": 4580
+     }
+    }
+   ],
+   "at": "2026-10-25T08:56:28+00:00",
+   "index": 9
+  },
+  {
+   "message_id": "msg:70530-5-10",
+   "from": "supplier",
+   "from_name": "Key Account Manager, Selvbrunn Drive Systems GmbH",
+   "subject": "Re: Renewal ctr:4600070530 - revised package for part 350020",
+   "body": "Dear Sir or Madam,\n\nWe have reviewed your offer and can adjust our Angebot as follows.\n\nFollowing our pricing guidelines, we present a price of €429.42 per unit, a Zahlungsziel of 60 days net, a volume of 4580 pcs per year, and a contract term of 36 months. As our prices are strictly frozen until December 2027, we must maintain our price of EUR 429.42 for the 60-day payment term. \n\nOur price follows our main cost drivers: PPI-C2611, LCI-C, CU-NOTATION. This Angebot remains valid for 30 days.\n\nMit freundlichen Grüßen\nBirgit Mayrhofer\nKey Account Manager, Selvbrunn Drive Systems GmbH\n\nCredit Control: Please be advised that our standard Zahlungsziel is 30 days net.",
+   "status": "open",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70530",
+   "term_sheets": [
+    {
+     "id": "offer:70530-5",
+     "terms": {
+      "unit_price": 429.42,
+      "payment_days": 60,
+      "contract_months": 36,
+      "volume_per_year": 4580
+     }
+    }
+   ],
+   "at": "2026-10-25T08:56:28+00:00",
+   "index": 10
+  },
+  {
+   "from": "buyer",
+   "subject": "Renewal ctr:4600070530 – revised package for signature",
+   "body": "Dear Ms Mayrhofer,\n\nThank you for your clear reply. We respect the price freeze you described, and we have moved our package another real step towards your offer.\n\nThe structure is unchanged:\n- 4580 pieces per year\n- 36-month contract\n- 60 days net\n- monthly call-offs as in your delivery schedule\n\nThe 36-month commitment secures your capacity and material planning for the whole term, beyond the freeze period. The even monthly call-offs keep your workload stable.\n\nWe would be glad to sign the renewal of ctr:4600070530 on these terms. Could you confirm the attached package so that both sides have planning security before your holiday shutdown?\n\nKind regards,\nHollerau Pumpenwerke, Purchasing",
+   "supplier_id": "sup:70530",
+   "term_sheets": [
+    {
+     "id": null,
+     "terms": {
+      "unit_price": 423.96,
+      "payment_days": 60,
+      "contract_months": 36,
+      "volume_per_year": 4580
+     }
+    }
+   ],
+   "at": "2026-10-25T08:56:50+00:00",
+   "index": 11
+  },
+  {
+   "message_id": "msg:70530-6-12",
+   "from": "supplier",
+   "from_name": "Key Account Manager, Selvbrunn Drive Systems GmbH",
+   "subject": "Re: Renewal ctr:4600070530 – revised package for signature",
+   "body": "Dear Sir or Madam,\nThank you for your message.\nThis is our final offer (letztes Angebot). Please decide.\nOur terms: a price of €429.42 per unit, Zahlungsziel 60 days net, a volume of 4580 pcs per year, a contract term of 36 months.\nFor your information:\nWe appreciate your further step towards our position and your understanding of our price freeze.\nAs our prices are strictly frozen until December 2027, we cannot reduce the price for the 60-day payment term below EUR 429.42.\nOur pricing follows our approval process.\nThis offer is subject to our general terms of sale.\nMit freundlichen Grüßen\nBirgit Mayrhofer\nKey Account Manager, Selvbrunn Drive Systems GmbH\n\nLegal Department: Please note that our general terms and conditions apply to this process; furthermore, the quote lists our standard terms.\n\nCredit Control: Please be advised that our standard Zahlungsziel is 30 days net.",
+   "status": "final_offer",
+   "claim_results": [],
+   "refs": [],
+   "supplier_id": "sup:70530",
+   "term_sheets": [
+    {
+     "id": "offer:70530-6",
+     "terms": {
+      "unit_price": 429.42,
+      "payment_days": 60,
+      "contract_months": 36,
+      "volume_per_year": 4580
+     }
+    }
+   ],
+   "attachments": [
+    "quote-offer-70530-6.pdf"
+   ],
+   "at": "2026-10-25T08:56:50+00:00",
+   "index": 12
+  },
+  {
+   "from": "buyer",
+   "supplier_id": "sup:70530",
+   "at": "2026-10-25T08:56:50+00:00",
+   "action": {
+    "type": "accept",
+    "term_sheet_id": "offer:70530-6"
+   },
+   "closing": true,
+   "term_sheets": [],
+   "index": 10000
+  }
+ ],
+ "decisions": [
+  {
+   "route": "fast",
+   "reason": "strong_unconfigured",
+   "fallback": false,
+   "budget_s": 40.0,
+   "at": "2026-10-25T08:53:23+00:00",
+   "decision_s": 6.294,
+   "move": {
+    "supplier_id": "sup:70530",
+    "action": "send",
+    "term_sheet_id": null,
+    "term_sheets": [
+     {
+      "unit_price": 402.0,
+      "payment_days": 60,
+      "contract_months": 36,
+      "volume_per_year": 4580
+     },
+     {
+      "unit_price": 413.68,
+      "payment_days": 30,
+      "contract_months": 36,
+      "volume_per_year": 4580
+     }
+    ]
+   },
+   "path": [
+    "decide",
+    "model",
+    "strong_unconfigured",
+    "validate"
+   ],
+   "sent_utc": "2026-10-25T08:54:01+00:00"
+  },
+  {
+   "route": "fast",
+   "reason": "strong_unconfigured",
+   "fallback": false,
+   "budget_s": 40.0,
+   "at": "2026-10-25T08:54:02+00:00",
+   "decision_s": 8.637,
+   "move": {
+    "supplier_id": "sup:70530",
+    "action": "send",
+    "term_sheet_id": null,
+    "term_sheets": [
+     {
+      "unit_price": 416.11,
+      "payment_days": 60,
+      "contract_months": 36,
+      "volume_per_year": 4580
+     }
+    ]
+   },
+   "path": [
+    "decide",
+    "model",
+    "strong_unconfigured",
+    "validate"
+   ],
+   "sent_utc": "2026-10-25T08:54:49+00:00"
+  },
+  {
+   "route": "fast",
+   "reason": "strong_unconfigured",
+   "fallback": false,
+   "budget_s": 40.0,
+   "at": "2026-10-25T08:54:49+00:00",
+   "decision_s": 3.183,
+   "move": {
+    "supplier_id": "sup:70530",
+    "action": "send",
+    "term_sheet_id": null,
+    "term_sheets": [
+     {
+      "unit_price": 418.77,
+      "payment_days": 60,
+      "contract_months": 36,
+      "volume_per_year": 4580
+     }
+    ]
+   },
+   "path": [
+    "decide",
+    "model",
+    "strong_unconfigured",
+    "validate"
+   ],
+   "sent_utc": "2026-10-25T08:55:23+00:00"
+  },
+  {
+   "route": "fast",
+   "reason": "strong_unconfigured",
+   "fallback": false,
+   "budget_s": 40.0,
+   "at": "2026-10-25T08:55:23+00:00",
+   "decision_s": 5.968,
+   "move": {
+    "supplier_id": "sup:70530",
+    "action": "send",
+    "term_sheet_id": null,
+    "term_sheets": [
+     {
+      "unit_price": 420.9,
+      "payment_days": 60,
+      "contract_months": 36,
+      "volume_per_year": 4580
+     }
+    ]
+   },
+   "path": [
+    "decide",
+    "model",
+    "strong_unconfigured",
+    "validate"
+   ],
+   "sent_utc": "2026-10-25T08:56:01+00:00"
+  },
+  {
+   "route": "fast",
+   "reason": "strong_unconfigured",
+   "fallback": false,
+   "budget_s": 40.0,
+   "at": "2026-10-25T08:56:01+00:00",
+   "decision_s": 4.684,
+   "move": {
+    "supplier_id": "sup:70530",
+    "action": "send",
+    "term_sheet_id": null,
+    "term_sheets": [
+     {
+      "unit_price": 422.6,
+      "payment_days": 60,
+      "contract_months": 36,
+      "volume_per_year": 4580
+     }
+    ]
+   },
+   "path": [
+    "decide",
+    "model",
+    "strong_unconfigured",
+    "validate"
+   ],
+   "sent_utc": "2026-10-25T08:56:28+00:00"
+  },
+  {
+   "route": "fast",
+   "reason": "strong_unconfigured",
+   "fallback": false,
+   "budget_s": 40.0,
+   "at": "2026-10-25T08:56:28+00:00",
+   "decision_s": 5.199,
+   "move": {
+    "supplier_id": "sup:70530",
+    "action": "send",
+    "term_sheet_id": null,
+    "term_sheets": [
+     {
+      "unit_price": 423.96,
+      "payment_days": 60,
+      "contract_months": 36,
+      "volume_per_year": 4580
+     }
+    ]
+   },
+   "path": [
+    "decide",
+    "model",
+    "strong_unconfigured",
+    "validate"
+   ],
+   "sent_utc": "2026-10-25T08:56:50+00:00"
+  },
+  {
+   "route": "script",
+   "reason": "terminal_offers",
+   "fallback": false,
+   "budget_s": 40.0,
+   "at": "2026-10-25T08:56:50+00:00",
+   "decision_s": 0.0,
+   "move": {
+    "supplier_id": "sup:70530",
+    "action": "accept",
+    "term_sheet_id": "offer:70530-6",
+    "term_sheets": []
+   },
+   "path": [
+    "decide",
+    "scripts",
+    "terminal",
+    "terminal_offers"
+   ]
+  }
+ ],
+ "result": {
+  "ended": true,
+  "deal": true,
+  "supplier_id": "sup:70530",
+  "offer_id": "offer:70530-6",
+  "terms": {
+   "payment_days": 60,
+   "lead_time_days": 49,
+   "volume_per_year": 4580,
+   "contract_months": 36,
+   "effective_date": "2027-01-01",
+   "index_clause": null,
+   "incoterm": "DAP",
+   "tooling_eur": 0.0,
+   "ppm_commitment": 350,
+   "chargeback_eur_per_complaint": 0.0,
+   "unit_price": 429.42
+  },
+  "c_open": 4246314.02,
+  "c_deal": 3937049.5,
+  "c_alt": 4332545.92,
+  "c_best": 3909043.1,
+  "score": 0.9169617113743457,
+  "must_haves_ok": true,
+  "cost_breakdown": {
+   "price": 3933487.2,
+   "uncovered_need": 0.0,
+   "fallback_risk": 0.0,
+   "payment_terms": 0.0,
+   "freight": 0.0,
+   "late_delivery": 0.0,
+   "quality": 2000.54,
+   "tooling": 0.0,
+   "index_clause": 0.0,
+   "index_risk": 0.0,
+   "relationship": 1561.76
+  }
+ },
+ "type": "renewal",
+ "negotiable": [
+  "unit_price",
+  "payment_days",
+  "contract_months",
+  "volume_per_year"
+ ],
+ "round_limit": 10,
+ "closing": {
+  "at": "2026-10-25T08:56:50+00:00",
+  "supplier_id": "sup:70530",
+  "action": {
+   "type": "accept",
+   "term_sheet_id": "offer:70530-6"
+  }
+ }
+}

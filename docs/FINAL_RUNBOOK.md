@@ -64,4 +64,4 @@ Until wave 1 starts, the case list returns 403 and the runner keeps waiting. Tha
 - **Final offers:** never countered, because hosted suppliers walk away. A cheaper alternative in a final offer is sent back once.
 - **Deadlines:** a slow model falls back to a scripted counter, and idle RFQ threads may lapse instead of forcing the case to close.
 
-Hosted practice on 25 October: best single run 0.789 (v17, fast mode). Every hosted practice session since 23 October is in the [deal journal](DEALS.md).
+Hosted practice on 25 October (v1.1 candidate, Claude Opus fast mode): passes of 0.789, 0.804, 0.789, 0.790, 0.797 and 0.793, plus 0.793 through `tacto run --set practice` itself. On the out-of-sample bench (the 9 practice cases never hosted, real model against local suppliers) v1.1 scores 0.797 against v1.0.1's 0.667 ([EVALUATION.md](EVALUATION.md)). Two live runs lost a case to runner errors that are now fixed: an accept of an offer replaced while we decided (re-read and decide again), and a network error (the runner resumes the session). Every hosted practice session since 23 October is in the [deal journal](DEALS.md).
