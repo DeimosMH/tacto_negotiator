@@ -17,7 +17,8 @@ systemd-inhibit --what=idle:sleep --why="Tacto final" \
 ```
 
 - **Before wave 1:** the case list answers 403 and the runner keeps waiting. That is expected.
-- **During each wave:** it plays all of the wave's cases in parallel and closes each case before the 8-minute cap.
+- **During each wave:** it plays all of the wave's cases in parallel. It stops countering 90 s before the 8-minute cap (or the slowest round plus 15 s, if longer) and takes the best acceptable offer.
+- **Errors:** a case that hits a network error, a 5xx or a 429 resumes its session by itself.
 - **If it crashes:** run the same command again. It resumes its open sessions; the arena allows one session per case, and a second attempt returns a 409.
 - **To watch:** open `docs/index.html#deals` and tick **Auto-refresh**. Every case appears as it runs, with its messages and decision path.
 
@@ -35,7 +36,9 @@ systemd-inhibit --what=idle:sleep --why="Tacto final" \
 | Your quota and best scores | `.venv/bin/tacto me` |
 | Leaderboard | `.venv/bin/tacto board --set final` |
 | Practice cases you can play | `.venv/bin/tacto cases --set practice` |
-| Stop leftover practice runs (they block final sessions) | `pgrep -af tacto` |
+| Find leftover practice runs (they block final sessions); stop them with `kill <pid>` | `pgrep -af tacto` |
+| Pre-flight: the final runner must keep waiting on 403 before wave 1 (stops after 60 s) | `timeout 60 env LLM_PROVIDER=anthropic LLM_MODEL=claude-opus-5-5 LLM_EFFORT=high .venv/bin/tacto -v run --set final --agent routed --data data --waves 5` |
+| Rehearse the final locally with the kit (2 short waves, real rules) | in the kit's `starter-kit/`: `uv sync --all-extras && uv run arena-sim serve --final-rehearsal --data <repo>/data`; then here: `ARENA_URL=http://127.0.0.1:8000 ARENA_API_KEY=<key from 'tacto register Rehearsal sim'> .venv/bin/tacto run --set final --waves 2 --agent routed --data data --parallel 10` |
 | Deal journal: rebuild the index / backfill saved hosted results | `.venv/bin/tacto deals` / `.venv/bin/tacto deals docs/results/live-practice-*.json` |
 | Docs and deal journal in the browser | open `docs/index.html` (deals: `#deals`, decision tree: `#tree`) |
 | Results dashboard | `.venv/bin/tacto-ui`, then [localhost:1234](http://localhost:1234) |
