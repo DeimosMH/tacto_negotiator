@@ -11,3 +11,5 @@ dist/
 *.egg-info/
 .coverage
 htmlcov/
+data/release-sunday/
+logs/

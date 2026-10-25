@@ -31,7 +31,7 @@ from catalog import (
 
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUT = "docs/data.js"
-SKIP = {".git", ".venv", "venv", "env", ".agents", ".codex", ".aws", "node_modules", "__pycache__", ".pytest_cache", ".ruff_cache"}
+SKIP = {".git", "release-sunday", ".venv", "venv", "env", ".agents", ".codex", ".aws", "node_modules", "__pycache__", ".pytest_cache", ".ruff_cache"}
 TEXT_TYPES = {".py", ".js", ".mjs", ".html", ".css", ".md", ".toml"}
 ROOT_FILES = ("README.md", ".gitignore", ".dockerignore", ".env.example", "pyproject.toml", "uv.lock", "Dockerfile", "LICENSE", "LICENSE-data", "NOTICE.md")
 

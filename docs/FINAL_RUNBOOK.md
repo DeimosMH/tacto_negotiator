@@ -16,6 +16,8 @@ Do not use max effort: every call exceeded the decision deadline in hosted tests
 
 ## 1. After 08:00: get the Sunday release
 
+**Automatic:** a systemd user timer runs `tools/sunday_release.py` at 08:10. It retries every minute until the release is public (until 10:30), downloads only `release-sunday` into `data/release-sunday`, checks that `DataPackage` merges it, runs the tests, and shows a desktop notification with the result (log: `logs/sunday-release.log`). Check it with `systemctl --user list-timers tacto-sunday-release.timer`. The timer does not survive a reboot, and the machine must be awake at 08:10. If the notification says it failed, or never comes, do it by hand:
+
 ```sh
 .venv/bin/tacto data --out data
 ls data/release-sunday/facts.json
